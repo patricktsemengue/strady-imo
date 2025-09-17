@@ -1,30 +1,70 @@
-/* General App Layout */
+/* --- THEME VARIABLES --- */
+/* Default (Light) Theme */
 :root {
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --text-color: #212529;
+  --text-muted-color: #6c757d;
+  --border-color: #dee2e6;
+  --primary-color: #005f73;
+  --primary-color-hover: #0a9396;
+  --button-secondary-bg: #e9ecef;
+  --button-secondary-text: #495057;
+  --button-secondary-border: #ced4da;
+  --negative-bg: #fde0e0;
+  --negative-text: #9e2b25;
+  --positive-bg: #e6f9f1;
+  --positive-text: #0b6e4f;
+}
+
+/* Dark Theme Overrides */
+[data-theme='dark'] {
+  --background-color: #121212;
+  --card-background: #1e1e1e;
+  --text-color: #e0e0e0;
+  --text-muted-color: #a0a0a0;
+  --border-color: #444444;
+  --primary-color: #94d2bd;
+  --primary-color-hover: #0a9396;
+  --button-secondary-bg: #333333;
+  --button-secondary-text: #e0e0e0;
+  --button-secondary-border: #555555;
+  --negative-bg: #5a1d1d;
+  --negative-text: #ffbaba;
+  --positive-bg: #1e4638;
+  --positive-text: #c6f6d5;
+}
+
+/* --- GENERAL STYLES --- */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8f9fa;
-  color: #212529;
 }
 
 .app-container {
   max-width: 600px;
   margin: 2rem auto;
-  padding: 2rem;
-  background-color: #ffffff;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 header h1 {
   text-align: center;
-  color: #005f73; /* A dark green/blue from our logo */
-  margin-bottom: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
 }
 
-/* Step Container & Form Styling */
+/* --- COMPONENT STYLES --- */
 .step-container {
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--border-color);
   padding-top: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -37,6 +77,7 @@ header h1 {
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--text-color);
 }
 
 input[type="number"],
@@ -44,21 +85,19 @@ input[type="text"],
 select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
-  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  box-sizing: border-box;
+  background-color: var(--card-background);
+  color: var(--text-color);
 }
 
-input[type="radio"] {
-  margin-right: 0.5rem;
-}
-
-/* Button Styling */
+/* --- BUTTONS --- */
 .button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 1.25rem;
+  display: flex;
+  gap: 10px;
+  margin-top: 1.25rem;
 }
 
 .next-button, .back-button {
@@ -70,51 +109,47 @@ input[type="radio"] {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition: background-color 0.2s;
 }
 
 .next-button {
-  background-color: #0a9396; /* Teal color */
+  background-color: var(--primary-color-hover);
   color: white;
 }
-
 .next-button:hover {
-  background-color: #005f73;
+  background-color: var(--primary-color);
 }
 
 .back-button {
-    background-color: #e9ecef;
-    color: #495057;
-    border: 1px solid #ced4da;
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--button-secondary-border);
 }
-
 .back-button:hover {
-    background-color: #dee2e6;
+  opacity: 0.8;
 }
 
 .reset-button {
-    width: 100%;
-    margin-top: 10px;
-    padding: 0.75rem;
-    background-color: transparent;
-    border: 1px solid #adb5bd;
-    color: #495057;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0.75rem;
+  background-color: transparent;
+  border: 1px solid var(--button-secondary-border);
+  color: var(--text-muted-color);
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-
 .reset-button:hover {
-    background-color: #f1f3f5;
+  background-color: var(--button-secondary-bg);
 }
 
-
-/* Display and List Styling */
+/* --- DISPLAYS & SUMMARY --- */
 .cost-display {
   margin-top: 1rem;
   padding: 1rem;
-  background-color: #e9ecef;
+  background-color: var(--button-secondary-bg);
   border-radius: 4px;
   text-align: center;
   font-size: 1.2rem;
@@ -122,52 +157,95 @@ input[type="radio"] {
 }
 
 .cost-display.negative {
-    background-color: #fde0e0;
-    color: #9e2b25;
+  background-color: var(--negative-bg);
+  color: var(--negative-text);
 }
 
-/* Summary Page Specific Styles */
 .summary-section {
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
+  background-color: var(--background-color);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
 }
 .summary-section h4 {
-    margin-top: 0;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
+  margin-top: 0;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 .summary-section p {
-    display: flex;
-    justify-content: space-between;
-    margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
 }
 
-.summary-section.metrics {
-    display: flex;
-    gap: 1rem;
-    background-color: transparent;
-    padding: 0;
-}
 .metric-box {
-    flex: 1;
-    background-color: #e9ecef;
-    text-align: center;
-    padding: 1rem;
-    border-radius: 8px;
+  flex: 1;
+  background-color: var(--button-secondary-bg);
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
 }
 .metric-box strong {
-    font-size: 2rem;
-    color: #005f73;
-    display: block;
-}
-.metric-box span {
-    font-weight: bold;
-    display: block;
-    margin: 0.25rem 0;
+  font-size: 2rem;
+  color: var(--primary-color);
+  display: block;
 }
 .metric-box small {
-    color: #6c757d;
+  color: var(--text-muted-color);
+}
+/* --- Progress Stepper Styles --- */
+.progress-stepper {
+  display: flex;
+  justify-content: space-between;
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.progress-stepper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--border-color);
+  transform: translateY(-50%);
+  z-index: 1;
+}
+.step {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+.step-indicator {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--card-background);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+.step-label {
+  font-size: 0.8rem;
+  color: var(--text-muted-color);
+}
+.step.completed .step-indicator,
+.step.active .step-indicator {
+  background-color: var(--primary-color-hover);
+  border-color: var(--primary-color-hover);
+  color: white;
+}
+.step.active .step-indicator {
+  transform: scale(1.2);
+}
+.step.active .step-label {
+  color: var(--primary-color);
+  font-weight: bold;
 }
