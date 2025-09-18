@@ -1,16 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { COST_PER_SQM } from '../config';
+import { calculateRegistrationTax, calculateRenovationCost } from '../utils/calculations';
 
 const formatCurrency = (value) => (value || 0).toLocaleString('fr-BE', { style: 'currency', currency: 'EUR' });
 
 function Summary({ data, onBack, onReset }) {
   const { t } = useTranslation();
-  const renovationCost = data.renovationItems.reduce((total, item) => {
-    return total + (item.surface * COST_PER_SQM[item.intensity]);
-  }, 0);
-  const registrationTaxRate = data.region === 'flanders' ? 0.03 : 0.125;
-  const registrationTax = data.propertyPrice * registrationTaxRate;
+  
+  const registrationTax = calculateRegistrationTax(data.propertyPrice, data.region, data.isPrimaryResidence);
+  const { total: renovationCost } = calculateRenovationCost(data.renovationItems, data);
   const notaryFees = data.propertyPrice * 0.015 + 1200;
   const totalProjectCost = data.propertyPrice + registrationTax + notaryFees + renovationCost;
   const loanAmount = totalProjectCost - data.personalContribution;
@@ -69,7 +67,7 @@ function Summary({ data, onBack, onReset }) {
       <div className="summary-section">
         <h4>{t('rental_performance')}</h4>
         <p><span>{t('noi')}</span> <strong>{formatCurrency(netOperatingIncome)} / year</strong></p>
-        <p><span>{t('annual_cash_flow')}</span> <strong style={{color: annualCashFlow >= 0 ? '#0b6e4f' : '#9e2b25'}}>{formatCurrency(annualCashFlow)}</strong></p>
+        <p><span>{t('annual_cash_flow')}</span> <strong style={{color: annualCashFlow >= 0 ? 'var(--positive-text)' : 'var(--negative-text)'}}>{formatCurrency(annualCashFlow)}</strong></p>
       </div>
       <div className="summary-section metrics">
         <div className="metric-box">

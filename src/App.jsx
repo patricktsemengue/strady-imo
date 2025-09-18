@@ -10,11 +10,24 @@ import ThemeSwitcher from './components/ThemeSwitcher';
 import './App.css';
 
 const initialProjectData = {
-  propertyPrice: '', propertyType: 'existing', region: 'wallonia',
+  propertyPrice: '', 
+  propertyType: 'existing', 
+  region: 'wallonia',
+  isPrimaryResidence: true,
+  propertyAge: 15,
+  isPrivateDwelling: true,
   renovationItems: [],
-  personalContribution: '', loanDuration: 25, interestRate: 3.5,
-  monthlyRent: '', otherMonthlyIncome: '', vacancyRate: 5, propertyTax: '',
-  insurance: '', maintenance: '', coOwnershipFees: '', otherExpenses: '',
+  personalContribution: '', 
+  loanDuration: 25, 
+  interestRate: 3.5,
+  monthlyRent: '', 
+  otherMonthlyIncome: '', 
+  vacancyRate: 5, 
+  propertyTax: '',
+  insurance: '', 
+  maintenance: '', 
+  coOwnershipFees: '', 
+  otherExpenses: '',
 };
 
 function App() {
@@ -42,7 +55,6 @@ function App() {
       </header>
       <main>
         <ProgressStepper currentStep={currentStep} />
-        
         {currentStep === 1 && <Acquisition data={projectData} updateData={updateProjectData} onNext={nextStep} />}
         {currentStep === 2 && <RenovationBuild data={projectData} updateData={updateProjectData} onNext={nextStep} onBack={prevStep} />}
         {currentStep === 3 && <Financing data={projectData} updateData={updateProjectData} onNext={nextStep} onBack={prevStep} />}
