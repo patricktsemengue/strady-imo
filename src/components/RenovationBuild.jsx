@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { calculateRenovationCost } from '../utils/calculations';
 
 const itemTypeKeys = ["room", "kitchen", "bathroom", "hall", "roof", "entire_house", "flat", "studio", "duplex", "triplex", "other"];
-const formatCurrency = (value) => (value || 0).toLocaleString('fr-BE', { style: 'currency', currency: 'EUR' });
+const formatCurrency = (value) => (value || 0).toLocaleString('fr-BE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
 function RenovationBuild({ data, updateData, onNext, onBack }) {
   const { t } = useTranslation();
@@ -33,54 +33,82 @@ function RenovationBuild({ data, updateData, onNext, onBack }) {
   const renovation = calculateRenovationCost(data.renovationItems, data);
 
   return (
-    <div className="step-container">
-      <h2>{t('step2_title')}</h2>
-      <div className="form-group" style={{display: 'flex', gap: '20px'}}>
-        <div>
-          <label>{t('property_age')}</label>
-          <input type="number" value={data.propertyAge} onChange={(e) => updateData({ propertyAge: parseInt(e.target.value, 10) || 0 })} />
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <label style={{display: 'flex', alignItems: 'center', height: '100%'}}>
-            <input type="checkbox" checked={data.isPrivateDwelling} onChange={(e) => updateData({ isPrivateDwelling: e.target.checked })} style={{ marginRight: '10px' }}/>
-            {t('private_dwelling')}
-          </label>
-        </div>
-      </div>
-      <div className="add-item-form" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-        <select value={itemType} onChange={(e) => setItemType(e.target.value)} style={{ flex: '2 1 150px' }}>
-          {itemTypeKeys.map(key => {
-            const translatedLabel = t(`reno_items.${key}`);
-            return <option key={key} value={translatedLabel}>{translatedLabel}</option>
-          })}
-        </select>
-        {itemType === t('reno_items.other') && <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder={t('add_item_placeholder')} style={{ flex: '2 1 150px' }} />}
-        <input type="number" value={surface} onChange={(e) => setSurface(e.target.value)} placeholder={t('surface_placeholder')} style={{ flex: '1 1 80px' }} />
-        <select value={intensity} onChange={(e) => setIntensity(e.target.value)} style={{ flex: '2 1 120px' }}>
-          <option value="light">Light</option><option value="medium">Medium</option><option value="heavy">Heavy</option>
-        </select>
-        <button type="button" onClick={handleAddItem} style={{ flex: '1 1 50px' }}>{t('add_button')}</button>
-      </div>
-      <div className="items-list">
-        {data.renovationItems.length === 0 ? <p>{t('no_items_added')}</p> : data.renovationItems.map(item => (
-          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0.5rem', borderBottom: '1px solid #eee' }}>
-            <div><strong>{item.name}</strong><br /><small>{item.surface} m² @ {item.intensity}</small></div>
-            <button onClick={() => handleRemoveItem(item.id)} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left Column: Inputs */}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-medium mb-2 text-text-secondary">{t('property_age')}</label>
+              <input type="number" className="w-full bg-bg-primary border border-border-color text-text-primary rounded-lg px-4 py-3 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50" value={data.propertyAge} onChange={(e) => updateData({ propertyAge: parseInt(e.target.value, 10) || 0 })} />
+            </div>
+            <div className="flex items-end pb-3">
+              <label className="flex items-center space-x-2 text-text-secondary">
+                <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-accent-primary focus:ring-accent-primary" checked={data.isPrivateDwelling} onChange={(e) => updateData({ isPrivateDwelling: e.target.checked })} />
+                <span>{t('private_dwelling')}</span>
+              </label>
+            </div>
           </div>
-        ))}
-      </div>
-      {renovation.total > 0 && (
-        <div className="cost-display">
-          <p style={{margin: 0, fontSize: '1rem', fontWeight: 'normal'}}>{t('renovation_subtotal')} {formatCurrency(renovation.subtotal)}</p>
-          <p style={{margin: 0, fontSize: '1rem', fontWeight: 'normal'}}>{t('applicable_vat')} {renovation.vatRate}% (+{formatCurrency(renovation.vatAmount)})</p>
-          <hr style={{borderColor: 'var(--border-color)', margin: '0.5rem 0'}}/>
-          <strong>{t('total_renovation_cost_vat')} {formatCurrency(renovation.total)}</strong>
+          
+          <div className="p-4 border border-border-color rounded-lg space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <select value={itemType} onChange={(e) => setItemType(e.target.value)} className="w-full bg-bg-primary border border-border-color text-text-primary rounded-lg px-4 py-3 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50">
+                {itemTypeKeys.map(key => <option key={key} value={t(`reno_items.${key}`)}>{t(`reno_items.${key}`)}</option>)}
+              </select>
+              {itemType === t('reno_items.other') && <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder={t('add_item_placeholder')} className="w-full bg-bg-primary border border-border-color text-text-primary rounded-lg px-4 py-3 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50" />}
+            </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input type="number" value={surface} onChange={(e) => setSurface(e.target.value)} placeholder={t('surface_placeholder')} className="w-full bg-bg-primary border border-border-color text-text-primary rounded-lg px-4 py-3 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50" />
+              <select value={intensity} onChange={(e) => setIntensity(e.target.value)} className="w-full bg-bg-primary border border-border-color text-text-primary rounded-lg px-4 py-3 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50">
+                <option value="light">Light</option><option value="medium">Medium</option><option value="heavy">Heavy</option>
+              </select>
+            </div>
+            <button onClick={handleAddItem} className="w-full bg-accent-primary text-white font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity">{t('add_button')}</button>
+          </div>
+          
+          <div className="space-y-2">
+            {data.renovationItems.map(item => (
+              <div key={item.id} className="flex justify-between items-center bg-bg-primary p-3 rounded-lg border border-border-color">
+                <div className="text-sm">
+                  <p className="font-semibold text-text-primary">{item.name}</p>
+                  <p className="text-text-secondary">{item.surface} m² @ {item.intensity}</p>
+                </div>
+                <button onClick={() => handleRemoveItem(item.id)} className="text-red-500 hover:text-red-700 font-bold">X</button>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
-      <div className="button-group">
-        <button className="back-button" onClick={onBack}>{t('previous')}</button>
-        <button className="next-button" onClick={onNext}>{t('next_financing')}</button>
+
+        {/* Right Column: Summary/Info */}
+        <div className="bg-bg-primary border border-border-color rounded-lg p-6 flex flex-col justify-between h-full">
+          <div>
+            <h3 className="font-bold text-lg mb-4 text-text-primary">{t('renovation_summary_title')}</h3>
+            <p className="text-text-secondary mb-4 text-sm">{t('renovation_summary_desc')}</p>
+            
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-text-secondary">{t('renovation_subtotal')}</span>
+                <span className="font-medium text-text-primary">{formatCurrency(renovation.subtotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-secondary">{t('applicable_vat')}</span>
+                <span className="font-medium text-text-primary">{renovation.vatRate}% ({formatCurrency(renovation.vatAmount)})</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 pt-4 border-t border-border-color">
+            <div className="flex justify-between items-baseline">
+              <span className="font-semibold text-text-primary">{t('total_renovation_cost_vat')}</span>
+              <span className="text-2xl font-bold text-accent-primary">{formatCurrency(renovation.total)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Actions */}
+      <div className="mt-10 flex justify-between">
+        <button onClick={onBack} className="bg-bg-secondary text-text-primary border border-border-color font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">{t('previous')}</button>
+        <button onClick={onNext} className="bg-accent-primary text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:opacity-90 transition-opacity">{t('next_financing')}</button>
       </div>
     </div>
   );

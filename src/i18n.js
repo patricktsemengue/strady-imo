@@ -32,7 +32,8 @@ const resources = {
       "renovation_subtotal": "Renovation Subtotal (excl. VAT):",
       "applicable_vat": "Applicable VAT:",
       "total_renovation_cost_vat": "Total Renovation Cost (incl. VAT):",
-
+      "renovation_summary_title": "Renovation Cost Breakdown",
+      "renovation_summary_desc": "Add renovation items on the left. The total cost, including the applicable VAT rate, will be calculated here.",
       // Step 3: Financing
       "step3_title": "3. Financing",
       "cost_breakdown_title": "Project Cost Breakdown",
@@ -47,6 +48,8 @@ const resources = {
       "amount_to_borrow": "Amount to Borrow:",
       "est_monthly_payment": "Est. Monthly Payment:",
       "next_rental": "Next: Rental Income →",
+      "financing_summary_title": "Financing Breakdown",
+
       // Step 4: Rental
       "step4_title": "4. Rental Income & Cash Flow",
       "income_section": "Income",
@@ -169,7 +172,10 @@ const resources = {
         "financing": "Financement",
         "rental": "Location",
         "summary": "Résumé"
-      }
+      },
+      "renovation_summary_title": "Détail des Coûts de Rénovation",
+      "renovation_summary_desc": "Ajoutez des postes de rénovation à gauche. Le coût total, incluant la TVA applicable, sera calculé ici.",
+      "financing_summary_title": "Détail du Financement"
     }
   },
   nl: {
@@ -250,7 +256,10 @@ const resources = {
         "financing": "Financiering",
         "rental": "Verhuur",
         "summary": "Overzicht"
-      }
+      },
+      "renovation_summary_title": "Overzicht Renovatiekosten",
+      "renovation_summary_desc": "Voeg links renovatie-items toe. De totale kost, inclusief het toepasselijke btw-tarief, wordt hier berekend.",
+      "financing_summary_title": "Financieringsoverzicht"
     }
   }
 };
