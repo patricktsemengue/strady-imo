@@ -14,23 +14,52 @@ function Financing({ data, updateData, onNext, onBack }) {
   const [loanRates, setLoanRates] = useState([]);
   const [isRateAuto, setIsRateAuto] = useState(true);
 
-  // --- LOGIC (UNMODIFIED) ---
+  // Effect to fetch and cache loan rates on component mount
   useEffect(() => {
-    const fetchRates = async () => { /* ... (unchanged) ... */ };
-    // ... (caching logic is unchanged) ...
+    const fetchRates = async () => {
+      try {
+        // --- UPDATED LINE ---
+        // The fetch URL now uses the environment variable for the live backend.
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/loan-rates`);
+        
+        if (!response.ok) throw new Error('Failed to fetch rates');
+        const rates = await response.json();
+        setLoanRates(rates);
+        localStorage.setItem('loanRates', JSON.stringify(rates));
+        localStorage.setItem('loanRatesTimestamp', Date.now());
+      } catch (error) {
+        console.error("Could not fetch loan rates from server:", error);
+      }
+    };
+
+    const cachedRates = localStorage.getItem('loanRates');
+    const cachedTimestamp = localStorage.getItem('loanRatesTimestamp');
+    
+    if (cachedRates && cachedTimestamp && (Date.now() - cachedTimestamp < LOAN_RATE_CACHE_DURATION)) {
+      setLoanRates(JSON.parse(cachedRates));
+    } else {
+      fetchRates();
+    }
   }, []);
 
+  // Effect to auto-update the interest rate when loan duration changes
   useEffect(() => {
-    if (isRateAuto && loanRates.length > 0) { /* ... (unchanged) ... */ }
-  }, [data.loanDuration, loanRates, isRateAuto]);
+    if (isRateAuto && loanRates.length > 0) {
+      const rateData = loanRates.find(r => parseInt(r.duration, 10) === data.loanDuration);
+      if (rateData) {
+        updateData({ interestRate: parseFloat(rateData.rate) });
+      }
+    }
+  }, [data.loanDuration, loanRates, isRateAuto, updateData]);
 
   const handleInterestRateChange = (e) => {
-    setIsRateAuto(false);
+    setIsRateAuto(false); // User is overriding, disable auto-updates
     updateData({ interestRate: parseFloat(e.target.value) || 0 });
   };
-
+  
   const resetInterestRate = () => setIsRateAuto(true);
 
+  // --- All calculations from here are the same ---
   const registrationTax = calculateRegistrationTax(data.propertyPrice, data.region, data.isPrimaryResidence);
   const { total: renovationCost } = calculateRenovationCost(data.renovationItems, data);
   const notaryFees = (data.propertyPrice || 0) * 0.015 + 1200;
@@ -41,7 +70,6 @@ function Financing({ data, updateData, onNext, onBack }) {
   const n = (data.loanDuration || 0) * 12;
   const monthlyPayment = P > 0 && r > 0 && n > 0 ? (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : 0;
 
-  // --- NEW JSX STRUCTURE ---
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
