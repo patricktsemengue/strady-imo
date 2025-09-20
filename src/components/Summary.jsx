@@ -7,7 +7,7 @@ const formatCurrency = (value) => (value || 0).toLocaleString('fr-BE', { style: 
 function Summary({ data, onBack, onReset }) {
   const { t } = useTranslation();
   
-  // --- LOGIC (UNMODIFIED) ---
+  // --- All calculations from the project data ---
   const registrationTax = calculateRegistrationTax(data.propertyPrice, data.region, data.isPrimaryResidence);
   const { total: renovationCost } = calculateRenovationCost(data.renovationItems, data);
   const notaryFees = data.propertyPrice * 0.015 + 1200;
@@ -27,9 +27,33 @@ function Summary({ data, onBack, onReset }) {
   const capRate = data.propertyPrice > 0 ? (netOperatingIncome / data.propertyPrice) * 100 : 0;
   const cashOnCashReturn = initialCashOutlay > 0 ? (annualCashFlow / initialCashOutlay) * 100 : 0;
 
-  const handleExport = async () => { /* ... (unchanged) ... */ };
+  const handleExport = async () => {
+    try {
+      // --- UPDATED LINE ---
+      // The fetch URL now uses the environment variable for the live backend.
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/generate-pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-  // --- NEW JSX STRUCTURE ---
+      if (!response.ok) throw new Error('Network response was not ok');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Strady-imo-Summary.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please ensure the backend server is running.');
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Section 1: Costs */}
@@ -53,16 +77,16 @@ function Summary({ data, onBack, onReset }) {
       
       {/* Section 3: Performance & Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-bg-primary border border-border-color rounded-lg p-6 text-center">
+        <div className="bg-bg-primary border border-border-color rounded-lg p-6 text-center flex flex-col justify-center">
           <h4 className="font-semibold text-text-secondary">{t('annual_cash_flow')}</h4>
           <p className={`text-4xl font-bold ${annualCashFlow >= 0 ? 'text-positive-text' : 'text-negative-text'}`}>{formatCurrency(annualCashFlow)}</p>
         </div>
         <div className="grid grid-cols-2 gap-4 text-center">
-          <div className="bg-bg-primary border border-border-color rounded-lg p-4">
+          <div className="bg-bg-primary border border-border-color rounded-lg p-4 flex flex-col justify-center">
             <h4 className="font-semibold text-text-secondary text-sm">{t('coc_return')}</h4>
             <p className="text-2xl font-bold text-accent-primary">{cashOnCashReturn.toFixed(2)}%</p>
           </div>
-          <div className="bg-bg-primary border border-border-color rounded-lg p-4">
+          <div className="bg-bg-primary border border-border-color rounded-lg p-4 flex flex-col justify-center">
             <h4 className="font-semibold text-text-secondary text-sm">{t('cap_rate')}</h4>
             <p className="text-2xl font-bold text-accent-primary">{capRate.toFixed(2)}%</p>
           </div>
