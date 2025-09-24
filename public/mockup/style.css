@@ -1,8 +1,8 @@
 /* --- CSS Variables for Brand Identity --- */
 :root {
     --dark-green: #004d40; /* Professional and stable */
-    --light-blue: #4fc3f7; /* Accent for financing/data */
-    --orange: #ff7043;     /* Critical calls-to-action */
+    --light-blue: #73c8f0f9; /* Accent for financing/data */
+    --orange: #f76c1c;     
     --background: #f4f6f8;
     --card-bg: #ffffff;
     --text-primary: #212121;
@@ -33,18 +33,30 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* --- FINAL CONSOLIDATED LOGO STYLES --- */
+
 .logo {
     display: flex;
-    align-items: baseline; /* Aligns all text elements nicely */
-    gap: 2px; /* Adds a small space between elements */
+    align-items: baseline; 
+    gap: 4px; /* Adjust spacing between elements */
 }
 
-.logo-strady {
-    font-family: cursive; /* The new, elegant font */
-    font-size: 2.2rem;
-    font-weight: 700;
+.logo-s {
+    font-family: 'Caveat', cursive;
+    font-size: 2.4rem;
+    font-weight: 600;
     font-style: italic;
     color: var(--dark-green);
+    transform: translateX(2px); 
+}
+
+.logo-trady {
+    font-family: 'The Girl Next Door', cursive; 
+    font-size: 1.8rem;
+    color: var(--dark-green);
+    font-style: oblique;
+    font-weight: 600;
+    padding-bottom: 5px; 
 }
 
 .logo-dot {
@@ -54,14 +66,16 @@ body {
 }
 
 .logo-imo {
-    font-family: 'Poppins', sans-serif; /* Keep this consistent with UI text */
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--light-blue);
+    font-family: 'Poppins', sans-serif; 
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--light-blue);   
     padding: 0.1rem 0.5rem;
-    border-radius: 8px;
-    border: 2.5px solid var(--light-blue);
-    line-height: 1; /* Helps with consistent box height */
+    border-radius: 6px;
+    border-top: 2.5px solid var(--light-blue);
+    border-right: 2.5px solid var(--light-blue);
+    border-bottom: 2.5px solid var(--light-blue);
+    line-height: 1.2;
 }
 
 .main-content {
