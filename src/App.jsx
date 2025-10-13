@@ -38,6 +38,10 @@ const BrainCircuitIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain-circuit"><path d="M12 5a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162"/><path d="M12 12a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162"/><path d="M12 19a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162"/><path d="M14.5 4.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z"/><path d="M9.5 4.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z"/><path d="M14.5 11.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z"/><path d="M9.5 11.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z"/><path d="M14.5 18.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z"/><path d="M9.5 18.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z"/><path d="M20 12h-2"/><path d="M6 12H4"/><path d="m14 15.5-.5.8"/><path d="m10.5 16.3.5-.8"/><path d="m14 8.5-.5-.8"/><path d="m10.5 7.7.5.8"/></svg>
 );
 
+// env
+const cacheDuration = import.meta.env.WELCOME_CACHE_DURATION_HOURS;
+const maxAnalyses = import.meta.env.MAX_ANALYSES;
+const apiKey = import.meta.env.GEMINI_API_KEY;
 
 // --- Composant Logo ---
 const Logo = () => (
@@ -144,9 +148,7 @@ const HelpPage = ({ onBack }) => (
 
 // --- Composant pour la page des paramètres (version lue depuis .env) ---
 const SettingsPage = ({ onBack }) => {
-    const cacheDuration = import.meta.env.WELCOME_CACHE_DURATION_HOURS;
-    const maxAnalyses = import.meta.env.MAX_ANALYSES;
-
+   
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Paramètres</h1>
@@ -561,9 +563,9 @@ export default function App() {
   const [projectNameForSave, setProjectNameForSave] = React.useState('');
   const [saveError, setSaveError] = React.useState('');
   const [notification, setNotification] = React.useState({ msg: '', type: '' });
-const [maxAnalyses, setMaxAnalyses] = React.useState(() => {
-    return parseInt(import.meta.env.MAX_ANALYSES || '3', 10);
-  });
+  const [maxAnalyses, setMaxAnalyses] = React.useState(() => {
+        return parseInt(import.meta.env.MAX_ANALYSES || '3', 10);
+    });
   const [allSettingsConfigured, setAllSettingsConfigured] = React.useState(false);
   
   // NOUVEAUX ÉTATS POUR L'ASSISTANT IA GÉNÉRAL
@@ -603,9 +605,11 @@ const [maxAnalyses, setMaxAnalyses] = React.useState(() => {
     document.head.appendChild(styleElement);
 
     // Check if all settings are configured
-    const apiKey = localStorage.getItem('geminiApiKey');
-    const cacheDuration = localStorage.getItem('welcomeCacheDuration');
-    const maxAnalysesStored = localStorage.getItem('maxAnalyses');
+    //const apiKey = localStorage.getItem('geminiApiKey');
+    //const cacheDuration = localStorage.getItem('welcomeCacheDuration');
+    //const maxAnalysesStored = localStorage.getItem('maxAnalyses');
+    
+
     if(apiKey && cacheDuration && maxAnalysesStored) {
         setAllSettingsConfigured(true);
     }
