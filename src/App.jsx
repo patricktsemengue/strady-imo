@@ -546,7 +546,7 @@ export default function App() {
   });
 
   const initialDataState = {
-    projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
+    projectName: 'Appartement 2chb Namur Place Communale', prixAchat: 200000, coutTravaux: 13000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
     ville: 'Namur', descriptionBien: 'Appartement 2 chambres, 85m², entièrement rénové...',
     tensionLocative: 7, loyerEstime: 900, chargesMensuelles: 100, vacanceLocative: 8,
   };
