@@ -620,12 +620,13 @@ export default function App() {
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
     
+    const numericValue = parseFloat(value);
+
     setData(prevData => {
-        const newData = { ...prevData, [name]: type === 'number' ? parseFloat(value) || 0 : value };
+        const newData = { ...prevData, [name]: type === 'number' ? (value === '' ? '' : numericValue) : value };
         if (name === 'prixAchat' ) {
-            newData.fraisAcquisition = Math.round((parseFloat(value) || 0) * 0.145);
+            newData.fraisAcquisition = Math.round((numericValue || 0) * 0.145);
         }
-        
         return newData;
     });
   };
@@ -643,26 +644,26 @@ export default function App() {
   };
 
   const { coutTotalProjet, montantAFinancer, mensualiteEstimee } = React.useMemo(() => {
-    const coutTotal = data.prixAchat + data.coutTravaux + data.fraisAcquisition + data.fraisAnnexe;
-    const aFinancer = coutTotal - data.apport;
-    const tauxMensuel = data.tauxCredit / 100 / 12;
-    const nbMensualites = data.dureeCredit * 12;
+    const coutTotal = (data.prixAchat || 0) + (data.coutTravaux || 0) + (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
+    const aFinancer = coutTotal - (data.apport || 0);
+    const tauxMensuel = (data.tauxCredit || 0) / 100 / 12;
+    const nbMensualites = (data.dureeCredit || 0) * 12;
     const mensualite = aFinancer > 0 && nbMensualites > 0 ? (aFinancer * tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / (Math.pow(1 + tauxMensuel, nbMensualites) - 1) : 0;
     return { coutTotalProjet: coutTotal, montantAFinancer: aFinancer, mensualiteEstimee: mensualite };
   }, [data.prixAchat, data.coutTravaux, data.fraisAcquisition, data.fraisAnnexe, data.apport, data.tauxCredit, data.dureeCredit]);
 
   const calculateScore = () => {
-    const loyerAnnuelBrut = data.loyerEstime * 12;
-    const chargesAnnuelles = data.chargesMensuelles * 12;
-    const coutVacance = loyerAnnuelBrut * (data.vacanceLocative / 100);
+    const loyerAnnuelBrut = (data.loyerEstime || 0) * 12;
+    const chargesAnnuelles = (data.chargesMensuelles || 0) * 12;
+    const coutVacance = loyerAnnuelBrut * ((data.vacanceLocative || 0) / 100);
     const rendementNet = ((loyerAnnuelBrut - chargesAnnuelles - coutVacance) / coutTotalProjet) * 100;
-    const cashflowMensuel = data.loyerEstime - data.chargesMensuelles - mensualiteEstimee;
+    const cashflowMensuel = (data.loyerEstime || 0) - (data.chargesMensuelles || 0) - mensualiteEstimee;
 
     let score = 0;
     if (rendementNet > 7) score += 40; else if (rendementNet > 5) score += 30; else if (rendementNet > 3) score += 15;
     if (cashflowMensuel > 100) score += 40; else if (cashflowMensuel > 0) score += 30; else if (cashflowMensuel > -150) score += 10;
-    score += data.tensionLocative;
-    const ratioApport = (data.apport / coutTotalProjet) * 100;
+    score += (data.tensionLocative || 0);
+    const ratioApport = coutTotalProjet > 0 ? ((data.apport || 0) / coutTotalProjet) * 100 : 0;
     if (ratioApport < 20) score += 10; else if (ratioApport < 30) score += 5;
     
     let grade, motivation;
@@ -936,4 +937,3 @@ const callGeminiAPI = async (systemPrompt, userPrompt, setLoading, setError, set
     </div>
   );
 }
-
