@@ -1,30 +1,53 @@
 export const handler = async (event) => {
+  // --- AJOUT POUR GÉRER LE PREFLIGHT CORS ---
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200, // 200 OK
+      headers: {
+        'Access-Control-Allow-Origin': '*', // Autorise n'importe quelle origine
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS' // Indique les méthodes autorisées
+      },
+      body: ''
+    };
+  }
+  // --- FIN DE L'AJOUT ---
+
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
+    // Cette ligne ne sera plus déclenchée par OPTIONS
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   const { systemPrompt, userPrompt } = JSON.parse(event.body);
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.STRADY_GEMINI_API_KEY;
 
   if (!apiKey) {
-    return { statusCode: 500, body: 'API key is not configured.' };
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ error: 'API key is not configured.' }) 
+    };
   }
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // URL Corrigée (avec -latest)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      
+      // Body Corrigé (sans 'tools')
       body: JSON.stringify({
         contents: [{ parts: [{ text: userPrompt }] }],
-        tools: [{ "google_search": {} }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
       })
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      return { statusCode: response.status, body: `API Error: ${errorBody}` };
+      return { 
+        statusCode: response.status, 
+        body: JSON.stringify({ error: `API Error: ${errorBody}` }) 
+      };
     }
     
     const data = await response.json();

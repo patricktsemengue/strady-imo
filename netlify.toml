@@ -1,0 +1,11 @@
+[build]
+  # Dossier où se trouvent vos fonctions serverless
+  functions = "netlify/functions"
+
+[dev]
+  # Commande pour lancer votre app (déjà dans package.json)
+  command = "npm run dev"
+  # Port par défaut pour le serveur local
+  port = 8888
+  # Port sur lequel votre app Vite s'exécute
+  targetPort = 5173
