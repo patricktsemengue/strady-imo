@@ -7,7 +7,7 @@ const AuthPage = ({ onBack }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // --- NOUVEAUX ÉTATS ---
+  // ---  ÉTATS ---
   const [confirmPassword, setConfirmPassword] = useState('');
   const [prenom, setPrenom] = useState('');
   // -------------------------
