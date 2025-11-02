@@ -549,6 +549,36 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
     );
 };
 
+// ---  Composant Modal de  Confirmation ---
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+                <h2 className="text-2xl font-bold mb-4">{title}</h2>
+                <div className="text-gray-700 mb-6">
+                    {children}
+                </div>
+                <div className="flex justify-end gap-3 pt-6 mt-4 border-t">
+                    <button 
+                        onClick={onClose} 
+                        className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400"
+                    >
+                        Annuler
+                    </button>
+                    <button 
+                        onClick={onConfirm} 
+                        className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700"
+                    >
+                        Confirmer la suppression
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Composant pour la page de bienvenue ---
 const WelcomePage = ({ onStart }) => (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-slate-100 animate-fade-in">
@@ -616,6 +646,8 @@ export default function App() {
     const [isDataLoading, setIsDataLoading] = React.useState(true);
     const [tempNumericValue, setTempNumericValue] = React.useState(null);
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+    const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
 
     // ASSISTANT IA GÉNÉRAL
     const [geminiQuery, setGeminiQuery] = React.useState('');
@@ -973,7 +1005,20 @@ export default function App() {
     };
 
     // Fonction pour supprimer une analyse (locale ou cloud)
-    const deleteAnalysis = async (id) => {
+    const deleteAnalysis = (id) => {
+        const analysis = analyses.find(a => a.id === id);
+        if (analysis) {
+            setAnalysisToDelete(analysis); // Mémorise l'analyse à supprimer
+            setIsDeleteModalOpen(true); // Ouvre la modale
+        }
+    };
+
+    //  Exécute la suppression (appelée par la modale)
+    const handleConfirmDelete = async () => {
+        if (!analysisToDelete) return; // Sécurité
+
+        const id = analysisToDelete.id;
+
         if (user) {
             // --- Logique Cloud ---
             const { error } = await supabase.from('analyses').delete().eq('id', id);
@@ -988,6 +1033,10 @@ export default function App() {
             setAnalyses(updatedAnalyses);
             localStorage.setItem('immoAnalyses', JSON.stringify(updatedAnalyses));
         }
+
+        // Réinitialise et ferme la modale
+        setIsDeleteModalOpen(false);
+        setAnalysisToDelete(null);
     };
 
     // Fonction pour appeler l'API Gemini
@@ -1217,6 +1266,24 @@ export default function App() {
                     error={saveError}
                     setError={setSaveError}
                 />
+
+                <ConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => {
+                        setIsDeleteModalOpen(false);
+                        setAnalysisToDelete(null);
+                    }}
+                    onConfirm={handleConfirmDelete}
+                    title="Confirmer la suppression"
+                >
+                    <p>Êtes-vous sûr de vouloir supprimer définitivement cette analyse ?</p>
+                    {analysisToDelete && (
+                        <p className="font-bold mt-2">
+                            "{analysisToDelete.project_name || analysisToDelete.data.projectName}"
+                        </p>
+                    )}
+                    <p className="text-sm text-red-600 mt-2">Cette action est irréversible.</p>
+                </ConfirmationModal>
                 {renderPage()}
             </main>
 
