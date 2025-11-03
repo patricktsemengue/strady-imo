@@ -623,9 +623,10 @@ export default function App() {
     });
 
     const initialDataState = {
-        projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
+        projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 0, tauxCredit: 3.5, dureeCredit: 25,
         ville: 'Namur', descriptionBien: 'Appartement 2 chambres, 85m², entièrement rénové...',
         tensionLocative: 7, loyerEstime: 900, chargesMensuelles: 100, vacanceLocative: 8,
+        quotite: 90, // <--- AJOUT DE LA QUOTITÉ PAR DÉFAUT
     };
 
     const [data, setData] = React.useState(initialDataState);
@@ -765,6 +766,36 @@ export default function App() {
 
         return () => { document.head.removeChild(fontLink); document.head.removeChild(styleElement); };
     }, [page]);
+    
+    // [NOUVEAU HOOK] Recalcul automatique de l'apport basé sur la quotité
+    React.useEffect(() => {
+        // Ne pas recalculer si l'utilisateur a entré un montant manuel
+        if (data.quotite === 'custom') return;
+
+        const baseEmpruntable = (data.prixAchat || 0) + (data.coutTravaux || 0);
+        const frais = (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
+        const selectedQuotite = Number(data.quotite) || 0;
+
+        let nouvelApport = 0;
+
+        if (selectedQuotite <= 100) {
+            // Quotité standard: l'apport couvre les frais + la part non financée
+            const partNonEmpruntee = baseEmpruntable * (1 - (selectedQuotite / 100));
+            nouvelApport = frais + partNonEmpruntee;
+        } else {
+            // Quotité > 100 (finance les frais)
+            const montantEmprunte = baseEmpruntable * (selectedQuotite / 100);
+            const fraisFinances = montantEmprunte - baseEmpruntable;
+            // L'apport est ce qui reste des frais, au minimum 0
+            nouvelApport = Math.max(0, frais - fraisFinances);
+        }
+
+        // Mettre à jour l'apport dans l'état
+        // On utilise 'd' pour "data" pour éviter le conflit de nom dans setData
+        setData(d => ({ ...d, apport: Math.round(nouvelApport) }));
+
+    }, [data.prixAchat, data.coutTravaux, data.fraisAcquisition, data.fraisAnnexe, data.quotite]);
+
 
     React.useEffect(() => {
         // Si l'utilisateur est maintenant connecté (user n'est pas null)
@@ -781,25 +812,39 @@ export default function App() {
         setData(prevData => {
             // Supprime les espaces pour gérer les formats comme "20 000"
             const cleanedValue = String(value).replace(/\s/g, '');
-            const newData = { ...prevData, [name]: type === 'number' ? parseFloat(cleanedValue) || 0 : value };
+            const newValue = type === 'number' ? (parseFloat(cleanedValue) || 0) : value;
+
+            const newData = { ...prevData, [name]: newValue };
+
             if (name === 'prixAchat') {
                 newData.fraisAcquisition = Math.round((parseFloat(cleanedValue) || 0) * 0.145);
             }
+
+            // --- MODIFICATION ---
+            // Si l'utilisateur modifie l'apport manuellement, on passe en quotité 'custom'
+            if (name === 'apport') {
+                newData.quotite = 'custom';
+            }
+            // Si l'utilisateur clique sur un bouton quotité, 'name' sera 'quotite'
+            // et la 'useEffect' de calcul d'apport s'en chargera.
+            // --- FIN MODIFICATION ---
 
             return newData;
         });
     };
 
     const handleTravauxUpdate = (newValue) => {
-        setData(d => ({ ...d, coutTravaux: newValue })); setIsEstimatorOpen(false);
-        setData(d => ({ ...d, apport: Math.round(d.fraisAcquisition + (d.prixAchat * 0.2) + (newValue * 0.2) + d.fraisAnnexe) }));
+        setData(d => ({ ...d, coutTravaux: newValue })); 
+        setIsEstimatorOpen(false);
+        // La ligne de calcul d'apport a été supprimée, l'useEffect s'en charge
     };
     const handleTensionUpdate = (newValue) => { setData(d => ({ ...d, tensionLocative: newValue })); setIsTensionEstimatorOpen(false); };
     const handleVacancyUpdate = (newValue) => { setData(d => ({ ...d, vacanceLocative: newValue })); setIsVacancyEstimatorOpen(false); };
     const handleChargesUpdate = (newValue) => { setData(d => ({ ...d, chargesMensuelles: newValue })); setIsChargesEstimatorOpen(false); };
     const handleAcquisitionFeesUpdate = (newValue) => {
-        setData(d => ({ ...d, fraisAcquisition: newValue })); setIsAcquisitionFeesEstimatorOpen(false);
-        setData(d => ({ ...d, apport: Math.round(newValue + (d.prixAchat * 0.2) + (d.coutTravaux * 0.2) + d.fraisAnnexe) }));
+        setData(d => ({ ...d, fraisAcquisition: newValue })); 
+        setIsAcquisitionFeesEstimatorOpen(false);
+        // La ligne de calcul d'apport a été supprimée, l'useEffect s'en charge
     };
 
     /*
@@ -1114,6 +1159,25 @@ export default function App() {
             case 'auth': return <AuthPage onBack={() => setPage('main')} />;
             case 'account': return <AccountPage onBack={() => setPage('main')} />;
             default:
+                
+                // --- NOUVEAU CALCUL POUR QUOTITÉ MANUELLE ---
+                let quotiteEstimeeLabel = '(Mode Manuel)';
+                if (data.quotite === 'custom') {
+                    const frais = (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
+                    const baseEmpruntable = (data.prixAchat || 0) + (data.coutTravaux || 0);
+                    
+                    if (baseEmpruntable > 0) {
+                        const partNonFinancee = (data.apport || 0) - frais;
+                        const quotiteRatio = 1 - (partNonFinancee / baseEmpruntable);
+                        const quotitePourcentage = (quotiteRatio * 100).toFixed(0);
+                        quotiteEstimeeLabel = `(Quotité estimée: ${quotitePourcentage}%)`;
+                    } else {
+                        // Si prixAchat + coutTravaux = 0, on ne peut pas calculer
+                        quotiteEstimeeLabel = '(Quotité non calc.)';
+                    }
+                }
+                // --- FIN DU NOUVEAU CALCUL ---
+
                 return (
                     <div className="space-y-8 animate-fade-in">
                         {/* --- Section 1: Détails du Bien --- */}
@@ -1145,13 +1209,55 @@ export default function App() {
                                     <p className="text-xs text-gray-500 mt-1">Estimation auto. Pour un calcul précis, utilisez l'estimateur ou notaire.be</p>
                                 </div>
                                 <div><label className="block text-sm font-medium text-gray-700">Frais annexes (€)</label><input type="number" name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} placeholder="Agence, hypothèque..." className="mt-1 w-full p-2 border rounded-md" /></div>
+                                
+                                {/* --- MODIFICATIONS POUR QUOTITÉ --- */}
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700">Apport personnel (€)</label>
-                                    <div className="flex items-center gap-2">
-                                        <input type="number" name="apport" value={data.apport} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
+                                    <label className="block text-sm font-medium text-gray-700">Quotité d'emprunt</label>
+                                    <p className="text-xs text-gray-500 mt-1 mb-2">Part du prix d'achat et des travaux financée par la banque. L'apport est calculé automatiquement.</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[70, 80, 90, 100, 125].map((q) => (
+                                            <button
+                                                key={q}
+                                                type="button"
+                                                onClick={() => handleInputChange({ target: { name: 'quotite', value: q, type: 'number' } })}
+                                                className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${
+                                                    data.quotite === q
+                                                        ? 'bg-blue-600 text-white border-blue-600'
+                                                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                                                }`}
+                                            >
+                                                {q}%
+                                            </button>
+                                        ))}
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Suggestion: Frais + 20% (achat + travaux).</p>
                                 </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Apport personnel (€)
+                                        {/* --- MODIFICATION DE CETTE LIGNE --- */}
+                                        {data.quotite === 'custom' && <span className="text-blue-600 font-normal ml-2">{quotiteEstimeeLabel}</span>}
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                        <input 
+                                            type="number" 
+                                            name="apport" 
+                                            value={data.apport} 
+                                            onChange={handleInputChange} 
+                                            onFocus={handleNumericFocus} 
+                                            onBlur={handleNumericBlur} 
+                                            className="mt-1 w-full p-2 border rounded-md" 
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {data.quotite === 'custom' 
+                                            ? "L'apport est en mode manuel. Sélectionnez une quotité pour réactiver le calcul auto."
+                                            : "Calculé (Frais + Part non-financée) basé sur la quotité."
+                                        }
+                                    </p>
+                                </div>
+                                {/* --- FIN DES MODIFICATIONS QUOTITÉ --- */}
+                                
                                 <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" name="tauxCredit" value={data.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium text-gray-700">Durée du crédit (années)</label><input type="number" name="dureeCredit" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                             </div>
@@ -1295,7 +1401,7 @@ export default function App() {
                 
                 {user ? (
                     <>
-                        {/* ▼▼▼ BOUTON "COMPTE" AJOUTÉ ▼▼▼ */}
+                        {/* Compte */}
                         <button onClick={() => setPage('account')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'account' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
                             <SettingsIcon />
                             <span className="text-xs font-medium">Compte</span>
@@ -1321,4 +1427,3 @@ export default function App() {
         </div>
     );
 }
-
