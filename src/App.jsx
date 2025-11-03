@@ -657,6 +657,7 @@ export default function App() {
     const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const typeBienOptions = ['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre'];
     const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
+    const dureeOptions = [15, 20, 25, 30];
 
     // ASSISTANT IA GÉNÉRAL
     const [geminiQuery, setGeminiQuery] = React.useState('');
@@ -954,13 +955,26 @@ export default function App() {
     };
 
     const handleOpenSaveModal = () => {
-        if (analyses.length >= maxAnalyses && currentAnalysisId === null) {
+        if (analyses.length >= maxAnalyses) {
             setNotification({ msg: `Limite de ${maxAnalyses} analyses atteinte.`, type: 'error' });
             setTimeout(() => setNotification({ msg: '', type: '' }), 5000);
             return;
         }
 
-        setProjectNameForSave(data.projectName);
+        // --- LOGIQUE DE GÉNÉRATION DE NOM ---
+        const parts = [];
+        if (data.typeBien) parts.push(data.typeBien);
+        if (data.surface > 0) parts.push(`${data.surface}m²`);
+        if (data.peb && data.peb !== 'N/C') parts.push(`PEB ${data.peb}`);
+        if (data.ville) parts.push(data.ville);
+
+        let suggestedName = parts.join(' - ');
+        if (!suggestedName.trim()) {
+            suggestedName = data.projectName; 
+        }
+        // --- FIN NOUVELLE LOGIQUE ---
+
+        setProjectNameForSave(suggestedName); 
         setSaveError('');
         setIsSaveModalOpen(true);
 
@@ -1324,7 +1338,25 @@ export default function App() {
                                 {/* --- FIN DES MODIFICATIONS QUOTITÉ --- */}
 
                                 <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" name="tauxCredit" value={data.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium text-gray-700">Durée du crédit (années)</label><input type="number" name="dureeCredit" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Durée du crédit (années)</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <input type="number" name="dureeCredit" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
+                                        <div className="flex-shrink-0 flex gap-1">
+                                            {dureeOptions.map(duree => (
+                                                <button
+                                                    key={duree}
+                                                    onClick={() => handleDataChange('dureeCredit', duree)}
+                                                    className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.dureeCredit === duree ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}
+                                                    title={`${duree} ans`}
+                                                >
+                                                    {duree}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                             <div className="mt-4 pt-4 border-t-2 border-dashed"><div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                                 <div><p className="text-sm text-gray-600">Coût total du projet</p><p className="text-lg font-bold">{finances.coutTotalProjet.toLocaleString('fr-BE')} €</p></div>
@@ -1339,8 +1371,8 @@ export default function App() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium">Loyer estimé (€)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium">Charges non-récup. (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
-                                <div className="md:col-span-2"><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1"><input type="range" min="1" max="10" name="tensionLocative" value={data.tensionLocative} onChange={handleInputChange} className="w-full" /><div className="font-semibold text-lg w-12 text-center">{data.tensionLocative}</div><button onClick={() => setIsTensionEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><TrendingUpIcon /></button></div></div>
-                                <div className="md:col-span-2"><label className="block text-sm font-medium">Vacance locative (%)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="vacanceLocative" value={data.vacanceLocative} onChange={handleInputChange} className="w-full p-2 border rounded-md" /><button onClick={() => setIsVacancyEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><PercentIcon /></button></div></div>
+                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1"><input type="range" min="1" max="10" name="tensionLocative" value={data.tensionLocative} onChange={handleInputChange} className="w-full" /><div className="font-semibold text-lg w-12 text-center">{data.tensionLocative}</div><button onClick={() => setIsTensionEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><TrendingUpIcon /></button></div></div>
+                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Vacance locative (%)</label><div className="flex items-center gap-2 mt-1"><input type="range" min="1" max="25" name="vacanceLocative" value={data.vacanceLocative} onChange={handleInputChange} className="w-full p-2 border rounded-md" /><div className="font-semibold text-lg w-12 text-center">{data.vacanceLocative}</div><button onClick={() => setIsVacancyEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><PercentIcon /></button></div></div>
                             </div>
                         </div>
 
