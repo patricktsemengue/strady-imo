@@ -580,6 +580,33 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
     );
 };
 
+// --- Composant Modal de Profil ---
+const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-end p-4" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <div className="p-4 border-b">
+                    <h2 className="text-lg font-semibold">Profil</h2>
+                    {user.user_metadata?.prenom && <p className="text-sm text-gray-500">Connecté en tant que {user.user_metadata.prenom}</p>}
+                </div>
+                <div className="p-2">
+                    <button onClick={() => { onNavigate('account'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                        <SettingsIcon />
+                        <span>Mon Compte</span>
+                    </button>
+                    <button onClick={() => { onSignOut(); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50">
+                        <LogOutIcon />
+                        <span>Déconnexion</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 // --- Composant pour la page de bienvenue ---
 const WelcomePage = ({ onStart }) => (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-slate-100 animate-fade-in">
@@ -655,7 +682,8 @@ export default function App() {
     const [tempNumericValue, setTempNumericValue] = React.useState(null);
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-    const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
+        const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
+    const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
     const typeBienOptions = ['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre'];
     const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
     const dureeOptions = [15, 20, 25, 30];
@@ -1538,7 +1566,14 @@ export default function App() {
         <div className="bg-slate-100 min-h-screen font-sans text-gray-800">
             <header className="bg-white shadow-md sticky top-0 left-0 right-0 z-10"><div className="max-w-4xl mx-auto p-4"><Logo /></div></header>
 
-            <main className="max-w-4xl mx-auto p-4 md:p-6 pb-24 pt-20">
+                        <main className="max-w-4xl mx-auto p-4 md:p-6 pb-24 pt-20">
+                <ProfileModal
+                    isOpen={isProfileModalOpen}
+                    onClose={() => setIsProfileModalOpen(false)}
+                    onNavigate={setPage}
+                    onSignOut={signOut}
+                    user={user}
+                />
                 <RenovationEstimatorModal isOpen={isEstimatorOpen} onClose={() => setIsEstimatorOpen(false)} onApply={handleTravauxUpdate} />
                 <TensionLocativeEstimatorModal isOpen={isTensionEstimatorOpen} onClose={() => setIsTensionEstimatorOpen(false)} onApply={handleTensionUpdate} />
                 <VacancyEstimatorModal isOpen={isVacancyEstimatorOpen} onClose={() => setIsVacancyEstimatorOpen(false)} onApply={handleVacancyUpdate} currentTension={data.tensionLocative} />
@@ -1587,22 +1622,10 @@ export default function App() {
                 <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
 
                 {user ? (
-                    <>
-                        {/* Compte */}
-                        <button onClick={() => setPage('account')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'account' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
-                            <SettingsIcon />
-                            <span className="text-xs font-medium">Compte</span>
-                        </button>
-
-                        {/* Bouton Déconnexion (modifié pour inclure le prénom) */}
-                        <button onClick={signOut} className={`flex flex-col items-center gap-1 p-2 rounded-lg text-gray-500 hover:text-red-500`}>
-                            <LogOutIcon />
-                            <span className="text-xs font-medium">
-                                {user.user_metadata?.prenom ? `(${user.user_metadata.prenom}) ` : ''}
-                                Déconnexion
-                            </span>
-                        </button>
-                    </>
+                    <button onClick={() => setIsProfileModalOpen(true)} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'account' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
+                        <UserIcon />
+                                                <span className="text-xs font-medium">{user.user_metadata?.prenom ? `Hey ${user.user_metadata.prenom} !` : 'Profil'}</span>
+                    </button>
                 ) : (
                     // Si l'utilisateur N'EST PAS connecté, on affiche "Connexion"
                     <button onClick={() => setPage('auth')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'auth' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
