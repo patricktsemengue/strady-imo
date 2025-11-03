@@ -249,7 +249,7 @@ const RenovationEstimatorModal = ({ isOpen, onClose, onApply }) => {
     const removeItem = (id) => setItems(items.filter(item => item.id !== id));
     const updateItem = (id, field, value) => {
         setItems(items.map(item =>
-            item.id === id ? { ...item, [field]: field === 'cost' ? parseFloat(value) || 0 : value } : item
+            item.id === id ? { ...item, [field]: field === 'cost' ? parseFloat(String(value).replace(/\s/g, '')) || 0 : value } : item
         ));
     };
     const totalCost = React.useMemo(() => items.reduce((total, item) => total + item.cost, 0), [items]);
@@ -265,7 +265,7 @@ const RenovationEstimatorModal = ({ isOpen, onClose, onApply }) => {
                         <div key={item.id} className="p-3 border rounded-lg grid grid-cols-1 md:grid-cols-7 gap-3 items-center">
                             <div className="md:col-span-2"><label className="text-sm font-medium">Objet {index + 1}</label><input type="text" placeholder="Ex: Chambre 1" value={item.object} onChange={(e) => updateItem(item.id, 'object', e.target.value)} className="mt-1 w-full p-2 border rounded-md" /></div>
                             <div className="md:col-span-2"><label className="text-sm font-medium">Type</label><input type="text" placeholder="Ex: Peinture + Sols" value={item.type} onChange={(e) => updateItem(item.id, 'type', e.target.value)} className="mt-1 w-full p-2 border rounded-md" /></div>
-                            <div className="md:col-span-2"><label className="text-sm font-medium">Coût (€)</label><input type="number" placeholder="1500" value={item.cost} onChange={(e) => updateItem(item.id, 'cost', e.target.value)} className="mt-1 w-full p-2 border rounded-md" /></div>
+                            <div className="md:col-span-2"><label className="text-sm font-medium">Coût (€)</label><input type="number" placeholder="1500" value={item.cost} onChange={(e) => updateItem(item.id, 'cost', e.target.value)}  className="mt-1 w-full p-2 border rounded-md" /></div>
                             <div className="text-right md:pt-6"><button onClick={() => removeItem(item.id)} className="p-2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full"><TrashIcon /></button></div>
                         </div>
                     ))}
@@ -343,7 +343,7 @@ const VacancyEstimatorModal = ({ isOpen, onClose, onApply, currentTension }) => 
                 <div className="my-6">
                     <label className="block text-center font-medium text-gray-700 mb-2">Ajustez la valeur si nécessaire :</label>
                     <div className="flex items-center gap-4">
-                        <input type="range" min="0" max="25" value={vacancy} onChange={(e) => setVacancy(parseInt(e.target.value))} className="w-full" />
+                        <input type="range" min="0" max="25" value={vacancy} onChange={(e) => setVacancy(parseInt(e.target.value))} className="w-full range-slider-good-low" />
                         <div className="font-bold text-2xl text-blue-600 w-20 text-center p-2 border rounded-lg">{vacancy}%</div>
                     </div>
                 </div>
@@ -758,7 +758,60 @@ export default function App() {
         .logo-trady { font-family: 'The Girl Next Door', cursive; font-size: 1.8rem; line-height: 1; }
         .logo-dot { font-size: 2.2rem; color: var(--orange); line-height: 1; }
         .logo-imo { font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 500; padding: 0.1rem 0.5rem; border-radius: 6px; border-top: 2.5px solid var(--light-blue); border-right: 2.5px solid var(--light-blue); border-bottom: 2.5px solid var(--light-blue); color: var(--light-blue); line-height: 1; }
-    `;
+    
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100%;
+            height: 18px; 
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        input[type="range"]::-moz-range-track {
+            height: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -5px; 
+            background-color: #ffffff;
+            border: 2px solid #4b5563; 
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+        }
+         input[type="range"]::-moz-range-thumb {
+            background-color: #ffffff;
+            border: 2px solid #4b5563;
+            height: 16px; 
+            width: 16px;
+            border-radius: 50%;
+        }
+
+        
+        .range-slider-good-high::-webkit-slider-runnable-track {
+             background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);
+        }
+        .range-slider-good-high::-moz-range-track {
+             background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);
+        }
+
+        .range-slider-good-low::-webkit-slider-runnable-track {
+             background: linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+        }
+        .range-slider-good-low::-moz-range-track {
+             background: linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+        }
+        `;
         document.head.appendChild(fontLink);
         document.head.appendChild(styleElement);
 
@@ -970,11 +1023,11 @@ export default function App() {
 
         let suggestedName = parts.join(' - ');
         if (!suggestedName.trim()) {
-            suggestedName = data.projectName; 
+            suggestedName = data.projectName;
         }
         // --- FIN NOUVELLE LOGIQUE ---
 
-        setProjectNameForSave(suggestedName); 
+        setProjectNameForSave(suggestedName);
         setSaveError('');
         setIsSaveModalOpen(true);
 
@@ -1301,8 +1354,8 @@ export default function App() {
                                                 type="button"
                                                 onClick={() => handleInputChange({ target: { name: 'quotite', value: q, type: 'number' } })}
                                                 className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.quotite === q
-                                                        ? 'bg-blue-600 text-white border-blue-600'
-                                                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
                                                     }`}
                                             >
                                                 {q}%
@@ -1371,8 +1424,21 @@ export default function App() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium">Loyer estimé (€)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium">Charges non-récup. (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
-                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1"><input type="range" min="1" max="10" name="tensionLocative" value={data.tensionLocative} onChange={handleInputChange} className="w-full" /><div className="font-semibold text-lg w-12 text-center">{data.tensionLocative}</div><button onClick={() => setIsTensionEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><TrendingUpIcon /></button></div></div>
-                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Vacance locative (%)</label><div className="flex items-center gap-2 mt-1"><input type="range" min="1" max="25" name="vacanceLocative" value={data.vacanceLocative} onChange={handleInputChange} className="w-full p-2 border rounded-md" /><div className="font-semibold text-lg w-12 text-center">{data.vacanceLocative}</div><button onClick={() => setIsVacancyEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><PercentIcon /></button></div></div>
+
+                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1">
+                                    {/* MODIFIÉ: Ajout de className="range-slider-good-high" */}
+                                    <input type="range" min="1" max="10" name="tensionLocative" value={data.tensionLocative} onChange={handleInputChange} className="w-full range-slider-good-high" />
+                                    <div className="font-semibold text-lg w-12 text-center">{data.tensionLocative}</div>
+                                    <button onClick={() => setIsTensionEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><TrendingUpIcon /></button>
+                                </div></div>
+
+                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Vacance locative (%)</label><div className="flex items-center gap-2 mt-1">
+                                    {/* MODIFIÉ: Remplacement de className par "range-slider-good-low" */}
+                                    <input type="range" min="1" max="25" name="vacanceLocative" value={data.vacanceLocative} onChange={handleInputChange} className="w-full range-slider-good-low" />
+                                    <div className="font-semibold text-lg w-12 text-center">{data.vacanceLocative}</div>
+                                    <button onClick={() => setIsVacancyEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><PercentIcon /></button>
+                                </div></div>
+
                             </div>
                         </div>
 
