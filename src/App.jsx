@@ -514,7 +514,7 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
                 <h2 className="text-2xl font-bold mb-4">{isUpdateMode ? "Mettre à jour ou Sauvegarder" : "Sauvegarder l'Analyse"}</h2>
-                
+
                 {isUpdateMode ? (
                     <p className="text-gray-600 mb-4">Cette analyse a été chargée. Voulez-vous la mettre à jour ou en créer une nouvelle copie ?</p>
                 ) : (
@@ -561,14 +561,14 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
                     {children}
                 </div>
                 <div className="flex justify-end gap-3 pt-6 mt-4 border-t">
-                    <button 
-                        onClick={onClose} 
+                    <button
+                        onClick={onClose}
                         className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400"
                     >
                         Annuler
                     </button>
-                    <button 
-                        onClick={onConfirm} 
+                    <button
+                        onClick={onConfirm}
                         className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700"
                     >
                         Confirmer la suppression
@@ -623,10 +623,15 @@ export default function App() {
     });
 
     const initialDataState = {
-        projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 0, tauxCredit: 3.5, dureeCredit: 25,
-        ville: 'Namur', descriptionBien: 'Appartement 2 chambres, 85m², entièrement rénové...',
+        projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
+        ville: 'Namur',
+        descriptionBien: 'Appartement 2 chambres, bon état',
+        typeBien: 'Appartement',
+        surface: 85,
+        peb: 'C',
+        revenuCadastral: 1000,
         tensionLocative: 7, loyerEstime: 900, chargesMensuelles: 100, vacanceLocative: 8,
-        quotite: 90, // <--- AJOUT DE LA QUOTITÉ PAR DÉFAUT
+        quotite: 80,
     };
 
     const [data, setData] = React.useState(initialDataState);
@@ -650,6 +655,8 @@ export default function App() {
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
+    const typeBienOptions = ['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre'];
+    const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
 
     // ASSISTANT IA GÉNÉRAL
     const [geminiQuery, setGeminiQuery] = React.useState('');
@@ -766,7 +773,7 @@ export default function App() {
 
         return () => { document.head.removeChild(fontLink); document.head.removeChild(styleElement); };
     }, [page]);
-    
+
     // [NOUVEAU HOOK] Recalcul automatique de l'apport basé sur la quotité
     React.useEffect(() => {
         // Ne pas recalculer si l'utilisateur a entré un montant manuel
@@ -806,6 +813,8 @@ export default function App() {
         }
     }, [user, page]);
 
+
+    /*
     const handleInputChange = (e) => {
         const { name, value, type } = e.target;
 
@@ -832,9 +841,36 @@ export default function App() {
             return newData;
         });
     };
+    */
+
+    const handleDataChange = (name, value) => {
+        setData(prevData => {
+            const newData = { ...prevData, [name]: value };
+
+            // Logique de l'ancien handler préservée
+            if (name === 'prixAchat') {
+                newData.fraisAcquisition = Math.round((parseFloat(value) || 0) * 0.145);
+            }
+
+            if (name === 'apport') {
+                newData.quotite = 'custom';
+            }
+
+            return newData;
+        });
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value, type } = e.target;
+
+        // Supprime les espaces pour gérer les formats comme "20 000"
+        const cleanedValue = String(value).replace(/\s/g, '');
+        const processedValue = type === 'number' ? parseFloat(cleanedValue) || 0 : value;
+        handleDataChange(name, processedValue);
+    };
 
     const handleTravauxUpdate = (newValue) => {
-        setData(d => ({ ...d, coutTravaux: newValue })); 
+        setData(d => ({ ...d, coutTravaux: newValue }));
         setIsEstimatorOpen(false);
         // La ligne de calcul d'apport a été supprimée, l'useEffect s'en charge
     };
@@ -842,7 +878,7 @@ export default function App() {
     const handleVacancyUpdate = (newValue) => { setData(d => ({ ...d, vacanceLocative: newValue })); setIsVacancyEstimatorOpen(false); };
     const handleChargesUpdate = (newValue) => { setData(d => ({ ...d, chargesMensuelles: newValue })); setIsChargesEstimatorOpen(false); };
     const handleAcquisitionFeesUpdate = (newValue) => {
-        setData(d => ({ ...d, fraisAcquisition: newValue })); 
+        setData(d => ({ ...d, fraisAcquisition: newValue }));
         setIsAcquisitionFeesEstimatorOpen(false);
         // La ligne de calcul d'apport a été supprimée, l'useEffect s'en charge
     };
@@ -940,9 +976,9 @@ export default function App() {
             setSaveError('Ce nom de projet existe déjà. Veuillez en choisir un autre.');
             return;
         }
-    
+
         const currentDataWithNewName = { ...data, projectName: projectNameForSave };
-    
+
         if (user) {
             // --- Cloud Update Logic ---
             const { data: updatedAnalysis, error } = await supabase
@@ -956,7 +992,7 @@ export default function App() {
                 .eq('id', currentAnalysisId)
                 .select()
                 .single();
-    
+
             if (error) {
                 setSaveError("Erreur lors de la mise à jour cloud: " + error.message);
                 return;
@@ -970,7 +1006,7 @@ export default function App() {
             setAnalyses(updatedAnalyses);
             localStorage.setItem('immoAnalyses', JSON.stringify(updatedAnalyses));
         }
-    
+
         setIsSaveModalOpen(false);
         setProjectNameForSave('');
         setSaveError('');
@@ -1159,13 +1195,13 @@ export default function App() {
             case 'auth': return <AuthPage onBack={() => setPage('main')} />;
             case 'account': return <AccountPage onBack={() => setPage('main')} />;
             default:
-                
+
                 // --- NOUVEAU CALCUL POUR QUOTITÉ MANUELLE ---
                 let quotiteEstimeeLabel = '(Mode Manuel)';
                 if (data.quotite === 'custom') {
                     const frais = (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
                     const baseEmpruntable = (data.prixAchat || 0) + (data.coutTravaux || 0);
-                    
+
                     if (baseEmpruntable > 0) {
                         const partNonFinancee = (data.apport || 0) - frais;
                         const quotiteRatio = 1 - (partNonFinancee / baseEmpruntable);
@@ -1183,11 +1219,41 @@ export default function App() {
                         {/* --- Section 1: Détails du Bien --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Détails du Bien</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            {/* --- NOM, VILLE, SURFACE, RC --- */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium">Ville / Commune</label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
                             </div>
-                            <div className="mt-4"><label className="block text-sm font-medium">Description</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="3" className="mt-1 w-full p-2 border rounded-md"></textarea></div>
+
+                            {/* --- TYPE DE BIEN (BOUTONS) --- */}
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium mb-2">Type de bien</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {typeBienOptions.map(opt => (
+                                        <button key={opt} onClick={() => handleDataChange('typeBien', opt)} className={`px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all ${data.typeBien === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* --- PEB (BOUTONS) --- */}
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium mb-2">Score PEB</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {pebOptions.map(opt => (
+                                        <button key={opt} onClick={() => handleDataChange('peb', opt)} className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.peb === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* --- DESCRIPTION --- */}
+                            <div className="mt-4"><label className="block text-sm font-medium">Description</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="2" className="mt-1 w-full p-2 border rounded-md"></textarea></div>
                         </div>
 
                         {/* --- Section 2: Coûts & Financement --- */}
@@ -1208,8 +1274,8 @@ export default function App() {
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">Estimation auto. Pour un calcul précis, utilisez l'estimateur ou notaire.be</p>
                                 </div>
-                                <div><label className="block text-sm font-medium text-gray-700">Frais annexes (€)</label><input type="number" name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} placeholder="Agence, hypothèque..." className="mt-1 w-full p-2 border rounded-md" /></div>
-                                
+                                <div><label className="block text-sm font-medium text-gray-700">Frais annexes (€)</label><input type="number" name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} placeholder="Agence, hypothèque..." className="mt-1 w-full p-2 border rounded-md" /></div>
+
                                 {/* --- MODIFICATIONS POUR QUOTITÉ --- */}
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700">Quotité d'emprunt</label>
@@ -1220,11 +1286,10 @@ export default function App() {
                                                 key={q}
                                                 type="button"
                                                 onClick={() => handleInputChange({ target: { name: 'quotite', value: q, type: 'number' } })}
-                                                className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${
-                                                    data.quotite === q
+                                                className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.quotite === q
                                                         ? 'bg-blue-600 text-white border-blue-600'
                                                         : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
-                                                }`}
+                                                    }`}
                                             >
                                                 {q}%
                                             </button>
@@ -1239,25 +1304,25 @@ export default function App() {
                                         {data.quotite === 'custom' && <span className="text-blue-600 font-normal ml-2">{quotiteEstimeeLabel}</span>}
                                     </label>
                                     <div className="flex items-center gap-2">
-                                        <input 
-                                            type="number" 
-                                            name="apport" 
-                                            value={data.apport} 
-                                            onChange={handleInputChange} 
-                                            onFocus={handleNumericFocus} 
-                                            onBlur={handleNumericBlur} 
-                                            className="mt-1 w-full p-2 border rounded-md" 
+                                        <input
+                                            type="number"
+                                            name="apport"
+                                            value={data.apport}
+                                            onChange={handleInputChange}
+                                            onFocus={handleNumericFocus}
+                                            onBlur={handleNumericBlur}
+                                            className="mt-1 w-full p-2 border rounded-md"
                                         />
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        {data.quotite === 'custom' 
+                                        {data.quotite === 'custom'
                                             ? "L'apport est en mode manuel. Sélectionnez une quotité pour réactiver le calcul auto."
                                             : "Calculé (Frais + Part non-financée) basé sur la quotité."
                                         }
                                     </p>
                                 </div>
                                 {/* --- FIN DES MODIFICATIONS QUOTITÉ --- */}
-                                
+
                                 <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" name="tauxCredit" value={data.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium text-gray-700">Durée du crédit (années)</label><input type="number" name="dureeCredit" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                             </div>
@@ -1398,7 +1463,7 @@ export default function App() {
                 <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
                 <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Dashboard</span></button>
                 <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
-                
+
                 {user ? (
                     <>
                         {/* Compte */}
@@ -1411,7 +1476,7 @@ export default function App() {
                         <button onClick={signOut} className={`flex flex-col items-center gap-1 p-2 rounded-lg text-gray-500 hover:text-red-500`}>
                             <LogOutIcon />
                             <span className="text-xs font-medium">
-                                {user.user_metadata?.prenom ? `(${user.user_metadata.prenom}) ` : ''} 
+                                {user.user_metadata?.prenom ? `(${user.user_metadata.prenom}) ` : ''}
                                 Déconnexion
                             </span>
                         </button>
