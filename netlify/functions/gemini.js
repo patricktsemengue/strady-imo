@@ -31,11 +31,11 @@ export const handler = async (event) => {
 
   try {
     // URL Corrigée (avec -latest)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       
-      // Body Corrigé (sans 'tools')
       body: JSON.stringify({
         contents: [{ parts: [{ text: userPrompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] },

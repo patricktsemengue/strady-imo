@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 import AuthPage from './AuthPage';
 import AccountPage from './AccountPage';
+import { prePromptConfig } from './config.js';
 
 // --- Icônes SVG pour une interface plus propre ---
 const HomeIcon = () => (
@@ -1290,7 +1291,7 @@ export default function App() {
                             {/* --- NOM, VILLE, SURFACE, RC --- */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Ville / Commune</label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Adresse/ Ville / Commune</label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
                             </div>
@@ -1492,8 +1493,31 @@ export default function App() {
                                     {isGeminiLoading ? 'Recherche...' : 'Interroger'}
                                 </button>
                             </div>
+                            
+                            {/* --- NOUVELLE SECTION: BOUTONS PRE-PROMPTS --- */}
+                            <div className="mt-4">
+                              {prePromptConfig.map((group) => (
+                                <div key={group.category} className="mb-3">
+                                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">{group.category}</h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {group.prompts.map((prompt) => (
+                                      <button
+                                        key={prompt}
+                                        onClick={() => setGeminiQuery(prompt)}
+                                        className="text-sm bg-gray-100 text-gray-800 py-1 px-3 rounded-full hover:bg-gray-200 transition"
+                                      >
+                                        {prompt}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            {/* --- FIN NOUVELLE SECTION --- */}
+                            
                             {geminiError && !isGeminiLoading && <p className="text-red-500 text-sm mt-2">{geminiError}</p>}
                             {isGeminiLoading && <div className="text-center p-4 text-sm text-gray-600">L'IA recherche la meilleure réponse...</div>}
+                         
                             {geminiResponse && (
                                 <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
                                     <h3 className="font-semibold mb-2 text-gray-800">Réponse de l'assistant :</h3>
