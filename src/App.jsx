@@ -4,6 +4,11 @@ import { supabase } from './supabaseClient';
 import AuthPage from './AuthPage';
 import AccountPage from './AccountPage';
 import { prePromptConfig } from './config.js';
+import FeedbackPage from './FeedbackPage';
+
+const StarIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+);
 
 // --- Icônes SVG pour une interface plus propre ---
 const HomeIcon = () => (
@@ -595,6 +600,10 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
                     <button onClick={() => { onNavigate('account'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
                         <SettingsIcon />
                         <span>Mon Compte</span>
+                    </button>
+                    <button onClick={() => { onNavigate('feedback'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                        <StarIcon />
+                        <span>Donner mon avis</span>
                     </button>
                     <button onClick={() => { onSignOut(); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50">
                         <LogOutIcon />
@@ -1289,7 +1298,8 @@ export default function App() {
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} />;
-            case 'account': return <AccountPage onBack={() => setPage('main')} />;
+                        case 'account': return <AccountPage onBack={() => setPage('main')} />;
+            case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
             default:
 
                 // --- NOUVEAU CALCUL POUR QUOTITÉ MANUELLE ---
