@@ -1,4 +1,10 @@
 export const prePromptConfig = [
+  {
+      category: '👋 Détail du bien',
+      prompts: [
+        'Extraire les informations (type de bien, surface, PEB, commune... de l\'annonce suivante : [INSÉRER ICI L\'URL ou LE TEXTE DE L\'ANNONCE\]' 
+      ]
+    },
     {
       category: '🏛️ Fiscalité & Taxes',
       prompts: [
@@ -22,11 +28,6 @@ export const prePromptConfig = [
         "Faut-il un permis d'urbanisme pour... ?",
         //"Plan urbanistique communal de Namur"
       ]
-    },
-    {
-      category: '🏗️ Détail du bien',
-      prompts: [
-        'Extraire les informations (type de bien, surface, PEB, commune... de l\'annonce suivante : [INSÉRER ICI L\'URL ou LE TEXTE DE L\'ANNONCE\]' 
-      ]
     }
+    
   ];

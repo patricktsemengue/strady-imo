@@ -9,7 +9,8 @@ const AuthPage = ({ onBack }) => {
   
   // ---  ÉTATS ---
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [prenom, setPrenom] = useState('');
+    const [prenom, setPrenom] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   // -------------------------
 
   const [loading, setLoading] = useState(false);
@@ -145,12 +146,31 @@ const AuthPage = ({ onBack }) => {
           </div>
         )}
 
+        {mode === 'signUp' && (
+            <div className="flex items-center">
+                <input
+                    id="terms"
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+                    J'ai lu et j'accepte les{" "}
+                    <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => window.alert('Veuillez consulter les Conditions d\'Utilisation via le lien dans le pied de page.')}>
+                        Conditions Générales d'Utilisation
+                    </span>
+                    .
+                </label>
+            </div>
+        )}
+
         {message && <p className="text-green-600 font-semibold">{message}</p>}
         {error && <p className="text-red-600 font-semibold">{error}</p>}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (mode === 'signUp' && !acceptedTerms)}
           className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
         >
           {loading ? 'Chargement...' : getTitle()}

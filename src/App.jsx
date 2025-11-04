@@ -5,6 +5,8 @@ import AuthPage from './AuthPage';
 import AccountPage from './AccountPage';
 import { prePromptConfig } from './config.js';
 import FeedbackPage from './FeedbackPage';
+import PrivacyPolicyPage from './PrivacyPolicyPage';
+import TermsOfServicePage from './TermsOfServicePage';
 
 const StarIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
@@ -251,14 +253,39 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
 // --- Modals d'estimation (Travaux, Tension, Vacance, Charges, Frais d'acquisition) ---
 const RenovationEstimatorModal = ({ isOpen, onClose, onApply }) => {
     const [items, setItems] = React.useState([{ id: Date.now(), object: 'Cuisine', type: 'Rénovation complète', cost: 8000 }]);
+    const [tempValue, setTempValue] = React.useState(null); // State for onFocus/onBlur
+
     const addItem = () => setItems([...items, { id: Date.now(), object: '', type: '', cost: 0 }]);
     const removeItem = (id) => setItems(items.filter(item => item.id !== id));
+
     const updateItem = (id, field, value) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, [field]: field === 'cost' ? parseFloat(String(value).replace(/\s/g, '')) || 0 : value } : item
-        ));
+        setItems(items.map(item => {
+            if (item.id !== id) return item;
+
+            if (field === 'cost') {
+                if (value === '') {
+                    return { ...item, cost: '' };
+                }
+                return { ...item, cost: parseFloat(String(value).replace(/\s/g, '')) || 0 };
+            }
+            return { ...item, [field]: value };
+        }));
     };
-    const totalCost = React.useMemo(() => items.reduce((total, item) => total + item.cost, 0), [items]);
+
+    const handleCostFocus = (id, cost) => {
+        setTempValue({ id, cost });
+        updateItem(id, 'cost', '');
+    };
+
+    const handleCostBlur = (id) => {
+        const item = items.find(i => i.id === id);
+        if (item && item.cost === '' && tempValue && tempValue.id === id) {
+            updateItem(id, 'cost', tempValue.cost);
+        }
+        setTempValue(null);
+    };
+
+    const totalCost = React.useMemo(() => items.reduce((total, item) => total + (item.cost || 0), 0), [items]);
 
     if (!isOpen) return null;
 
@@ -271,7 +298,18 @@ const RenovationEstimatorModal = ({ isOpen, onClose, onApply }) => {
                         <div key={item.id} className="p-3 border rounded-lg grid grid-cols-1 md:grid-cols-7 gap-3 items-center">
                             <div className="md:col-span-2"><label className="text-sm font-medium">Objet {index + 1}</label><input type="text" placeholder="Ex: Chambre 1" value={item.object} onChange={(e) => updateItem(item.id, 'object', e.target.value)} className="mt-1 w-full p-2 border rounded-md" /></div>
                             <div className="md:col-span-2"><label className="text-sm font-medium">Type</label><input type="text" placeholder="Ex: Peinture + Sols" value={item.type} onChange={(e) => updateItem(item.id, 'type', e.target.value)} className="mt-1 w-full p-2 border rounded-md" /></div>
-                            <div className="md:col-span-2"><label className="text-sm font-medium">Coût (€)</label><input type="number" placeholder="1500" value={item.cost} onChange={(e) => updateItem(item.id, 'cost', e.target.value)}  className="mt-1 w-full p-2 border rounded-md" /></div>
+                            <div className="md:col-span-2">
+                                <label className="text-sm font-medium">Coût (€)</label>
+                                <input
+                                    type="number"
+                                    placeholder="1500"
+                                    value={item.cost}
+                                    onChange={(e) => updateItem(item.id, 'cost', e.target.value)}
+                                    onFocus={() => handleCostFocus(item.id, item.cost)}
+                                    onBlur={() => handleCostBlur(item.id)}
+                                    className="mt-1 w-full p-2 border rounded-md"
+                                />
+                            </div>
                             <div className="text-right md:pt-6"><button onClick={() => removeItem(item.id)} className="p-2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full"><TrashIcon /></button></div>
                         </div>
                     ))}
@@ -617,7 +655,7 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
 
 
 // --- Composant pour la page de bienvenue ---
-const WelcomePage = ({ onStart }) => (
+const WelcomePage = ({ onStart, onNavigate }) => (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-slate-100 animate-fade-in">
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
             <Logo />
@@ -642,6 +680,7 @@ const WelcomePage = ({ onStart }) => (
             >
                 Commencer l'analyse
             </button>
+            <p className="text-xs text-gray-500 mt-4">En continuant, vous confirmez avoir lu et accepté notre <button onClick={() => onNavigate('terms')} className="underline">Conditions d'Utilisation</button> et notre <button onClick={() => onNavigate('privacy')} className="underline">Politique de Confidentialité</button>.</p>
         </div>
     </div>
 );
@@ -662,7 +701,7 @@ export default function App() {
     const initialDataState = {
         projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
         ville: 'Namur',
-        descriptionBien: 'Appartement 2 chambres, bon état',
+        descriptionBien: '',// 'Appartement 2 chambres, bon état',
         typeBien: 'Appartement',
         surface: 85,
         peb: 'C',
@@ -693,6 +732,23 @@ export default function App() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
         const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
+
+    const [showCookieBanner, setShowCookieBanner] = React.useState(() => {
+        return !localStorage.getItem('cookie_consent');
+    });
+
+    const handleCookieConsent = () => {
+        localStorage.setItem('cookie_consent', 'true');
+        setShowCookieBanner(false);
+    };
+
+// --- Composant pour la bannière de cookies ---
+const CookieBanner = ({ onAccept }) => (
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col md:flex-row justify-between items-center z-50 animate-fade-in-up">
+        <p className="text-sm mb-2 md:mb-0">Ce site utilise des cookies et le stockage local essentiels à son bon fonctionnement. En continuant, vous acceptez leur utilisation.</p>
+        <button onClick={onAccept} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex-shrink-0">J'ai compris</button>
+    </div>
+);
     const typeBienOptions = ['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre'];
     const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
     const dureeOptions = [15, 20, 25, 30];
@@ -1260,7 +1316,7 @@ export default function App() {
     };
 
     const handleGeneralQuery = () => {
-        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique (Wallonie, Flandre, Bruxelles). Tu peux répondre à des questions sur le droit, la fiscalité, les taxes, la location, le marché, le financement, les travaux, les permis d'urbanisme, l'architecture, la décoration, et les garanties. Fournis des réponses claires, structurées et factuelles. Si une information est spécifique à une région, précise-le.`;
+        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique (Wallonie, Flandre, Bruxelles). Tu peux répondre à des questions sur le droit, la fiscalité, les taxes, la location, le marché, le financement, les travaux, les permis d'urbanisme, l'architecture, la décoration, et les garanties. Fournis des réponses claires, structurées et factuelles. Si une information est spécifique à une région, précise-le. Ton rôle est strictement limité à ce domaine. Si un utilisateur te pose une question qui sort de ce cadre (par exemple, des recommandations de films, de restaurants, ou des questions d'ordre général non liées à l'immobilier), tu dois décliner poliment la demande en rappelant ton champ d'expertise. La seule exception est si la question sur un lieu (comme un restaurant) est posée dans le but d'évaluer la proximité d'un bien immobilier.`;
         callGeminiAPI(systemPrompt, geminiQuery, setIsGeminiLoading, setGeminiError, setGeminiResponse);
     };
 
@@ -1299,7 +1355,9 @@ export default function App() {
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} />;
                         case 'account': return <AccountPage onBack={() => setPage('main')} />;
-            case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
+                        case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
+            case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;
+            case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;
             default:
 
                 // --- NOUVEAU CALCUL POUR QUOTITÉ MANUELLE ---
@@ -1359,7 +1417,7 @@ export default function App() {
                             </div>
 
                             {/* --- DESCRIPTION --- */}
-                            <div className="mt-4"><label className="block text-sm font-medium">Description</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="2" className="mt-1 w-full p-2 border rounded-md"></textarea></div>
+                            <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
                         </div>
 
                         {/* --- Section 2: Coûts & Financement --- */}
@@ -1569,7 +1627,7 @@ export default function App() {
     };
 
     if (showWelcome) {
-        return <WelcomePage onStart={handleStart} />;
+        return <WelcomePage onStart={handleStart} onNavigate={setPage} />;
     }
 
     return (
@@ -1623,27 +1681,37 @@ export default function App() {
                     )}
                     <p className="text-sm text-red-600 mt-2">Cette action est irréversible.</p>
                 </ConfirmationModal>
-                {renderPage()}
-            </main>
-
-            <footer className="sticky bottom-0 left-0 right-0 bg-white border-t-2 shadow-top"><nav className="max-w-4xl mx-auto flex justify-around p-2">
-                <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
-                <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Dashboard</span></button>
-                <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
-
-                {user ? (
-                    <button onClick={() => setIsProfileModalOpen(true)} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'account' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
-                        <UserIcon />
-                                                <span className="text-xs font-medium">{user.user_metadata?.prenom ? `Hey ${user.user_metadata.prenom} !` : 'Profil'}</span>
-                    </button>
-                ) : (
-                    // Si l'utilisateur N'EST PAS connecté, on affiche "Connexion"
-                    <button onClick={() => setPage('auth')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'auth' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
-                        <UserIcon />
-                        <span className="text-xs font-medium">Connexion</span>
-                    </button>
-                )}
-            </nav></footer>
-        </div>
-    );
+                                {renderPage()}
+                            </main>
+                
+                            <footer className="bg-white border-t-2 shadow-top">
+                                <nav className="max-w-4xl mx-auto flex justify-around p-2 sticky bottom-0 left-0 right-0 bg-white">
+                                    <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
+                                    <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Dashboard</span></button>
+                                    <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
+                
+                                    {user ? (
+                                        <button onClick={() => setIsProfileModalOpen(true)} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'account' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
+                                            <UserIcon />
+                                            <span className="text-xs font-medium">{user.user_metadata?.prenom ? `Hey ${user.user_metadata.prenom} !` : 'Profil'}</span>
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => setPage('auth')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'auth' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
+                                            <UserIcon />
+                                            <span className="text-xs font-medium">Connexion</span>
+                                        </button>
+                                    )}
+                                </nav>
+                                <div className="text-center py-4 border-t">
+                                    <div className="text-sm text-gray-600 space-x-4">
+                                        <button onClick={() => setPage('privacy')} className="hover:underline">Politique de Confidentialité</button>
+                                        <span>•</span>
+                                        <button onClick={() => setPage('terms')} className="hover:underline">Conditions d'Utilisation</button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">© 2025 Strady.imo - Tous droits réservés.</p>
+                                </div>
+                            </footer>
+                
+                            {showCookieBanner && <CookieBanner onAccept={handleCookieConsent} />}
+                        </div>    );
 }
