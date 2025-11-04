@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from './AuthContext'; // Notre hook
 import { Logo } from './App'; // Importer le Logo depuis App.jsx
 
-const AuthPage = ({ onBack }) => {
+const AuthPage = ({ onBack, onNavigate }) => {
   const [mode, setMode] = useState('signIn'); // 'signIn', 'signUp', 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -157,7 +157,7 @@ const AuthPage = ({ onBack }) => {
                 />
                 <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                     J'ai lu et j'accepte les{" "}
-                    <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => window.alert('Veuillez consulter les Conditions d\'Utilisation via le lien dans le pied de page.')}>
+                    <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => onNavigate('terms')}>
                         Conditions Générales d'Utilisation
                     </span>
                     .

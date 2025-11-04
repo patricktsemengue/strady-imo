@@ -7,6 +7,7 @@ import { prePromptConfig } from './config.js';
 import FeedbackPage from './FeedbackPage';
 import PrivacyPolicyPage from './PrivacyPolicyPage';
 import TermsOfServicePage from './TermsOfServicePage';
+import ConfirmationModal from './ConfirmationModal';
 
 const StarIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
@@ -593,35 +594,7 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
     );
 };
 
-// ---  Composant Modal de  Confirmation ---
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
-    if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
-                <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                <div className="text-gray-700 mb-6">
-                    {children}
-                </div>
-                <div className="flex justify-end gap-3 pt-6 mt-4 border-t">
-                    <button
-                        onClick={onClose}
-                        className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400"
-                    >
-                        Annuler
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700"
-                    >
-                        Confirmer la suppression
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 // --- Composant Modal de Profil ---
 const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
@@ -687,7 +660,12 @@ const WelcomePage = ({ onStart, onNavigate }) => (
 
 // --- Composant principal de l'application ---
 export default function App() {
-    const [page, setPage] = React.useState('main');
+    const [page, setPageInternal] = React.useState('main');
+
+    const setPage = (newPage) => {
+        console.log('Navigating to page:', newPage);
+        setPageInternal(newPage);
+    };
 
     // Utilisation de notre Contexte d'Authentification
     const { user, signOut } = useAuth();
@@ -1204,7 +1182,8 @@ const CookieBanner = ({ onAccept }) => (
                     project_name: projectNameForSave,
                     ville: currentDataWithNewName.ville,
                     data: currentDataWithNewName,
-                    result: result
+                    result: result,
+                    created_at: new Date().toISOString()
                 })
                 .select()
                 .single();
@@ -1349,11 +1328,12 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     const renderPage = () => {
+        console.log('Rendering page:', page);
         switch (page) {
             case 'aide': return <HelpPage onBack={() => setPage('main')} />;
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
-            case 'auth': return <AuthPage onBack={() => setPage('main')} />;
+            case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
                         case 'account': return <AccountPage onBack={() => setPage('main')} />;
                         case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
             case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;

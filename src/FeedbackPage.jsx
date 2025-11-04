@@ -33,7 +33,8 @@ const FeedbackPage = ({ onBack }) => {
                 rating: rating,
                 comment: comment,
                 user_email: user.email,
-                user_name: user.user_metadata?.prenom || ''
+                user_name: user.user_metadata?.prenom || '',
+                created_at: new Date().toISOString()
             });
 
         if (dbError) {
