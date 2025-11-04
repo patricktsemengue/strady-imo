@@ -710,6 +710,7 @@ export default function App() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
         const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
+    const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
 
     const [showCookieBanner, setShowCookieBanner] = React.useState(() => {
         return !localStorage.getItem('cookie_consent');
@@ -935,9 +936,14 @@ const CookieBanner = ({ onAccept }) => (
         // ET que l'utilisateur est toujours sur la page d'authentification
         if (user && page === 'auth') {
             // Redirige vers le dashboard
-            setPage('dashboard');
+            if (redirectAfterLogin) {
+                setPage(redirectAfterLogin);
+                setRedirectAfterLogin(null);
+            } else {
+                setPage('dashboard');
+            }
         }
-    }, [user, page]);
+    }, [user, page, redirectAfterLogin]);
 
 
     /*
@@ -1080,6 +1086,12 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     const handleOpenSaveModal = () => {
+        if (!user) {
+            setRedirectAfterLogin('main');
+            setPage('auth');
+            return;
+        }
+
         if (analyses.length >= maxAnalyses) {
             setNotification({ msg: `Limite de ${maxAnalyses} analyses atteinte.`, type: 'error' });
             setTimeout(() => setNotification({ msg: '', type: '' }), 5000);
