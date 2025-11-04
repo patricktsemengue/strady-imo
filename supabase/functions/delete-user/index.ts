@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
     // 3. Client Admin pour les actions
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      Deno.env.get('STRADY_SUPABASE_SERVICE_ROLE_KEY')!      
     )
 
     // 4. MARQUER les données comme supprimées
