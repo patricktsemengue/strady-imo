@@ -1550,9 +1550,10 @@ const CookieBanner = ({ onAccept }) => (
                         )}
 
                         {/* ---  Assistant IA Général --- */}
+                        {user && (
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><BrainCircuitIcon /> Assistant Immobilier IA</h2>
-                            <p className="text-sm text-gray-500 mb-3">Posez n'importe quelle question sur l'immobilier en Belgique (droit, fiscalité, marché, travaux, etc.).</p>
+                            <p className="text-sm text-gray-500 mb-3">Posez une question sur l'immobilier en Belgique (droit, fiscalité, marché, travaux, etc.).</p>
                             <div className="flex flex-col sm:flex-row gap-2">
                                 <input
                                     type="text"
@@ -1601,6 +1602,7 @@ const CookieBanner = ({ onAccept }) => (
                                 </div>
                             )}
                         </div>
+                        )}
                     </div>
                 );
         }
@@ -1667,7 +1669,9 @@ const CookieBanner = ({ onAccept }) => (
                             <footer className="bg-white border-t-2 shadow-top">
                                 <nav className="max-w-4xl mx-auto flex justify-around p-2 sticky bottom-0 left-0 right-0 bg-white">
                                     <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
+                                    {user && (
                                     <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Dashboard</span></button>
+                                    )}
                                     <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
                 
                                     {user ? (
