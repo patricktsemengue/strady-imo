@@ -35,7 +35,7 @@ const PrivacyPolicyPage = ({ onBack }) => (
             <ul className="list-disc list-inside">
                 <li><strong>Droit d'accès :</strong> Vous pouvez demander une copie des données que nous détenons sur vous.</li>
                 <li><strong>Droit de rectification :</strong> Vous pouvez modifier les informations de votre compte à tout moment.</li>
-                <li><strong>Droit à l'oubli :</strong> Vous pouvez supprimer votre compte et toutes les données associées depuis la page "Mon Compte". Cette action est irréversible.</li>
+                <li><strong>Droit à l'oubli :</strong> Vous pouvez supprimer votre compte et toutes les données associées depuis la page "Mon profil". Cette action est irréversible.</li>
             </ul>
 
             <h2 className="text-xl font-semibold">6. Cookies et Stockage Local</h2>

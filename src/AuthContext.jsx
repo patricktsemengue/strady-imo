@@ -49,12 +49,12 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-    signUp: (email, password, prenom) => supabase.auth.signUp({ 
+    signUp: (email, password, displayName) => supabase.auth.signUp({ 
       email, 
       password,
       options: {
         data: {
-          prenom: prenom 
+          displayName: displayName 
         }
       }
     }),

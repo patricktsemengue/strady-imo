@@ -23,7 +23,7 @@ const AccountPage = ({ onBack }) => {
         setNameMessage('');
         setError('');
         if (!prenom.trim()) {
-            setError('Le prénom ne peut pas être vide.');
+            setError('Le nom ne peut pas être vide.');
             setLoading(false);
             return;
         }
@@ -32,7 +32,7 @@ const AccountPage = ({ onBack }) => {
         if (error) {
             setError(error.message);
         } else {
-            setNameMessage('Prénom mis à jour avec succès !');
+            setNameMessage('Nom mis à jour avec succès !');
         }
     };
 
@@ -78,21 +78,40 @@ const AccountPage = ({ onBack }) => {
             setIsModalOpen(false);
         } else {
             await signOut();
-            // No need to set loading to false as the user will be redirected.
+            // Vider toutes les données locales pour ne laisser aucune trace
+            localStorage.removeItem('immoAnalyses');
+            localStorage.removeItem('welcomeExpiry');
+            // Pas besoin de supprimer le consentement des cookies, c'est un choix de navigateur
+            
+            // Rediriger vers la page principale
+            onBack(); 
         }
     };
 
     return (
         <>
             <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in space-y-8 max-w-lg mx-auto">
-                <h1 className="text-2xl font-bold text-gray-800">Mon Compte</h1>
-                <button onClick={onBack} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour à l'analyse</button>
+                <h1 className="text-2xl font-bold text-gray-800">Mon profil</h1>
+                <button class="hidden" onClick={onBack} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour à l'analyse</button>
 
-                {/* Formulaire Prénom */}
-                <form onSubmit={handleNameUpdate} className="space-y-4 border-t pt-6">
-                    <h2 className="text-xl font-semibold text-gray-700">Modifier mon prénom</h2>
+                <div className="border-t pt-6">
+                    <h2 className="text-xl font-semibold text-gray-700">Compte</h2>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Prénom</label>
+                        <label className="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+                        <input
+                            type="email"
+                            value={user.email}
+                            readOnly
+                            className="mt-1 w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed"
+                        />
+                    </div>
+                </div>
+
+                {/* Formulaire Nom */}
+                <form onSubmit={handleNameUpdate} className="space-y-4 border-t pt-6">
+                    <h2 className="text-xl font-semibold text-gray-700">Modifier le nom </h2>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Nom</label>
                         <input
                             type="text"
                             value={prenom}
@@ -106,7 +125,7 @@ const AccountPage = ({ onBack }) => {
                         disabled={loading}
                         className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
                     >
-                        {loading ? '...' : 'Mettre à jour le prénom'}
+                        {loading ? '...' : 'Mettre à jour le nom'}
                     </button>
                 </form>
 

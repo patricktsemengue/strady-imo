@@ -610,7 +610,7 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
                 <div className="p-2">
                     <button onClick={() => { onNavigate('account'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
                         <SettingsIcon />
-                        <span>Mon Compte</span>
+                        <span>Mon profil</span>
                     </button>
                     <button onClick={() => { onNavigate('feedback'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
                         <StarIcon />
@@ -770,6 +770,7 @@ const CookieBanner = ({ onAccept }) => (
 
         // --- LOGIQUE DE SYNCHRONISATION ---
         // S'exécute si un utilisateur vient de se connecter
+        /*
         const syncLocalAnalyses = async (userId) => {
             const localAnalyses = JSON.parse(localStorage.getItem('immoAnalyses') || '[]');
 
@@ -799,11 +800,12 @@ const CookieBanner = ({ onAccept }) => (
                 }
             }
         };
+        */
 
         // --- POINT D'ENTRÉE ---
         if (user) {
             // 1. Utilisateur connecté
-            syncLocalAnalyses(user.id); // Vérifier s'il y a des données locales à synchroniser
+            // syncLocalAnalyses(user.id); // Vérifier s'il y a des données locales à synchroniser
             loadAnalysesFromCloud(user.id); // Charger les données du cloud
         } else {
             // 2. Utilisateur déconnecté
@@ -1376,13 +1378,7 @@ const CookieBanner = ({ onAccept }) => (
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Détails du Bien</h2>
 
-                            {/* --- NOM, VILLE, SURFACE, RC --- */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                <div><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Adresse/ Ville / Commune</label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                            </div>
+                            
 
                             {/* --- TYPE DE BIEN (BOUTONS) --- */}
                             <div className="mt-4">
@@ -1408,7 +1404,15 @@ const CookieBanner = ({ onAccept }) => (
                                 </div>
                             </div>
 
-                            {/* --- DESCRIPTION --- */}
+                            {/* --- NOM, VILLE, SURFACE, RC --- */}
+                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">                                
+                                <div class="hidden"><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Adresse/ Ville / Commune</label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                            </div>
+
+                            {/* --- NOTES --- */}
                             <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
                         </div>
 
@@ -1682,7 +1686,7 @@ const CookieBanner = ({ onAccept }) => (
                                 <nav className="max-w-4xl mx-auto flex justify-around p-2 sticky bottom-0 left-0 right-0 bg-white">
                                     <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
                                     {user && (
-                                    <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Dashboard</span></button>
+                                    <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Mes analyses</span></button>
                                     )}
                                     <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
                 
