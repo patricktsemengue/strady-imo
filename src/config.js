@@ -33,23 +33,11 @@ export const prePromptConfig = [
   ];
 
 export const scoreConfig = {
-    rendementNet: [
-        { threshold: 7, points: 40 },
-        { threshold: 5, points: 30 },
-        { threshold: 3, points: 15 }
-    ],
-    cashflowMensuel: [
-        { threshold: 100, points: 40 },
-        { threshold: 0, points: 30 },
-        { threshold: -150, points: 10 }
-    ],
-    ratioApport: [
-        { threshold: 20, points: 10 },
-        { threshold: 30, points: 5 }
-    ],
-    grades: [
-        { threshold: 75, grade: 'A', motivation: "Projet très favorable. Excellent potentiel !" },
-        { threshold: 50, grade: 'B', motivation: "Projet mitigé. Analysez les possibilités d'optimisation." },
-        { threshold: 0, grade: 'C', motivation: "Projet non favorable. Le risque est élevé." }
+    cashflowScore: [
+        { grade: 'A', minYears: 0, maxYears: 5, cashOnCash: 20, comment: "Rendement exceptionnel, équivalent à des placements de type startups ou cryptomonnaies." },
+        { grade: 'B', minYears: 5, maxYears: 10, cashOnCash: 10, comment: "Très bon rendement, comparable à des actions ou ETF dynamiques." },
+        { grade: 'C', minYears: 10, maxYears: 15, cashOnCash: 7, comment: "Rendement courant pour l’immobilier résidentiel bien situé." },
+        { grade: 'D', minYears: 15, maxYears: 20, cashOnCash: 5, comment: "Rendement conservateur typique de biens patrimoniaux." },
+        { grade: 'E', minYears: 20, maxYears: Infinity, cashOnCash: 4, comment: "Rendement faible (voire négatif), comparable à des produits d’assurance-vie ou comptes épargne." }
     ]
 };

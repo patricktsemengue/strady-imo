@@ -207,18 +207,53 @@ const SettingsPage = ({ onBack, maxAnalyses }) => {
 
 // --- Composant pour la page Dashboard ---
 const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
+    const [sortOrder, setSortOrder] = React.useState('createdAt');
+    const [sortDirection, setSortDirection] = React.useState('desc');
     const emptySlotsCount = maxAnalyses > analyses.length ? maxAnalyses - analyses.length : 0;
     const emptySlots = Array.from({ length: emptySlotsCount });
 
+    const sortedAnalyses = React.useMemo(() => {
+        return [...analyses].sort((a, b) => {
+            let comparison = 0;
+            if (sortOrder === 'name') {
+                const nameA = a.data.projectName || '';
+                const nameB = b.data.projectName || '';
+                comparison = nameA.localeCompare(nameB);
+            } else if (sortOrder === 'profitability') {
+                const rentaA = a.result ? parseFloat(a.result.rendementNet) : -Infinity;
+                const rentaB = b.result ? parseFloat(b.result.rendementNet) : -Infinity;
+                comparison = rentaB - rentaA;
+            } else { // Default to sorting by creation date
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
+                comparison = dateB - dateA;
+            }
+            return sortDirection === 'asc' ? comparison : -comparison;
+        });
+    }, [analyses, sortOrder, sortDirection]);
+
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Mes Analyses</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Mes analyses</h1>
             <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Continuer &rarr;</button>
+            
+            <div className="mb-4 flex flex-col items-center gap-3">
+                <div className="flex justify-center gap-2">
+                    <button onClick={() => setSortOrder('createdAt')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'createdAt' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Date</button>
+                    <button onClick={() => setSortOrder('name')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'name' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Nom</button>
+                    <button onClick={() => setSortOrder('profitability')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'profitability' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Rentabilité</button>
+                </div>
+                <div className="flex justify-center gap-2">
+                    <button onClick={() => setSortDirection('desc')} className={`px-3 py-1 text-xs font-medium rounded-lg border-2 transition-all ${sortDirection === 'desc' ? 'bg-gray-600 text-white border-gray-600' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500'}`}>Décroissant</button>
+                    <button onClick={() => setSortDirection('asc')} className={`px-3 py-1 text-xs font-medium rounded-lg border-2 transition-all ${sortDirection === 'asc' ? 'bg-gray-600 text-white border-gray-600' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500'}`}>Croissant</button>
+                </div>
+            </div>
+
             <div className="space-y-4">
-                {analyses.length === 0 && emptySlotsCount === 0 && (
+                {sortedAnalyses.length === 0 && emptySlotsCount === 0 && (
                     <p className="text-center text-gray-500 py-8">Aucune analyse sauvegardée. Augmentez la limite dans les paramètres pour en ajouter.</p>
                 )}
-                {analyses.map(analysis => (
+                {sortedAnalyses.map(analysis => (
                     <div key={analysis.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex-grow">
                             <h2 className="font-bold text-lg">{analysis.data.projectName}</h2>
@@ -406,6 +441,7 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
         { id: Date.now(), object: 'Précompte immobilier', periodicity: 'An', price: data.revenuCadastral ? Math.round(data.revenuCadastral * 1.25) : 0 },
         { id: Date.now(), object: 'Assurance PNO', periodicity: 'An', price: 250 },
         { id: Date.now() + 1, object: 'Charges copropriété non-récup.', periodicity: 'Mois', price: 50 },
+        { id: Date.now() + 1, object: 'Vacance locative', periodicity: 'Mois', price: data.loyerEstime ? Math.round(data.loyerEstime * 0.1) : 0 },
     ]);
     const addItem = () => setItems([...items, { id: Date.now(), object: '', periodicity: 'Mois', price: 0 }]);
     const removeItem = (id) => setItems(items.filter(item => item.id !== id));
@@ -632,7 +668,7 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
 
 
 // --- Composant pour la page de bienvenue ---
-const WelcomePage = ({ onStart, onNavigate }) => (
+const WelcomePage = ({ onStart, onNavigate, user }) => (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-slate-100 animate-fade-in">
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
             <Logo />
@@ -651,12 +687,15 @@ const WelcomePage = ({ onStart, onNavigate }) => (
             <p className="text-gray-600 mb-8 italic">
                 Prêt à transformer vos intuitions en décisions chiffrées ? Bonne utilisation !
             </p>
-            <button
-                onClick={onStart}
-                className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg"
-            >
-                Commencer l'analyse
-            </button>
+            <div className="flex flex-col gap-4 mb-8">
+                <button
+                    onClick={onStart}
+                    className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg"
+                >
+                    Commencer une analyse
+                </button>
+                
+            </div>
             <p className="text-xs text-gray-500 mt-4">En continuant, vous confirmez avoir lu et accepté notre <button onClick={() => onNavigate('terms')} className="underline">Conditions d'Utilisation</button> et notre <button onClick={() => onNavigate('privacy')} className="underline">Politique de Confidentialité</button>.</p>
         </div>
     </div>
@@ -819,9 +858,6 @@ const CookieBanner = ({ onAccept }) => (
     }, [user]);
 
     const handleStart = () => {
-        const durationHours = parseInt(import.meta.env.VITE_STRADY_CACHE_DURATION_HOURS || '24', 10);
-        const expiryTime = Date.now() + durationHours * 60 * 60 * 1000;
-        localStorage.setItem('welcomeExpiry', expiryTime.toString());
         setShowWelcome(false);
     };
 
@@ -1060,58 +1096,76 @@ const CookieBanner = ({ onAccept }) => (
         const chargesAnnuelles = (data.chargesMensuelles || 0) * 12;
         const coutVacance = loyerAnnuelBrut * ((data.vacanceLocative || 0) / 100);
 
-        // Utiliser 'finances.coutTotalProjet'
-        const rendementNet = ((loyerAnnuelBrut - chargesAnnuelles - coutVacance) / finances.coutTotalProjet) * 100;
-        // Utiliser 'finances.mensualiteEstimee'
-        const cashflowMensuel = (data.loyerEstime || 0) - (data.chargesMensuelles || 0) - finances.mensualiteEstimee;
-
-        const getPoints = (value, config) => {
-            for (const tier of config) {
-                if (value >= tier.threshold) {
-                    return tier.points;
-                }
-            }
-            return 0;
-        };
-
-        const getPointsRatio = (value, config) => {
-            for (let i = 0; i < config.length; i++) {
-                if (value < config[i].threshold) {
-                    return config[i].points;
-                }
-            }
-            return 0;
-        };
-
-        let score = 0;
-        score += getPoints(rendementNet, scoreConfig.rendementNet);
-        score += getPoints(cashflowMensuel, scoreConfig.cashflowMensuel);
+        const rendementNet = finances.coutTotalProjet > 0 ? ((loyerAnnuelBrut - chargesAnnuelles - coutVacance) / finances.coutTotalProjet) * 100 : 0;
         
-        const ratioApport = finances.coutTotalProjet > 0 ? ((data.apport || 0) / finances.coutTotalProjet) * 100 : 0;
-        score += getPointsRatio(ratioApport, scoreConfig.ratioApport);
+        const cashflowMensuel = (data.loyerEstime || 0) - (data.chargesMensuelles || 0) - finances.mensualiteEstimee;
+        const cashflowAnnuel = cashflowMensuel * 12;
 
-        score += (data.tensionLocative || 0);
+        let grade = 'E';
+        let motivation = "Rendement faible ou négatif.";
+        let score = 0;
+        let yearsToRecover = null;
+        let cashOnCash = null;
 
-        const getGrade = (score, gradesConfig) => {
-            for (const grade of gradesConfig) {
-                if (score >= grade.threshold) {
-                    return { grade: grade.grade, motivation: grade.motivation };
-                }
+        if ((data.apport || 0) <= 0) {
+            if (cashflowAnnuel > 0) { // Infinite return
+                const bestScore = scoreConfig.cashflowScore[0];
+                grade = bestScore.grade;
+                motivation = bestScore.comment;
+                score = 100;
+                yearsToRecover = 0;
+                cashOnCash = Infinity;
+            } else { // No investment, no return
+                const worstScore = scoreConfig.cashflowScore[scoreConfig.cashflowScore.length - 1];
+                grade = worstScore.grade;
+                motivation = worstScore.comment;
+                score = 10;
             }
-            const lowestGrade = gradesConfig[gradesConfig.length - 1];
-            return { grade: lowestGrade.grade, motivation: lowestGrade.motivation };
-        };
+        } else if (cashflowAnnuel <= 0) {
+            const worstScore = scoreConfig.cashflowScore[scoreConfig.cashflowScore.length - 1];
+            grade = worstScore.grade;
+            motivation = worstScore.comment;
+            score = 10;
+            cashOnCash = (cashflowAnnuel / data.apport) * 100;
+        } else {
+            yearsToRecover = (data.apport || 0) / cashflowAnnuel;
+            cashOnCash = (cashflowAnnuel / data.apport) * 100;
+            
+            const foundTier = scoreConfig.cashflowScore.find(tier => yearsToRecover >= tier.minYears && yearsToRecover < tier.maxYears);
 
-        const { grade, motivation } = getGrade(score, scoreConfig.grades);
+            if (foundTier) {
+                grade = foundTier.grade;
+                motivation = foundTier.comment;
+            } else {
+                // Should not happen if config is correct, but as a fallback
+                const worstScore = scoreConfig.cashflowScore[scoreConfig.cashflowScore.length - 1];
+                grade = worstScore.grade;
+                motivation = worstScore.comment;
+            }
+            
+            // Map grades to a 0-100 score for the UI
+            switch(grade) {
+                case 'A': score = 95; break;
+                case 'B': score = 80; break;
+                case 'C': score = 60; break;
+                case 'D': score = 40; break;
+                case 'E': score = 20; break;
+                default: score = 0;
+            }
+        }
 
         const newResult = {
             rendementNet: isFinite(rendementNet) ? rendementNet.toFixed(2) : '0.00',
             cashflowMensuel: cashflowMensuel.toFixed(2),
-            // Utiliser 'finances' pour le résultat
             mensualiteCredit: finances.mensualiteEstimee.toFixed(2),
             coutTotal: finances.coutTotalProjet.toFixed(0),
-            grade, motivation, score: Math.round(score)
+            grade,
+            motivation,
+            score: Math.round(score),
+            yearsToRecover,
+            cashOnCash
         };
+
         setResult(newResult);
         setNotification({ msg: '', type: '' });
     };
@@ -1383,8 +1437,8 @@ const CookieBanner = ({ onAccept }) => (
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
-                        case 'account': return <AccountPage onBack={() => setPage('main')} />;
-                        case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
+            case 'account': return <AccountPage onBack={() => setPage('main')} />;
+            case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
             case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;
             case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;
             default:
@@ -1453,7 +1507,7 @@ const CookieBanner = ({ onAccept }) => (
 
                         {/* --- Section 2: Coûts & Financement --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Coûts & Financement</h2>
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Financement & Coûts</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium text-gray-700">Prix d'achat (€)</label><input type="number" name="prixAchat" value={data.prixAchat} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium text-gray-700">Coût travaux (€)</label><div className="flex items-center gap-2"><input type="number" name="coutTravaux" value={data.coutTravaux} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
@@ -1553,14 +1607,14 @@ const CookieBanner = ({ onAccept }) => (
                                 <div><label className="block text-sm font-medium">Loyer hors charges (€/mois)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" placeholder="900 € HC"/></div>
                                 <div><label className="block text-sm font-medium">Charges d'exploitation (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
 
-                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1">
+                                <div className="md:col-span-2 hidden"><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1">
                                     {/* MODIFIÉ: Ajout de className="range-slider-good-high" */}
                                     <input type="range" min="1" max="10" name="tensionLocative" value={data.tensionLocative} onChange={handleInputChange} className="w-full range-slider-good-high" />
                                     <div className="font-semibold text-lg w-12 text-center">{data.tensionLocative}</div>
                                     <button onClick={() => setIsTensionEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><TrendingUpIcon /></button>
                                 </div></div>
 
-                                <div className="md:col-span-2 "><label className="block text-sm font-medium">Vacance locative (%)</label><div className="flex items-center gap-2 mt-1">
+                                <div className="md:col-span-2 hidden"><label className="block text-sm font-medium">Vacance locative (%)</label><div className="flex items-center gap-2 mt-1">
                                     {/* MODIFIÉ: Remplacement de className par "range-slider-good-low" */}
                                     <input type="range" min="1" max="25" name="vacanceLocative" value={data.vacanceLocative} onChange={handleInputChange} className="w-full range-slider-good-low" />
                                     <div className="font-semibold text-lg w-12 text-center">{data.vacanceLocative}</div>
@@ -1587,9 +1641,12 @@ const CookieBanner = ({ onAccept }) => (
                                         </button>
                                     )}
                                 </div>
-                                <div className={`text-center p-4 rounded-lg mb-4 ${result.grade === 'A' ? 'bg-green-100' : result.grade === 'B' ? 'bg-yellow-100' : 'bg-red-100'}`}><span className={`text-6xl font-black ${result.grade === 'A' ? 'text-green-600' : result.grade === 'B' ? 'text-yellow-600' : 'text-red-600'}`}>{result.grade}</span><p className="font-semibold text-lg mt-2">{result.motivation}</p><p className="font-mono text-sm mt-1">Score: {result.score}/100</p></div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div className={`text-center p-4 rounded-lg mb-4 ${result.grade === 'A' ? 'bg-green-100' : result.grade === 'B' ? 'bg-yellow-100' : 'bg-red-100'}`}><span className={`text-6xl font-black ${result.grade === 'A' ? 'text-green-600' : result.grade === 'B' ? 'text-yellow-600' : 'text-red-600'}`}>{result.grade}</span><p className="font-semibold text-lg mt-2">{result.motivation}</p><p className="font-mono text-sm mt-1">Score Strady: {result.score}/100</p>{result.yearsToRecover !== null && <p className="font-semibold text-md mt-2">Retour sur apport en {result.yearsToRecover.toFixed(1)} ans</p>}</div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                                 
                                     <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Rendement Net</p><p className="text-xl font-bold text-blue-700">{result.rendementNet} %</p></div>
+                                    <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-on-Cash</p><p className="text-xl font-bold text-blue-700">{result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'}</p></div>
+                                    
                                     <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-Flow / mois</p><p className={`text-xl font-bold ${result.cashflowMensuel > 0 ? 'text-green-600' : 'text-red-600'}`}>{result.cashflowMensuel} €</p></div>
                                     <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Mensualité Crédit</p><p className="text-xl font-bold">{result.mensualiteCredit} €</p></div>
                                     <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Coût Total</p><p className="text-xl font-bold">{parseInt(result.coutTotal).toLocaleString('fr-BE')} €</p></div>
@@ -1660,7 +1717,7 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     if (showWelcome) {
-        return <WelcomePage onStart={handleStart} onNavigate={setPage} />;
+        return <WelcomePage onStart={handleStart} onNavigate={setPage} user={user} />;
     }
 
     return (
@@ -1724,7 +1781,9 @@ const CookieBanner = ({ onAccept }) => (
                                     <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Mes analyses</span></button>
                                     )}
                                     <button onClick={() => setPage('aide')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'aide' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HelpIcon /><span className="text-xs font-medium">Aide</span></button>
-                
+                                    {/** 
+                                    <button onClick={() => setShowWelcome(true)} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${showWelcome ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><StarIcon /><span className="text-xs font-medium">Accueil</span></button>
+                                     **/}
                                     {user ? (
                                         <button onClick={() => setIsProfileModalOpen(true)} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'account' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
                                             <UserIcon />
