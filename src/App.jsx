@@ -57,6 +57,14 @@ const BrainCircuitIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain-circuit"><path d="M12 5a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162" /><path d="M12 12a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162" /><path d="M12 19a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162" /><path d="M14.5 4.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" /><path d="M9.5 4.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z" /><path d="M14.5 11.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" /><path d="M9.5 11.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z" /><path d="M14.5 18.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" /><path d="M9.5 18.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z" /><path d="M20 12h-2" /><path d="M6 12H4" /><path d="m14 15.5-.5.8" /><path d="m10.5 16.3.5-.8" /><path d="m14 8.5-.5-.8" /><path d="m10.5 7.7.5.8" /></svg>
 );
 
+const QuestionMarkIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-help-circle">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+);
+
 // env
 const cacheDuration = import.meta.env.VITE_STRADY_CACHE_DURATION_HOURS;
 //const maxAnalyses = import.meta.env.VITE_STRADY_MAX_ANALYZES;
@@ -582,6 +590,40 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat }) 
     );
 };
 
+// --- Composant Modal pour l'explication du score ---
+const ScoreExplanationModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    const scores = [
+        { grade: 'A', text: "Votre cashflow net permet de reconstituer votre apport en moins de 5 ans.", color: "text-green-800" }, // vert foncé
+        { grade: 'B', text: "Votre cashflow net permet de reconstituer votre apport entre 5 et 10 ans.", color: "text-green-500" }, // vert clair
+        { grade: 'C', text: "Votre cashflow net permet de reconstituer votre apport entre 10 et 15 ans.", color: "text-yellow-500" }, // jaune
+        { grade: 'D', text: "Votre cashflow net permet de reconstituer votre apport entre 15 et 20 ans.", color: "text-orange-500" }, // orange
+        { grade: 'E', text: "Votre cashflow net ne permet pas la reconstitution de votre apport en moins de 20 ans.", color: "text-red-800" } // rouge très foncé
+    ];
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
+                <h2 className="text-2xl font-bold mb-4">Échelle des scores Strady</h2>
+                <div className="space-y-4">
+                    {scores.map(score => (
+                        <div key={score.grade} className="flex items-start">
+                            <div className={`text-2xl font-black w-10 text-center ${score.color}`}>{score.grade}</div>
+                            <div className="ml-4">
+                                <p className="text-gray-700">{score.text}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="flex justify-end gap-3 pt-6 mt-4 border-t">
+                    <button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Fermer</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Composant Modal pour la sauvegarde ---
 const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisId, projectName, setProjectName, error, setError }) => {
     if (!isOpen) return null;
@@ -754,6 +796,7 @@ export default function App() {
     const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
     const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
+    const [isScoreModalOpen, setIsScoreModalOpen] = React.useState(false);
 
     const [showCookieBanner, setShowCookieBanner] = React.useState(() => {
         return !localStorage.getItem('cookie_consent');
@@ -858,6 +901,8 @@ const CookieBanner = ({ onAccept }) => (
     }, [user]);
 
     const handleStart = () => {
+        const newExpiry = Date.now() + (cacheDuration * 60 * 60 * 1000);
+        localStorage.setItem('welcomeExpiry', newExpiry);
         setShowWelcome(false);
     };
 
@@ -1465,7 +1510,7 @@ const CookieBanner = ({ onAccept }) => (
                     <div className="space-y-8 animate-fade-in">
                         {/* --- Section 1: Détails du Bien --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Détails du Bien</h2>
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Bien immobilier</h2>
 
                             
 
@@ -1507,7 +1552,7 @@ const CookieBanner = ({ onAccept }) => (
 
                         {/* --- Section 2: Coûts & Financement --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Financement & Coûts</h2>
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Financement</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium text-gray-700">Prix d'achat (€)</label><input type="number" name="prixAchat" value={data.prixAchat} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium text-gray-700">Coût travaux (€)</label><div className="flex items-center gap-2"><input type="number" name="coutTravaux" value={data.coutTravaux} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
@@ -1602,7 +1647,7 @@ const CookieBanner = ({ onAccept }) => (
 
                         {/* --- Section 3: Analyse du Marché et du Loyer --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Analyse Marché & Loyer</h2>
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Loyer et charge</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium">Loyer hors charges (€/mois)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" placeholder="900 € HC"/></div>
                                 <div><label className="block text-sm font-medium">Charges d'exploitation (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
@@ -1641,11 +1686,43 @@ const CookieBanner = ({ onAccept }) => (
                                         </button>
                                     )}
                                 </div>
-                                <div className={`text-center p-4 rounded-lg mb-4 ${result.grade === 'A' ? 'bg-green-100' : result.grade === 'B' ? 'bg-yellow-100' : 'bg-red-100'}`}><span className={`text-6xl font-black ${result.grade === 'A' ? 'text-green-600' : result.grade === 'B' ? 'text-yellow-600' : 'text-red-600'}`}>{result.grade}</span><p className="font-semibold text-lg mt-2">{result.motivation}</p><p className="font-mono text-sm mt-1">Score Strady: {result.score}/100</p>{result.yearsToRecover !== null && <p className="font-semibold text-md mt-2">Retour sur apport en {result.yearsToRecover.toFixed(1)} ans</p>}</div>
+                                <div className={`text-center p-4 rounded-lg mb-4 ${
+                                    result.grade === 'A' ? 'bg-green-100' :
+                                    result.grade === 'B' ? 'bg-green-50' :
+                                    result.grade === 'C' ? 'bg-yellow-50' :
+                                    result.grade === 'D' ? 'bg-orange-50' :
+                                    'bg-red-100'
+                                }`}>
+                                    <span className={`text-6xl font-black ${
+                                        result.grade === 'A' ? 'text-green-800' :
+                                        result.grade === 'B' ? 'text-green-500' :
+                                        result.grade === 'C' ? 'text-yellow-500' :
+                                        result.grade === 'D' ? 'text-orange-500' :
+                                        'text-red-800'
+                                    }`}>{result.grade}</span>
+                                    {result.yearsToRecover !== null && <p className="font-semibold text-md mt-2">Retour sur apport en {result.yearsToRecover.toFixed(0)} ans</p>}
+                                    <p className="font-mono text-sm mt-2">{result.motivation}</p>
+                                    <p className="font-mono text-sm mt-1 flex items-center justify-center">
+                                        Score Strady 
+                                        <button onClick={() => setIsScoreModalOpen(true)} className="ml-1">
+                                            <QuestionMarkIcon />
+                                        </button>
+                                    </p>                                        
+                                    </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
                                  
-                                    <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Rendement Net</p><p className="text-xl font-bold text-blue-700">{result.rendementNet} %</p></div>
-                                    <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-on-Cash</p><p className="text-xl font-bold text-blue-700">{result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'}</p></div>
+                                    {user && (
+                                        <>
+                                            <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Rendement Net</p><p className="text-xl font-bold text-blue-700">{result.rendementNet} %</p></div>
+                                            <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-on-Cash</p><p className={`text-xl font-bold ${
+                                                result.grade === 'A' ? 'text-green-800' :
+                                                result.grade === 'B' ? 'text-green-500' :
+                                                result.grade === 'C' ? 'text-yellow-500' :
+                                                result.grade === 'D' ? 'text-orange-500' :
+                                                'text-red-800'
+                                            }`}>{result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'}</p></div>
+                                        </>
+                                    )}
                                     
                                     <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-Flow / mois</p><p className={`text-xl font-bold ${result.cashflowMensuel > 0 ? 'text-green-600' : 'text-red-600'}`}>{result.cashflowMensuel} €</p></div>
                                     <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Mensualité Crédit</p><p className="text-xl font-bold">{result.mensualiteCredit} €</p></div>
@@ -1717,7 +1794,7 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     if (showWelcome) {
-        return <WelcomePage onStart={handleStart} onNavigate={setPage} user={user} />;
+        return <WelcomePage onStart={handleStart} onNavigate={setPage}/>;
     }
 
     return (
@@ -1742,6 +1819,7 @@ const CookieBanner = ({ onAccept }) => (
                     onApply={handleAcquisitionFeesUpdate}
                     prixAchat={data.prixAchat}
                 />
+                <ScoreExplanationModal isOpen={isScoreModalOpen} onClose={() => setIsScoreModalOpen(false)} />
                 <SaveAnalysisModal
                     isOpen={isSaveModalOpen}
                     onClose={() => setIsSaveModalOpen(false)}
