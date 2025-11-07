@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 import AuthPage from './AuthPage';
 import AccountPage from './AccountPage';
-import { prePromptConfig } from './config.js';
+import { prePromptConfig, scoreConfig } from './config.js';
 import FeedbackPage from './FeedbackPage';
 import PrivacyPolicyPage from './PrivacyPolicyPage';
 import TermsOfServicePage from './TermsOfServicePage';
@@ -401,8 +401,9 @@ const VacancyEstimatorModal = ({ isOpen, onClose, onApply, currentTension }) => 
     );
 };
 
-const ChargesEstimatorModal = ({ isOpen, onClose, onApply }) => {
+const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
     const [items, setItems] = React.useState([
+        { id: Date.now(), object: 'Précompte immobilier', periodicity: 'An', price: data.revenuCadastral ? Math.round(data.revenuCadastral * 1.25) : 0 },
         { id: Date.now(), object: 'Assurance PNO', periodicity: 'An', price: 250 },
         { id: Date.now() + 1, object: 'Charges copropriété non-récup.', periodicity: 'Mois', price: 50 },
     ]);
@@ -426,7 +427,7 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl max-h-[90vh] flex flex-col">
-                <h2 className="text-2xl font-bold mb-4">Estimation des Charges Mensuelles Non-Récupérables</h2>
+                <h2 className="text-2xl font-bold mb-4">Estimation des charges d'exploitation</h2>
                 <div className="overflow-y-auto flex-grow pr-2 space-y-4">
                     {items.map((item, index) => (
                         <div key={item.id} className="p-3 border rounded-lg grid grid-cols-1 md:grid-cols-8 gap-3 items-center">
@@ -495,7 +496,10 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat }) 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
-                <h2 className="text-2xl font-bold mb-4">Calculateur Détaillé des Frais d'Acquisition</h2>
+                <h2 className="text-2xl font-bold mb-4">Calcul de frais d'acte d'achat immobilier</h2>
+                <div className="mb-4 text-sm">
+                <span className="text-gray-600">Les calculs de nos simulateurs sont indicatifs. Pour plus de précisions, demandez à votre notaire une prévision du coût des démarches.</span>
+                </div>
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -678,7 +682,7 @@ export default function App() {
 
     const initialDataState = {
         projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
-        ville: 'Namur',
+        ville: '',
         descriptionBien: '',// 'Appartement 2 chambres, bon état',
         typeBien: 'Appartement',
         surface: 85,
@@ -708,7 +712,7 @@ export default function App() {
     const [tempNumericValue, setTempNumericValue] = React.useState(null);
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-        const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
+    const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
     const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
 
@@ -1061,19 +1065,44 @@ const CookieBanner = ({ onAccept }) => (
         // Utiliser 'finances.mensualiteEstimee'
         const cashflowMensuel = (data.loyerEstime || 0) - (data.chargesMensuelles || 0) - finances.mensualiteEstimee;
 
+        const getPoints = (value, config) => {
+            for (const tier of config) {
+                if (value >= tier.threshold) {
+                    return tier.points;
+                }
+            }
+            return 0;
+        };
+
+        const getPointsRatio = (value, config) => {
+            for (let i = 0; i < config.length; i++) {
+                if (value < config[i].threshold) {
+                    return config[i].points;
+                }
+            }
+            return 0;
+        };
+
         let score = 0;
-        if (rendementNet > 7) score += 40; else if (rendementNet > 5) score += 30; else if (rendementNet > 3) score += 15;
-        if (cashflowMensuel > 100) score += 40; else if (cashflowMensuel > 0) score += 30; else if (cashflowMensuel > -150) score += 10;
+        score += getPoints(rendementNet, scoreConfig.rendementNet);
+        score += getPoints(cashflowMensuel, scoreConfig.cashflowMensuel);
+        
+        const ratioApport = finances.coutTotalProjet > 0 ? ((data.apport || 0) / finances.coutTotalProjet) * 100 : 0;
+        score += getPointsRatio(ratioApport, scoreConfig.ratioApport);
+
         score += (data.tensionLocative || 0);
 
-        // Utiliser 'finances.coutTotalProjet'
-        const ratioApport = finances.coutTotalProjet > 0 ? ((data.apport || 0) / finances.coutTotalProjet) * 100 : 0;
-        if (ratioApport < 20) score += 10; else if (ratioApport < 30) score += 5;
+        const getGrade = (score, gradesConfig) => {
+            for (const grade of gradesConfig) {
+                if (score >= grade.threshold) {
+                    return { grade: grade.grade, motivation: grade.motivation };
+                }
+            }
+            const lowestGrade = gradesConfig[gradesConfig.length - 1];
+            return { grade: lowestGrade.grade, motivation: lowestGrade.motivation };
+        };
 
-        let grade, motivation;
-        if (score > 75) { grade = 'A'; motivation = "Projet très favorable. Excellent potentiel !"; }
-        else if (score > 50) { grade = 'B'; motivation = "Projet mitigé. Analysez les possibilités d'optimisation."; }
-        else { grade = 'C'; motivation = "Projet non favorable. Le risque est élevé."; }
+        const { grade, motivation } = getGrade(score, scoreConfig.grades);
 
         const newResult = {
             rendementNet: isFinite(rendementNet) ? rendementNet.toFixed(2) : '0.00',
@@ -1091,6 +1120,12 @@ const CookieBanner = ({ onAccept }) => (
         if (!user) {
             setRedirectAfterLogin('main');
             setPage('auth');
+            return;
+        }
+
+        if (!data.ville || !data.ville.trim()) {
+            setNotification({ msg: 'Le champ "Adresse/ Ville / Commune" est obligatoire.', type: 'error' });
+            setTimeout(() => setNotification({ msg: '', type: '' }), 5000);
             return;
         }
 
@@ -1407,9 +1442,9 @@ const CookieBanner = ({ onAccept }) => (
                             {/* --- NOM, VILLE, SURFACE, RC --- */}
                             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">                                
                                 <div class="hidden"><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Adresse/ Ville / Commune</label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
+                                <div><label className="block text-sm font-medium">Adresse/ Ville / Commune <span className='text-red-400'>*</span></label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} required placeholder='Rue de Strady 1, 5000 Namur' className="mt-1 w-full p-2 border rounded-md" /></div>
                             </div>
 
                             {/* --- NOTES --- */}
@@ -1432,7 +1467,7 @@ const CookieBanner = ({ onAccept }) => (
                                             <CalculatorIcon />
                                         </button>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Estimation auto. Pour un calcul précis, utilisez l'estimateur ou notaire.be</p>
+                                    <p className="text-xs text-gray-500 mt-1">Estimation auto. Pour un calcul précis, demandez à votre notaire une prévision des coûts (notaire.be)</p>
                                 </div>
                                 <div><label className="block text-sm font-medium text-gray-700">Frais annexes (€)</label><input type="number" name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} placeholder="Agence, hypothèque..." className="mt-1 w-full p-2 border rounded-md" /></div>
 
@@ -1515,8 +1550,8 @@ const CookieBanner = ({ onAccept }) => (
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Analyse Marché & Loyer</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                <div><label className="block text-sm font-medium">Loyer estimé (€)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
-                                <div><label className="block text-sm font-medium">Charges non-récup. (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
+                                <div><label className="block text-sm font-medium">Loyer hors charges (€/mois)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" placeholder="900 € HC"/></div>
+                                <div><label className="block text-sm font-medium">Charges d'exploitation (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
 
                                 <div className="md:col-span-2 "><label className="block text-sm font-medium">Tension locative (1-10)</label><div className="flex items-center gap-2 mt-1">
                                     {/* MODIFIÉ: Ajout de className="range-slider-good-high" */}
@@ -1643,7 +1678,7 @@ const CookieBanner = ({ onAccept }) => (
                 <RenovationEstimatorModal isOpen={isEstimatorOpen} onClose={() => setIsEstimatorOpen(false)} onApply={handleTravauxUpdate} />
                 <TensionLocativeEstimatorModal isOpen={isTensionEstimatorOpen} onClose={() => setIsTensionEstimatorOpen(false)} onApply={handleTensionUpdate} />
                 <VacancyEstimatorModal isOpen={isVacancyEstimatorOpen} onClose={() => setIsVacancyEstimatorOpen(false)} onApply={handleVacancyUpdate} currentTension={data.tensionLocative} />
-                <ChargesEstimatorModal isOpen={isChargesEstimatorOpen} onClose={() => setIsChargesEstimatorOpen(false)} onApply={handleChargesUpdate} />
+                <ChargesEstimatorModal isOpen={isChargesEstimatorOpen} onClose={() => setIsChargesEstimatorOpen(false)} onApply={handleChargesUpdate} data={data} />
                 <AcquisitionFeesEstimatorModal
                     isOpen={isAcquisitionFeesEstimatorOpen}
                     onClose={() => setIsAcquisitionFeesEstimatorOpen(false)}

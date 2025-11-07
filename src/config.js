@@ -31,3 +31,25 @@ export const prePromptConfig = [
     }
     
   ];
+
+export const scoreConfig = {
+    rendementNet: [
+        { threshold: 7, points: 40 },
+        { threshold: 5, points: 30 },
+        { threshold: 3, points: 15 }
+    ],
+    cashflowMensuel: [
+        { threshold: 100, points: 40 },
+        { threshold: 0, points: 30 },
+        { threshold: -150, points: 10 }
+    ],
+    ratioApport: [
+        { threshold: 20, points: 10 },
+        { threshold: 30, points: 5 }
+    ],
+    grades: [
+        { threshold: 75, grade: 'A', motivation: "Projet très favorable. Excellent potentiel !" },
+        { threshold: 50, grade: 'B', motivation: "Projet mitigé. Analysez les possibilités d'optimisation." },
+        { threshold: 0, grade: 'C', motivation: "Projet non favorable. Le risque est élevé." }
+    ]
+};
