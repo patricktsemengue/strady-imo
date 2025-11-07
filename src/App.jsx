@@ -771,6 +771,8 @@ export default function App() {
         revenuCadastral: 1000,
         tensionLocative: 7, loyerEstime: 900, chargesMensuelles: 100, vacanceLocative: 8,
         quotite: 80,
+        enOrdreUrbanistique: false,
+        electriciteConforme: false,
     };
 
     const [data, setData] = React.useState(initialDataState);
@@ -1546,8 +1548,50 @@ const CookieBanner = ({ onAccept }) => (
                                 <div><label className="block text-sm font-medium">Adresse/ Ville / Commune <span className='text-red-400'>*</span></label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} required placeholder='Rue de Strady 1, 5000 Namur' className="mt-1 w-full p-2 border rounded-md" /></div>
                             </div>
 
+                            
+                            {/* --- Urbanisme et Électricité --- */}
+                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">En ordre urbanistique ?</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleDataChange('enOrdreUrbanistique', true)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.enOrdreUrbanistique ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}
+                                        >
+                                            Oui
+                                        </button>
+                                        <button
+                                            onClick={() => handleDataChange('enOrdreUrbanistique', false)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${!data.enOrdreUrbanistique ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}
+                                        >
+                                            Non
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Électricité conforme ?</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleDataChange('electriciteConforme', true)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.electriciteConforme ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}
+                                        >
+                                            Oui
+                                        </button>
+                                        <button
+                                            onClick={() => handleDataChange('electriciteConforme', false)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${!data.electriciteConforme ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}
+                                        >
+                                            Non
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             {/* --- NOTES --- */}
                             <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
+
+
                         </div>
 
                         {/* --- Section 2: Coûts & Financement --- */}
