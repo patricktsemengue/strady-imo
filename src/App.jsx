@@ -62,6 +62,9 @@ const SparklesIcon = () => (
 const AlertTriangleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle h-5 w-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
 );
+const EllipsisVerticalIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis-vertical h-6 w-6 text-gray-600"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+);
 const ChevronDownIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down ${className || ''}`}><path d="m6 9 6 6 6-6"/></svg>
 );
@@ -132,6 +135,7 @@ const SettingsPage = ({ onBack, maxAnalyses }) => {
 const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
+    const [openMenuId, setOpenMenuId] = React.useState(null);
     const emptySlotsCount = maxAnalyses > analyses.length ? maxAnalyses - analyses.length : 0;
     const emptySlots = Array.from({ length: emptySlotsCount });
 
@@ -154,6 +158,18 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
             return sortDirection === 'asc' ? comparison : -comparison;
         });
     }, [analyses, sortOrder, sortDirection]);
+
+    React.useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (openMenuId && !event.target.closest('.context-menu-container')) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, [openMenuId]);
 
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
@@ -182,14 +198,30 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
                             <h2 className="font-bold text-lg">{analysis.data.projectName}</h2>
                             <p className="text-sm text-gray-600">{analysis.data.ville}</p>
                             {analysis.result && (
-                                <div className={`mt-2 text-sm font-semibold p-2 rounded-md inline-block ${analysis.result.grade === 'A' ? 'bg-green-100 text-green-800' : analysis.result.grade === 'B' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                    Score: {analysis.result.grade} ({analysis.result.score}/100) - Renta. Net: {analysis.result.rendementNet}%
-                                </div>
+                                <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                    <div className={`p-2 rounded-md ${analysis.result.grade.startsWith('A') ? 'bg-green-100 text-green-800' : analysis.result.grade.startsWith('B') ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                        <div className="text-xs font-medium">Score</div><div className="font-bold">{analysis.result.grade}</div>
+                                    </div>
+                                    <div className="p-2 bg-gray-100 rounded-md"><div className="text-xs font-medium">Rend. Net</div><div className="font-bold">{analysis.result.rendementNet}%</div></div>
+                                    <div className="p-2 bg-gray-100 rounded-md"><div className="text-xs font-medium">Cash-Flow</div><div className="font-bold">{analysis.result.cashflowMensuel}€</div></div>
+                                    <div className="p-2 bg-gray-100 rounded-md"><div className="text-xs font-medium">CoC</div><div className="font-bold">{analysis.result.cashOnCash !== null && isFinite(analysis.result.cashOnCash) ? `${analysis.result.cashOnCash.toFixed(1)}%` : 'N/A'}</div></div>
+                                </div>                                
                             )}
                         </div>
-                        <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-                            <button onClick={() => onLoad(analysis.id)} className="flex-1 bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition">Charger</button>
-                            <button onClick={() => onDelete(analysis.id)} className="flex-1 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition">Supprimer</button>
+                        <div className="relative context-menu-container">
+                            <button onClick={() => setOpenMenuId(openMenuId === analysis.id ? null : analysis.id)} className="p-2 rounded-full hover:bg-gray-100">
+                                <EllipsisVerticalIcon />
+                            </button>
+                            {openMenuId === analysis.id && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border animate-fade-in-fast">
+                                    <button onClick={() => { onLoad(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                                        <HomeIcon /> Charger
+                                    </button>
+                                    <button onClick={() => { onDelete(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                        <TrashIcon /> Supprimer
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
