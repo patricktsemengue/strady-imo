@@ -53,8 +53,14 @@ const ClipboardListIcon = () => (
 const SaveIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
 );
-const BrainCircuitIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain-circuit"><path d="M12 5a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162" /><path d="M12 12a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162" /><path d="M12 19a3 3 0 1 0-5.993.119c.044.835.43 1.616.993 2.162m5.993-.119a3 3 0 1 1 5.993.119c-.044.835-.43 1.616-.993 2.162" /><path d="M14.5 4.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" /><path d="M9.5 4.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z" /><path d="M14.5 11.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" /><path d="M9.5 11.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z" /><path d="M14.5 18.5a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" /><path d="M9.5 18.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Z" /><path d="M20 12h-2" /><path d="M6 12H4" /><path d="m14 15.5-.5.8" /><path d="m10.5 16.3.5-.8" /><path d="m14 8.5-.5-.8" /><path d="m10.5 7.7.5.8" /></svg>
+const SparklesIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
+);
+const AlertTriangleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle h-5 w-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+);
+const ChevronDownIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down ${className || ''}`}><path d="m6 9 6 6 6-6"/></svg>
 );
 
 const QuestionMarkIcon = () => (
@@ -852,6 +858,8 @@ export default function App() {
     const [aiInput, setAiInput] = React.useState(''); // Pour le textarea (texte ou URL)
     const [aiPrompt, setAiPrompt] = React.useState(''); // Pour le bouton de prompt rapide cliqué
     const [showAiResponseActions, setShowAiResponseActions] = React.useState(false); // Pour afficher/cacher les boutons Sauvegarder/Ignorer
+    const [isApplyingAi, setIsApplyingAi] = React.useState(false); // Pour l'état de chargement du bouton "Appliquer"
+    const [isAiAssistantOpen, setIsAiAssistantOpen] = React.useState(false);
     // -----------------------------------------
 
     const [showCookieBanner, setShowCookieBanner] = React.useState(() => {
@@ -876,9 +884,12 @@ const CookieBanner = ({ onAccept }) => (
         setIsMetricModalOpen(true);
     };
 
-    const typeBienOptions = ['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre'];
-    const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
     const dureeOptions = [15, 20, 25, 30];
+
+    // Convertir les options en état pour les rendre modifiables
+    const [typeBienOptions, setTypeBienOptions] = React.useState(['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre']);
+    const [pebOptions, setPebOptions] = React.useState(['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C']);
+
 
     // --- ASSISTANT IA GÉNÉRAL (MODIFIÉ) ---
     const [geminiQuery, setGeminiQuery] = React.useState('');
@@ -1505,15 +1516,17 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     const handleGeneralQuery = () => {
-        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique. Ton rôle est d'analyser des annonces, des textes ou des questions et de fournir des réponses structurées. Si on te demande d'extraire des informations, présente-les clairement. Pour une annonce, voici les champs importants : Type de bien, score PEB, Surface, Revenu Cadastral, Adresse, Conformité électrique, Conformité urbanistique, conformité locative, travaux à prévoir, travaux votés en AG, travaux de mise en conformité, et autres informations pertinentes pour un investisseur. Si une information n'est pas présente, indique "Non spécifié". Si la question sort du cadre de l'immobilier belge, décline poliment.`;
+        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique. Ton rôle est d'analyser des annonces, des textes ou des questions et de fournir des réponses structurées. Si on te demande d'extraire des informations, présente-les de façon claire, cohérente et concise. Pour une annonce, voici les champs importants : Type de bien, score PEB, Surface, Revenu Cadastral, Prix, Adresse, Conformité électrique, Conformité urbanistique, conformité locative, travaux à prévoir, travaux votés en AG, travaux de mise en conformité, et autres informations pertinentes pour un investisseur. Si une information n'est pas présente, indique "Non spécifié". Si la question sort du cadre de l'immobilier belge, décline poliment en commençant ta réponse par "Je suis désolé".`;
         
         // Construit le prompt final
         const finalPrompt = `${aiPrompt}\n\nVoici le contexte à analyser (texte ou URL) :\n\n${aiInput}`;
         
         callGeminiAPI(systemPrompt, finalPrompt, setIsGeminiLoading, setGeminiError, (response) => {
             setGeminiResponse(response);
-            if (response) {
-                setShowAiResponseActions(true); // Affiche les boutons après la réponse
+            if (response) { 
+                // Vérifie si la réponse est un refus poli avant d'afficher les boutons
+                const isOutOfScopeResponse = /désolé|sort de mon cadre|ma spécialité|mon rôle est limité|sort du cadre de l'immobilier/i.test(response);
+                setShowAiResponseActions(!isOutOfScopeResponse);
             }
         });
     };
@@ -1527,6 +1540,81 @@ const CookieBanner = ({ onAccept }) => (
 
     const handleIgnoreAiResponse = () => {
         setShowAiResponseActions(false); // Cache simplement les boutons
+    };
+
+    const handleApplyAiResponse = () => {
+        setIsApplyingAi(true);
+
+        // Un léger délai pour s'assurer que l'état de chargement est visible
+        setTimeout(() => {
+            const responseText = geminiResponse;
+            let updatedData = {};
+
+            const extract = (regex) => {
+                const match = responseText.match(regex);
+                return match ? match[1].trim() : null;
+            };
+
+            const typeBien = extract(/\*\*Type de bien:\*\*\s*(.*)/i);
+            if (typeBien && !typeBienOptions.includes(typeBien)) {
+                setTypeBienOptions(prev => [...prev, typeBien]);
+            }
+            if (typeBien) updatedData.typeBien = typeBien;
+
+            const peb = extract(/\*\*Score PEB:\*\*\s*([A-G]\+?)/i);
+            if (peb) updatedData.peb = peb;
+
+            const surface = extract(/\*\*Surface:\*\*\s*(\d+)/i);
+            if (surface) updatedData.surface = parseInt(surface, 10);
+
+            const revenuCadastral = extract(/\*\*Revenu Cadastral:\*\*\s*([\d\s.,]+)/i);
+            if (revenuCadastral) updatedData.revenuCadastral = parseInt(revenuCadastral.replace(/[.\s€]/g, ''), 10);
+
+            const prixAchatMatch = extract(/\*\*Prix:\*\*.*?((\d{1,3}(?:[.\s]?\d{3})*))[,€]?/i);
+            if (prixAchatMatch) updatedData.prixAchat = parseInt(prixAchatMatch.replace(/[.\s]/g, ''), 10);
+
+            const adresse = extract(/\*\*Adresse:\*\*\s*(.*)/i);
+            if (adresse) updatedData.ville = adresse;
+
+            const electricite = extract(/\*\*Conformité électrique:\*\*\s*(.*)/i);
+            if (electricite) updatedData.electriciteConforme = !/non\s*conforme/i.test(electricite);
+
+            const urbanisme = extract(/\*\*Conformité urbanistique:\*\*\s*(.*)/i);
+            if (urbanisme) updatedData.enOrdreUrbanistique = !/non\s*conforme|demande\s*en\s*cours/i.test(urbanisme);
+
+            const loyer = extract(/Revenu locatif actuel\s*:\s*([\d.,]+)€/i);
+            if (loyer) updatedData.loyerEstime = parseInt(loyer.replace(/[.,\s]/g, ''), 10);
+
+            // --- NOUVELLE LOGIQUE : EXTRACTION DES TAUX D'INTÉRÊT ---
+            // Priorité 1: Chercher le taux pour 25 ans par défaut.
+            let tauxMatch = responseText.match(/Taux(?:.*?)sur\s*25\s*ans\s*:\s*([\d,.]+)%/i);
+            
+            if (tauxMatch) {
+                // Taux pour 25 ans trouvé, on l'applique et on met à jour la durée.
+                const tauxExtrait = parseFloat(tauxMatch[1].replace(',', '.'));
+                if (!isNaN(tauxExtrait)) {
+                    updatedData.tauxCredit = tauxExtrait;
+                    updatedData.dureeCredit = 25; // Mettre à jour la durée pour correspondre
+                }
+            } else {
+                // Priorité 2 (fallback): Chercher le taux pour la durée actuelle du formulaire.
+                const currentDuree = data.dureeCredit;
+                tauxMatch = responseText.match(new RegExp(`Taux(?:.*?)sur\\s*${currentDuree}\\s*ans\\s*:\\s*([\\d,.]+)%`, "i"));
+                if (tauxMatch) {
+                    const tauxExtrait = parseFloat(tauxMatch[1].replace(',', '.'));
+                    if (!isNaN(tauxExtrait)) {
+                        updatedData.tauxCredit = tauxExtrait;
+                    }
+                }
+            }
+
+            setData(prev => ({ ...prev, ...updatedData }));
+
+            setShowAiResponseActions(false);
+            setNotification({ msg: 'Les informations ont été appliquées au formulaire !', type: 'success' });
+            setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+            setIsApplyingAi(false);
+        }, 100);
     };
 
     // Se déclenche quand l'utilisateur clique DANS un champ
@@ -1670,8 +1758,102 @@ const CookieBanner = ({ onAccept }) => (
                             {/* --- NOTES --- */}
                             <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
 
-
                         </div>
+
+                        {/* ---  Assistant IA Général (Déplacé et modifiable) --- */}
+                        {user && (
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)}>
+                                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <SparklesIcon /> Assistant Immobilier IA
+                                </h2>
+                                <ChevronDownIcon className={`transition-transform ${isAiAssistantOpen ? 'rotate-180' : ''}`} />
+                            </div>
+                            
+                            {isAiAssistantOpen && (
+                                <div className="mt-4 pt-4 border-t animate-fade-in">
+                                    <p className="text-sm text-gray-500 mb-3">Collez le texte d'une annonce ou une URL, choisissez une action, puis interrogez l'IA.</p>
+                                                    
+                                    <div className="space-y-4">
+                                        <textarea
+                                            value={aiInput}
+                                            onChange={(e) => setAiInput(e.target.value)}
+                                            rows="5"
+                                            placeholder="Collez un texte, une URL..."
+                                            className="w-full p-2 border rounded-md"
+                                        />
+
+                                        <div className="mt-4">
+                                        {prePromptConfig.map((group) => (
+                                            <div key={group.category} className="mb-3">
+                                            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">{group.category}</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {group.prompts.map((promptText) => (
+                                                <button
+                                                    key={promptText}
+                                                    onClick={() => setAiPrompt(promptText)}
+                                                    className={`text-sm py-1 px-3 rounded-full transition border-2 ${aiPrompt === promptText ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-800 border-gray-100 hover:border-gray-300'}`}
+                                                >
+                                                    {promptText}
+                                                </button>
+                                                ))}
+                                            </div>
+                                            </div>
+                                        ))}
+                                        </div>
+
+                                        <button
+                                            onClick={handleGeneralQuery}
+                                            disabled={isGeminiLoading || !aiInput || !aiPrompt}
+                                            className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-purple-300"
+                                        >
+                                            {isGeminiLoading ? 'Recherche...' : "Interroger l'IA"}
+                                        </button>
+                                    </div>
+
+                                    {geminiError && !isGeminiLoading && <p className="text-red-500 text-sm mt-2">{geminiError}</p>}
+                                    {isGeminiLoading && <div className="text-center p-4 text-sm text-gray-600">L'IA recherche la meilleure réponse...</div>}
+                                
+                                    {geminiResponse && (
+                                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                                            <h3 className="font-semibold mb-2 text-gray-800">Réponse de l'assistant :</h3>
+                                            <div className="text-gray-700 whitespace-pre-wrap prose prose-sm max-w-none mb-4">{geminiResponse}</div>
+                                            <div className="mt-4 flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                                                <div className="flex-shrink-0 text-yellow-500 pt-0.5">
+                                                    <AlertTriangleIcon />
+                                                </div>
+                                                <p className="text-xs text-yellow-800"><strong>Avertissement :</strong> L'assistant IA peut commettre des erreurs. Pensez à toujours vérifier les informations importantes par vous-même.</p>
+                                            </div>
+                                            {showAiResponseActions && (
+                                                (() => {
+                                                    // Vérifier si au moins une donnée pertinente peut être extraite
+                                                    const isPriceExtractable = geminiResponse.match(/\*\*Prix:\*\*.*?((\d{1,3}(?:[.\s]?\d{3})*))/i);
+                                                    const isSurfaceExtractable = geminiResponse.match(/\*\*Surface:\*\*\s*(\d+)/i);
+                                                    const isRateExtractable = geminiResponse.match(/Taux(?:.*?)sur\s*\d{1,2}\s*ans\s*:\s*([\d,.]+)%/i);
+                                                    const canApply = isPriceExtractable || isSurfaceExtractable || isRateExtractable;
+
+                                                return (
+                                                <div className="flex justify-end gap-3 border-t pt-3">
+                                                    <button onClick={handleIgnoreAiResponse} className="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Ignorer</button>
+                                                    <button 
+                                                        onClick={handleApplyAiResponse} 
+                                                        disabled={isApplyingAi || !canApply}
+                                                        className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed"
+                                                        title={!canApply ? "Aucune donnée pertinente (prix, surface, taux) n'a été trouvée." : "Appliquer les données au formulaire"}
+                                                    >
+                                                        {isApplyingAi ? 'Application...' : 'Appliquer au formulaire'}
+                                                    </button>
+                                                    <button onClick={handleSaveAiResponse} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Sauvegarder dans les notes</button>
+                                                </div>
+                                                )
+                                            })()
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        )}
 
                         {/* --- Section 2: Coûts & Financement --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
@@ -1903,69 +2085,6 @@ const CookieBanner = ({ onAccept }) => (
                         ) : (
                             <div className="bg-transparent p-6 rounded-lg text-center text-gray-600">
                             </div>
-                        )}
-
-                        {/* ---  Assistant IA Général --- */}
-                        {user && (
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><BrainCircuitIcon /> Assistant Immobilier IA</h2>
-                            <p className="text-sm text-gray-500 mb-3">Collez le texte d'une annonce ou une URL, choisissez une action, puis interrogez l'IA.</p>
-                            
-                            {/* --- NOUVELLE INTERFACE IA --- */}
-                            <div className="space-y-4">
-                                <textarea
-                                    value={aiInput}
-                                    onChange={(e) => setAiInput(e.target.value)}
-                                    rows="5"
-                                    placeholder="Collez un texte, une URL..."
-                                    className="w-full p-2 border rounded-md"
-                                />
-
-                                <div className="mt-4">
-                                  {prePromptConfig.map((group) => (
-                                    <div key={group.category} className="mb-3">
-                                      <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">{group.category}</h4>
-                                      <div className="flex flex-wrap gap-2">
-                                        {group.prompts.map((promptText) => (
-                                          <button
-                                            key={promptText}
-                                            onClick={() => setAiPrompt(promptText)}
-                                            className={`text-sm py-1 px-3 rounded-full transition border-2 ${aiPrompt === promptText ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-800 border-gray-100 hover:border-gray-300'}`}
-                                          >
-                                            {promptText}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                <button
-                                    onClick={handleGeneralQuery}
-                                    disabled={isGeminiLoading || !aiInput || !aiPrompt}
-                                    className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-purple-300"
-                                >
-                                    {isGeminiLoading ? 'Recherche...' : "Interroger l'IA"}
-                                </button>
-                            </div>
-                            {/* --- FIN NOUVELLE INTERFACE --- */}
-
-                            {geminiError && !isGeminiLoading && <p className="text-red-500 text-sm mt-2">{geminiError}</p>}
-                            {isGeminiLoading && <div className="text-center p-4 text-sm text-gray-600">L'IA recherche la meilleure réponse...</div>}
-                         
-                            {geminiResponse && (
-                                <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-                                    <h3 className="font-semibold mb-2 text-gray-800">Réponse de l'assistant :</h3>
-                                    <div className="text-gray-700 whitespace-pre-wrap prose prose-sm max-w-none mb-4">{geminiResponse}</div>
-                                    {showAiResponseActions && (
-                                        <div className="flex justify-end gap-3 border-t pt-3">
-                                            <button onClick={handleIgnoreAiResponse} className="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-400">Ignorer</button>
-                                            <button onClick={handleSaveAiResponse} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Sauvegarder dans les notes</button>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
                         )}
                     </div>
                 );
