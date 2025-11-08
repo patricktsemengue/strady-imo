@@ -708,10 +708,15 @@ const WelcomePage = ({ onStart, onNavigate, user }) => (
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
             <Logo />
             <h1 className="text-3xl font-bold text-gray-800 mt-6 mb-2">
-                Bienvenue sur Strady.imo !
+                {user?.user_metadata?.prenom
+                    ? `Hey ${user.user_metadata.prenom} !`
+                    : "Bienvenue sur Strady.imo !"}
             </h1>
             <p className="text-lg text-gray-600 mb-6">
-                Votre copilote pour l'investissement locatif en Belgique.
+                {user?.user_metadata?.prenom
+                    ? "Ravi de vous revoir. Prêt à analyser votre prochain investissement ?"
+                    : "Votre copilote pour l'investissement locatif en Belgique."
+                }
             </p>
             <div className="text-left space-y-3 mb-8">
                 <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Analysez</strong> la rentabilité d'un bien (score, rendement, cash-flow).</span></p>
@@ -1729,7 +1734,6 @@ const CookieBanner = ({ onAccept }) => (
 
                             {/* --- NOTES --- */}
                             <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
-
                         </div>
 
                         {/* ---  Assistant IA Général (Déplacé et modifiable) --- */}
@@ -2064,7 +2068,7 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     if (showWelcome) {
-        return <WelcomePage onStart={handleStart} onNavigate={setPage}/>;
+        return <WelcomePage onStart={handleStart} onNavigate={setPage} user={user} />;
     }
 
     return (
