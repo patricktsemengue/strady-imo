@@ -132,12 +132,16 @@ const SettingsPage = ({ onBack, maxAnalyses }) => {
 
 
 // --- Composant pour la page Dashboard ---
-const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
+const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAnalyses }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
     const emptySlotsCount = maxAnalyses > analyses.length ? maxAnalyses - analyses.length : 0;
     const emptySlots = Array.from({ length: emptySlotsCount });
+
+    // --- États pour le renommage ---
+    const [renamingId, setRenamingId] = React.useState(null);
+    const [renameValue, setRenameValue] = React.useState('');
 
     const sortedAnalyses = React.useMemo(() => {
         return [...analyses].sort((a, b) => {
@@ -171,6 +175,24 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
         };
     }, [openMenuId]);
 
+    const handleStartRename = (analysis) => {
+        setRenamingId(analysis.id);
+        setRenameValue(analysis.project_name || analysis.data.projectName);
+        setOpenMenuId(null);
+    };
+
+    const handleConfirmRename = () => {
+        if (renamingId && renameValue.trim()) {
+            onUpdateName(renamingId, renameValue.trim());
+        }
+        setRenamingId(null);
+    };
+
+    const handleRenameKeyDown = (e) => {
+        if (e.key === 'Enter') handleConfirmRename();
+        if (e.key === 'Escape') setRenamingId(null);
+    };
+
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Mes analyses</h1>
@@ -195,7 +217,19 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
                 {sortedAnalyses.map(analysis => (
                     <div key={analysis.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex-grow">
-                            <h2 className="font-bold text-lg">{analysis.data.projectName}</h2>
+                            {renamingId === analysis.id ? (
+                                <input
+                                    type="text"
+                                    value={renameValue}
+                                    onChange={(e) => setRenameValue(e.target.value)}
+                                    onBlur={handleConfirmRename}
+                                    onKeyDown={handleRenameKeyDown}
+                                    className="font-bold text-lg p-1 border rounded-md w-full"
+                                    autoFocus
+                                />
+                            ) : (
+                                <h2 className="font-bold text-lg">{analysis.project_name || analysis.data.projectName}</h2>
+                            )}
                             <p className="text-sm text-gray-600">{analysis.data.ville}</p>
                             {analysis.result && (
                                 <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
@@ -216,6 +250,9 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onBack, maxAnalyses }) => {
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border animate-fade-in-fast">
                                     <button onClick={() => { onLoad(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                                         <HomeIcon /> Charger
+                                    </button>
+                                    <button onClick={() => handleStartRename(analysis)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> Renommer
                                     </button>
                                     <button onClick={() => { onDelete(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
                                         <TrashIcon /> Supprimer
@@ -1418,6 +1455,35 @@ const CookieBanner = ({ onAccept }) => (
         setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
     };
 
+    const handleUpdateAnalysisName = async (id, newName) => {
+        // Vérifier si le nom existe déjà (en excluant l'analyse actuelle)
+        if (analyses.some(a => a.id !== id && (a.project_name || a.data.projectName) === newName)) {
+            setNotification({ msg: 'Ce nom de projet existe déjà.', type: 'error' });
+            setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+            return;
+        }
+
+        const analysisToUpdate = analyses.find(a => a.id === id);
+        if (!analysisToUpdate) return;
+
+        // Mettre à jour la propriété 'projectName' dans l'objet 'data'
+        const updatedData = { ...analysisToUpdate.data, projectName: newName };
+
+        if (user) {
+            const { error } = await supabase
+                .from('analyses')
+                .update({ project_name: newName, data: updatedData })
+                .eq('id', id);
+            if (error) { /* Gérer l'erreur */ return; }
+        } else {
+            const updatedAnalyses = analyses.map(a => a.id === id ? { ...a, project_name: newName, data: updatedData } : a);
+            localStorage.setItem('immoAnalyses', JSON.stringify(updatedAnalyses));
+        }
+
+        // Mettre à jour l'état local pour un rafraîchissement immédiat
+        setAnalyses(analyses.map(a => a.id === id ? { ...a, project_name: newName, data: updatedData } : a));
+    };
+
     // Fonction pour supprimer une analyse (locale ou cloud)
     const deleteAnalysis = (id) => {
         const analysis = analyses.find(a => a.id === id);
@@ -1626,7 +1692,7 @@ const CookieBanner = ({ onAccept }) => (
             case 'user-manual': return <UserManualPage onBack={() => setPage('aide')} />;
             case 'knowledge': return <KnowledgePage onBack={() => setPage('aide')} />;
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
-            case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
+            case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
             case 'account': return <AccountPage onBack={() => setPage('main')} />;
             case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
