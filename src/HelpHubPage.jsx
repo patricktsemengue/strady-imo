@@ -19,6 +19,14 @@ const HelpHubPage = ({ onNavigate }) => (
                     Plongez dans notre guide complet sur l'investissement immobilier en Belgique, de l'étude de marché à la fiscalité.
                 </p>
             </div>
+
+            {/* Carte pour le Glossaire */}
+            <div onClick={() => onNavigate('glossary')} className="p-6 border rounded-lg hover:shadow-lg hover:border-purple-400 transition cursor-pointer">
+                <h2 className="text-xl font-semibold text-purple-700 mb-2">Glossaire des Termes</h2>
+                <p className="text-gray-600">
+                    Revenu cadastral, quotité, PEB... Retrouvez la définition des termes clés de l'immobilier pour ne plus jamais être perdu.
+                </p>
+            </div>
         </div>
     </div>
 );

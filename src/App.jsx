@@ -10,6 +10,7 @@ import TermsOfServicePage from './TermsOfServicePage'; //
 import HelpHubPage from './HelpHubPage';
 import UserManualPage from './UserManualPage';
 import KnowledgePage from './KnowledgePage';
+import GlossaryPage from './GlossaryPage';
 import ConfirmationModal from './ConfirmationModal';
 
 const StarIcon = () => (
@@ -1691,6 +1692,7 @@ const CookieBanner = ({ onAccept }) => (
             case 'aide': return <HelpHubPage onNavigate={setPage} />;
             case 'user-manual': return <UserManualPage onBack={() => setPage('aide')} />;
             case 'knowledge': return <KnowledgePage onBack={() => setPage('aide')} />;
+            case 'glossary': return <GlossaryPage onBack={() => setPage('aide')} />;
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
