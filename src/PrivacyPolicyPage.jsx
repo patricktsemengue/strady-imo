@@ -1,12 +1,12 @@
 import React from 'react';
+import { legalConfig } from './legalConfig';
 
 const PrivacyPolicyPage = ({ onBack }) => (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Politique de Confidentialité</h1>
         <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour</button>
         <div className="prose max-w-none text-gray-700 space-y-4">
-            <p>Dernière mise à jour : 3 novembre 2025</p>
-            
+            <p>Dernière mise à jour : {legalConfig.lastUpdate}</p>
             <h2 className="text-xl font-semibold">1. Introduction</h2>
             <p>Bienvenue sur Strady.imo. Nous nous engageons à protéger votre vie privée. Cette politique de confidentialité explique comment nous collectons, utilisons, divulguons et protégeons vos informations.</p>
 
@@ -42,7 +42,7 @@ const PrivacyPolicyPage = ({ onBack }) => (
             <p>Nous n'utilisons pas de cookies de suivi ou de publicité. Nous utilisons uniquement le stockage local (LocalStorage) qui est essentiel au bon fonctionnement de l'application (par exemple, pour gérer votre authentification). Aucune information personnelle n'est stockée de manière non sécurisée.</p>
 
             <h2 className="text-xl font-semibold">7. Contact</h2>
-            <p>Pour toute question relative à cette politique, veuillez nous contacter à [VOTRE ADRESSE EMAIL].</p>
+            <p>Pour toute question relative à cette politique, veuillez nous contacter à {legalConfig.contactEmail}.</p>
         </div>
     </div>
 );
