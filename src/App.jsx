@@ -66,6 +66,10 @@ const AlertTriangleIcon = () => (
 const EllipsisVerticalIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis-vertical h-6 w-6 text-gray-600"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
 );
+const PencilIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+);
+
 const ChevronDownIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down ${className || ''}`}><path d="m6 9 6 6 6-6"/></svg>
 );
@@ -1725,7 +1729,19 @@ const CookieBanner = ({ onAccept }) => (
                         {/* --- Section 1: Détails du Bien --- */}
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Bien immobilier</h2>
-
+                            
+                            {/* --- Indicateur d'état (Nouveau / Édition) --- */}
+                            {currentAnalysisId ? (
+                                <div className="mb-4 p-2 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2 text-sm text-purple-800">
+                                    <PencilIcon />
+                                    <span>Édition de : <strong>{data.projectName}</strong></span>
+                                </div>
+                            ) : (
+                                <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-800">
+                                    <PlusCircleIcon />
+                                    <span>Nouvelle Analyse</span>
+                                </div>
+                            )}
                             
 
                             {/* --- TYPE DE BIEN (BOUTONS) --- */}

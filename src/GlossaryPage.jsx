@@ -83,14 +83,3 @@ const GlossaryPage = ({ onBack }) => {
 };
 
 export default GlossaryPage;
-                    <div key={item.term} className="border-b pb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">{item.term}</h3>
-                        <p className="text-gray-600 mt-1">{item.definition}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-export default GlossaryPage;
