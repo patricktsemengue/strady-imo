@@ -848,6 +848,12 @@ export default function App() {
     const [isMetricModalOpen, setIsMetricModalOpen] = React.useState(false);
     const [selectedMetric, setSelectedMetric] = React.useState(null);
 
+    // --- NOUVEAUX ÉTATS POUR L'ASSISTANT IA ---
+    const [aiInput, setAiInput] = React.useState(''); // Pour le textarea (texte ou URL)
+    const [aiPrompt, setAiPrompt] = React.useState(''); // Pour le bouton de prompt rapide cliqué
+    const [showAiResponseActions, setShowAiResponseActions] = React.useState(false); // Pour afficher/cacher les boutons Sauvegarder/Ignorer
+    // -----------------------------------------
+
     const [showCookieBanner, setShowCookieBanner] = React.useState(() => {
         return !localStorage.getItem('cookie_consent');
     });
@@ -874,7 +880,7 @@ const CookieBanner = ({ onAccept }) => (
     const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
     const dureeOptions = [15, 20, 25, 30];
 
-    // ASSISTANT IA GÉNÉRAL
+    // --- ASSISTANT IA GÉNÉRAL (MODIFIÉ) ---
     const [geminiQuery, setGeminiQuery] = React.useState('');
     const [geminiResponse, setGeminiResponse] = React.useState('');
     const [isGeminiLoading, setIsGeminiLoading] = React.useState(false);
@@ -1499,10 +1505,29 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     const handleGeneralQuery = () => {
-        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique (Wallonie, Flandre, Bruxelles). Tu peux répondre à des questions sur le droit, la fiscalité, les taxes, la location, le marché, le financement, les travaux, les permis d'urbanisme, l'architecture, la décoration, et les garanties. Fournis des réponses claires, structurées et factuelles. Si une information est spécifique à une région, précise-le. Ton rôle est strictement limité à ce domaine. Si un utilisateur te pose une question qui sort de ce cadre (par exemple, des recommandations de films, de restaurants, ou des questions d'ordre général non liées à l'immobilier), tu dois décliner poliment la demande en rappelant ton champ d'expertise. La seule exception est si la question sur un lieu (comme un restaurant) est posée dans le but d'évaluer la proximité d'un bien immobilier.`;
-        callGeminiAPI(systemPrompt, geminiQuery, setIsGeminiLoading, setGeminiError, setGeminiResponse);
+        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique. Ton rôle est d'analyser des annonces, des textes ou des questions et de fournir des réponses structurées. Si on te demande d'extraire des informations, présente-les clairement. Pour une annonce, voici les champs importants : Type de bien, score PEB, Surface, Revenu Cadastral, Adresse, Conformité électrique, Conformité urbanistique, conformité locative, travaux à prévoir, travaux votés en AG, travaux de mise en conformité, et autres informations pertinentes pour un investisseur. Si une information n'est pas présente, indique "Non spécifié". Si la question sort du cadre de l'immobilier belge, décline poliment.`;
+        
+        // Construit le prompt final
+        const finalPrompt = `${aiPrompt}\n\nVoici le contexte à analyser (texte ou URL) :\n\n${aiInput}`;
+        
+        callGeminiAPI(systemPrompt, finalPrompt, setIsGeminiLoading, setGeminiError, (response) => {
+            setGeminiResponse(response);
+            if (response) {
+                setShowAiResponseActions(true); // Affiche les boutons après la réponse
+            }
+        });
     };
 
+    const handleSaveAiResponse = () => {
+        setData(prev => ({ ...prev, descriptionBien: (prev.descriptionBien || '') + '\n\n--- Réponse IA ---\n' + geminiResponse }));
+        setShowAiResponseActions(false); // Cache les boutons
+        setNotification({ msg: 'Réponse IA ajoutée aux notes !', type: 'success' });
+        setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+    };
+
+    const handleIgnoreAiResponse = () => {
+        setShowAiResponseActions(false); // Cache simplement les boutons
+    };
 
     // Se déclenche quand l'utilisateur clique DANS un champ
     const handleNumericFocus = (e) => {
@@ -1884,52 +1909,60 @@ const CookieBanner = ({ onAccept }) => (
                         {user && (
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><BrainCircuitIcon /> Assistant Immobilier IA</h2>
-                            <p className="text-sm text-gray-500 mb-3">Posez une question sur l'immobilier en Belgique (droit, fiscalité, marché, travaux, etc.).</p>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <input
-                                    type="text"
-                                    value={geminiQuery}
-                                    onChange={(e) => setGeminiQuery(e.target.value)}
-                                    placeholder="Ex: Quelles sont les conditions pour le taux de TVA à 6% sur les rénovations ?"
-                                    className="flex-grow p-2 border rounded-md"
+                            <p className="text-sm text-gray-500 mb-3">Collez le texte d'une annonce ou une URL, choisissez une action, puis interrogez l'IA.</p>
+                            
+                            {/* --- NOUVELLE INTERFACE IA --- */}
+                            <div className="space-y-4">
+                                <textarea
+                                    value={aiInput}
+                                    onChange={(e) => setAiInput(e.target.value)}
+                                    rows="5"
+                                    placeholder="Collez un texte, une URL..."
+                                    className="w-full p-2 border rounded-md"
                                 />
+
+                                <div className="mt-4">
+                                  {prePromptConfig.map((group) => (
+                                    <div key={group.category} className="mb-3">
+                                      <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">{group.category}</h4>
+                                      <div className="flex flex-wrap gap-2">
+                                        {group.prompts.map((promptText) => (
+                                          <button
+                                            key={promptText}
+                                            onClick={() => setAiPrompt(promptText)}
+                                            className={`text-sm py-1 px-3 rounded-full transition border-2 ${aiPrompt === promptText ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-800 border-gray-100 hover:border-gray-300'}`}
+                                          >
+                                            {promptText}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
                                 <button
                                     onClick={handleGeneralQuery}
-                                    disabled={isGeminiLoading}
+                                    disabled={isGeminiLoading || !aiInput || !aiPrompt}
                                     className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-purple-300"
                                 >
-                                    {isGeminiLoading ? 'Recherche...' : 'Interroger'}
+                                    {isGeminiLoading ? 'Recherche...' : "Interroger l'IA"}
                                 </button>
                             </div>
-                            
-                            {/* --- NOUVELLE SECTION: BOUTONS PRE-PROMPTS --- */}
-                            <div className="mt-4">
-                              {prePromptConfig.map((group) => (
-                                <div key={group.category} className="mb-3">
-                                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">{group.category}</h4>
-                                  <div className="flex flex-wrap gap-2">
-                                    {group.prompts.map((prompt) => (
-                                      <button
-                                        key={prompt}
-                                        onClick={() => setGeminiQuery(prompt)}
-                                        className="text-sm bg-gray-100 text-gray-800 py-1 px-3 rounded-full hover:bg-gray-200 transition"
-                                      >
-                                        {prompt}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            {/* --- FIN NOUVELLE SECTION --- */}
-                            
+                            {/* --- FIN NOUVELLE INTERFACE --- */}
+
                             {geminiError && !isGeminiLoading && <p className="text-red-500 text-sm mt-2">{geminiError}</p>}
                             {isGeminiLoading && <div className="text-center p-4 text-sm text-gray-600">L'IA recherche la meilleure réponse...</div>}
                          
                             {geminiResponse && (
                                 <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
                                     <h3 className="font-semibold mb-2 text-gray-800">Réponse de l'assistant :</h3>
-                                    <div className="text-gray-700 whitespace-pre-wrap prose prose-sm max-w-none">{geminiResponse}</div>
+                                    <div className="text-gray-700 whitespace-pre-wrap prose prose-sm max-w-none mb-4">{geminiResponse}</div>
+                                    {showAiResponseActions && (
+                                        <div className="flex justify-end gap-3 border-t pt-3">
+                                            <button onClick={handleIgnoreAiResponse} className="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-400">Ignorer</button>
+                                            <button onClick={handleSaveAiResponse} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Sauvegarder dans les notes</button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
