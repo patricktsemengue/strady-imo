@@ -29,6 +29,45 @@ const DataRow = ({ label, value, unit = '', isHighlighted = false }) => (
     </div>
 );
 
+const RevenueExpenseChart = ({ revenue, expenses }) => {
+    const total = Math.max(revenue, expenses, 1); // Avoid division by zero
+    const revenuePercentage = (revenue / total) * 100;
+    const expensePercentage = (expenses / total) * 100;
+
+    return (
+        <div className="space-y-3">
+            {/* Barre des Revenus */}
+            <div>
+                <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-green-700">Revenus Mensuels</span>
+                    <span className="font-bold text-green-700">{revenue.toLocaleString('fr-BE')} €</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-5">
+                    <div
+                        className="bg-green-500 h-5 rounded-full"
+                        style={{ width: `${revenuePercentage}%` }}
+                    ></div>
+                </div>
+            </div>
+
+            {/* Barre des Dépenses */}
+            <div>
+                <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-red-700">Dépenses Mensuelles Totales</span>
+                    <span className="font-bold text-red-700">{expenses.toLocaleString('fr-BE')} €</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-5">
+                    <div
+                        className="bg-red-500 h-5 rounded-full"
+                        style={{ width: `${expensePercentage}%` }}
+                    ></div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const ResultCard = ({ label, value, unit = '', grade = 'C' }) => {
     const gradeColor =
         grade.startsWith('A') ? 'bg-green-100 text-green-800' :
@@ -61,6 +100,16 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
 
     const { data, result } = analysis;
 
+    // Mettre à jour le titre du document
+    React.useEffect(() => {
+        const originalTitle = document.title;
+        document.title = `Rapport: ${data.projectName}`;
+
+        // Revenir au titre original quand le composant est démonté
+        return () => {
+            document.title = originalTitle;
+        };
+    }, [data.projectName]);
     const handlePrint = () => {
         window.print();
     };
@@ -88,9 +137,9 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
             </div>
             <div className="hidden print-block mb-6 border-b pb-4">
                 <Logo />
-                <h1 className="text-3xl font-bold text-gray-800 mt-4">{data.projectName}</h1>
-                <p className="text-lg text-gray-600">{data.ville}</p>
-                <p className="text-sm text-gray-500">Rapport généré le {new Date().toLocaleDateString('fr-BE')}</p>
+                <h1 className="text-3xl font-bold text-gray-800 mt-6">{data.projectName}</h1>
+                <p className="text-xl text-blue-600 font-semibold mt-1">Rapport d'Analyse - {data.ville}</p>
+                <p className="text-sm text-gray-500 mt-2">Rapport généré le {new Date().toLocaleDateString('fr-BE')}</p>
             </div>
 
             {/* --- Section Résultats --- */}
@@ -105,45 +154,54 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
                 </Section>
             )}
 
+            {result && (
+                <Section title="Visualisation du Cash-Flow Mensuel" icon={<BriefcaseIcon />}>
+                    <RevenueExpenseChart
+                        revenue={data.loyerEstime || 0}
+                        expenses={(parseFloat(result.mensualiteCredit) || 0) + (data.chargesMensuelles || 0)}
+                    />
+                </Section>
+            )}
+
             <Section title="Structure de l'Investissement et du Financement" icon={<EuroIcon />}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     {/* --- Détail de l'investissement --- */}
                     <div className="bg-gray-50 p-4 rounded-lg border">
-                        <h3 className="font-semibold text-lg mb-3">Détail de l'Investissement</h3>
+                        <h3 className="font-semibold text-lg mb-3">Structure des Coûts</h3>
                         <DataRow label="Prix d'achat" value={data.prixAchat} unit="€" />
                         <DataRow label="Coût des travaux" value={data.coutTravaux} unit="€" />
                         <DataRow label="Frais d'acquisition" value={data.fraisAcquisition} unit="€" />
                         <DataRow label="Frais annexes" value={data.fraisAnnexe} unit="€" />
                         {data.travauxDetail && data.travauxDetail.length > 0 && (
-                            <div className="pl-4 mt-2 text-sm text-gray-600 space-y-1">
+                            <div className="pl-4 mt-2 text-sm text-gray-600 space-y-1 border-t pt-2">
                                 {data.travauxDetail.map(travau => (
                                     <div key={travau.id} className="flex justify-between items-center py-1 border-b border-gray-200 last:border-b-0">
                                         <span>
                                             - {travau.object}
                                             {travau.type && <span className="text-gray-500 italic"> ({travau.type})</span>}
                                         </span>
-                                        <span className="font-mono">{travau.cost.toLocaleString('fr-BE')} €</span>
+                                        <span className="font-mono">{travau.cost?.toLocaleString('fr-BE')} €</span>
                                     </div>
                                 ))}
                             </div>
                         )}
                         <div className="flex justify-between items-center py-2 border-t-2 mt-2 font-bold">
-                            <span>Coût Total de l'Investissement</span>
+                            <span>Coût Total du Projet</span>
                             <span>{finances.coutTotal.toLocaleString('fr-BE')} €</span>
                         </div>
                     </div>
 
                     {/* --- Structure du Financement --- */}
                     <div className="bg-gray-50 p-4 rounded-lg border">
-                        <h3 className="font-semibold text-lg mb-3">Structure du Financement</h3>
+                        <h3 className="font-semibold text-lg mb-3">Montage Financier</h3>
+                        <DataRow label="Coût Total du Projet" value={finances.coutTotal} unit="€" />
                         <DataRow label="Apport personnel" value={data.apport} unit="€" />
                         <div className="flex justify-between items-center py-2 border-t-2 mt-2 font-bold text-blue-600">
-                            <span>Montant du Financement</span>
+                            <span>Besoin de Financement</span>
                             <span>{finances.montantAFinancer.toLocaleString('fr-BE')} €</span>
                         </div>
-                        <DataRow label="Taux du crédit" value={data.tauxCredit} unit="%" />
-                        <DataRow label="Durée du crédit" value={data.dureeCredit} unit="ans" />
-                        <DataRow label="Mensualité du crédit" value={finances.mensualiteCredit.toFixed(2)} unit="€" isHighlighted />
+                        <DataRow label="Taux / Durée" value={`${data.tauxCredit}% / ${data.dureeCredit} ans`} />
+                        <DataRow label="Mensualité du crédit" value={finances.mensualiteCredit?.toFixed(2)} unit="€" isHighlighted />
                     </div>
                 </div>
             </Section>
