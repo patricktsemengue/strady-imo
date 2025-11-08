@@ -4,9 +4,12 @@ import { supabase } from './supabaseClient';
 import AuthPage from './AuthPage';
 import AccountPage from './AccountPage';
 import { prePromptConfig, scoreConfig } from './config.js';
-import FeedbackPage from './FeedbackPage';
-import PrivacyPolicyPage from './PrivacyPolicyPage';
-import TermsOfServicePage from './TermsOfServicePage';
+import FeedbackPage from './FeedbackPage'; //
+import PrivacyPolicyPage from './PrivacyPolicyPage'; //
+import TermsOfServicePage from './TermsOfServicePage'; //
+import HelpHubPage from './HelpHubPage';
+import UserManualPage from './UserManualPage';
+import KnowledgePage from './KnowledgePage';
 import ConfirmationModal from './ConfirmationModal';
 
 const StarIcon = () => (
@@ -98,100 +101,6 @@ const calculateFinances = (data) => {
         mensualiteEstimee: mensualite
     };
 };
-
-// --- Composant pour la page d'aide (Protocole) ---
-const HelpPage = ({ onBack }) => (
-    <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Protocole d'Aide à la Décision</h1>
-        <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour à l'analyse</button>
-        <div className="prose max-w-none text-gray-700 space-y-4">
-            {/* --- PHASE 1 --- */}
-            <h2 className="text-xl font-semibold">Phase 1 : Analyse Macro du Marché Wallon</h2>
-            <p>L'objectif de cette phase est de comprendre les tendances générales, le cadre légal et les zones porteuses en Wallonie avant même de chercher des biens.</p>
-            <h3 className="text-lg font-semibold">1.1. Étude Démographique et Économique</h3>
-            <p>Comprendre qui sont les locataires potentiels et quelle est leur santé financière. Sources : Statbel, IWEPS. Indicateurs : croissance démographique, structure de la population, pôles d'attractivité, revenu médian.</p>
-            <h3 className="text-lg font-semibold">1.2. Tendances du Marché Immobilier</h3>
-            <p>Sources : Baromètre des notaires, Statbel. Indicateurs : prix de vente moyen au m², prix de location moyen, taux de vacance locative.</p>
-            <h3 className="text-lg font-semibold">1.3. Analyse Réglementaire</h3>
-            <p>Sources : spw.wallonie.be. Points de vigilance : bail d'habitation wallon, normes PEB, CoDT (urbanisme), fiscalité.</p>
-
-            {/* --- PHASE 2 --- */}
-            <h2 className="text-xl font-semibold mt-6">Phase 2 : Analyse Micro du Marché Local (Ville/Quartier)</h2>
-            <p>Une fois une ou plusieurs villes cibles identifiées, il faut zoomer sur les quartiers.</p>
-            <h3 className="text-lg font-semibold">2.1. Analyse de l'Attractivité du Quartier</h3>
-            <p>Proximité des services (transports, commerces, écoles), qualité de vie, profil des locataires.</p>
-            <h3 className="text-lg font-semibold">2.2. Analyse de la Concurrence et des Loyers</h3>
-            <p>Source : Immoweb, ImmoVlan. Méthodologie : répertorier les biens en location pendant 2-4 semaines pour calculer le loyer moyen au m² par type de bien et estimer la tension locative.</p>
-
-            {/* --- Guide Tension Locative --- */}
-            <div className="p-4 bg-gray-50 rounded-lg border">
-                <h3 className="text-lg font-semibold text-blue-700">Comment évaluer objectivement la tension locative ?</h3>
-                <p className="mt-2">C'est un travail de détective qui repose sur des données concrètes. Voici une méthodologie en 3 étapes :</p>
-                <h4 className="font-semibold mt-3">Étape 1 : Analyse des Annonces en Ligne</h4>
-                <ul className="list-disc list-inside space-y-1 mt-2">
-                    <li><strong>Vitesse de location :</strong> Le critère le plus important. Combien de temps une annonce reste-t-elle en ligne ?
-                        <ul className="list-circle list-inside pl-4 mt-1 text-sm">
-                            <li>&lt; 7 jours : Tension Extrêmement Haute (Score 9-10/10)</li>
-                            <li>7-15 jours : Tension Forte (Score 7-8/10)</li>
-                            <li>15-30 jours : Tension Correcte (Score 5-6/10)</li>
-                            <li>&gt; 1 mois : Tension Faible (Score 3-4/10)</li>
-                        </ul>
-                    </li>
-                    <li><strong>Volume de la concurrence :</strong> Combien de biens similaires sont disponibles ?</li>
-                </ul>
-                <h4 className="font-semibold mt-3">Étape 2 : Validation sur le Terrain et Humaine</h4>
-                <ul className="list-disc list-inside space-y-1 mt-2">
-                    <li><strong>Questionnez les agents immobiliers.</strong></li>
-                    <li><strong>Observez lors des visites.</strong></li>
-                </ul>
-                <h4 className="font-semibold mt-3">Étape 3 : Analyse du Contexte</h4>
-                <ul className="list-disc list-inside space-y-1 mt-2">
-                    <li><strong>Pôles d'attraction, démographie, projets d'urbanisme.</strong></li>
-                </ul>
-            </div>
-
-            {/* --- Guide Vacance Locative --- */}
-            <div className="p-4 bg-gray-50 rounded-lg border mt-4">
-                <h3 className="text-lg font-semibold text-blue-700">Comment estimer objectivement la vacance locative ?</h3>
-                <p className="mt-2">La vacance locative est la période où votre bien est vide. Son estimation dépend directement de la tension locative.</p>
-                <p className="font-mono text-sm my-2">Formule : (% vacance) = (Jours de vacance / 365) * 100</p>
-                <ul className="list-disc list-inside space-y-2 mt-2">
-                    <li>
-                        <strong>Tension Élevée (8-10/10) :</strong> Vous relouez très vite.
-                        <br /><span className="text-sm">Estimation : 10-17 jours de vacance &rarr; <strong>3% à 5%</strong>.</span>
-                    </li>
-                    <li>
-                        <strong>Tension Moyenne (5-7/10) :</strong> La "règle du mois de loyer" s'applique.
-                        <br /><span className="text-sm">Estimation : 22-30 jours de vacance &rarr; <strong>7% à 9%</strong>.</span>
-                    </li>
-                    <li>
-                        <strong>Tension Faible (1-4/10) :</strong> Soyez pessimiste, le risque est réel.
-                        <br /><span className="text-sm">Estimation : 40-55 jours de vacance &rarr; <strong>10% à 15%</strong>.</span>
-                    </li>
-                </ul>
-            </div>
-
-            {/* --- PHASE 3 --- */}
-            <h2 className="text-xl font-semibold mt-6">Phase 3 : Fiche d'Évaluation du Bien Visité</h2>
-            <p>C'est le cœur de votre aide à la décision. Une checklist à utiliser lors de chaque visite.</p>
-            <h3 className="text-lg font-semibold">3.1. Informations Générales & 3.2. Évaluation Technique</h3>
-            <p>Relever l'adresse, prix, RC, charges de copro, PEB, état du gros œuvre, électricité, plomberie, chauffage, isolation.</p>
-            <h3 className="text-lg font-semibold">3.3. Estimation des Coûts par Projet</h3>
-            <p>Estimer le budget pour un "Rafraîchissement" (5-15k€), une "Rénovation" (30-70k€+), ou un achat "Clé sur porte" (travaux nuls).</p>
-            <h3 className="text-lg font-semibold">3.4. Potentiel par Type de Location</h3>
-            <p>Évaluer l'adéquation pour une location classique, une colocation (taille des chambres, SDB) ou une courte durée (règlementation, tourisme).</p>
-
-            {/* --- PHASE 4 --- */}
-            <h2 className="text-xl font-semibold mt-6">Phase 4 : Simulateur de Rentabilité</h2>
-            <p>Calculer le coût total d'acquisition, simuler les revenus et charges, et calculer les indicateurs clés.</p>
-            <ul className="list-disc list-inside">
-                <li><strong>Rendement Brut (%)</strong> = (Loyer Annuel Brute / Coût Total) x 100</li>
-                <li><strong>Rendement Net (%)</strong> = ((Loyer Annuel Brut - Charges Annuelles) / Coût Total) x 100</li>
-                <li><strong>Cash-Flow Mensuel (€)</strong> = (Loyer Mensuel - Charges Mensuelles) - Mensualité du Crédit</li>
-            </ul>
-        </div>
-    </div>
-);
 
 // --- Composant pour la page des paramètres (version lue depuis .env) ---
 const SettingsPage = ({ onBack, maxAnalyses }) => {
@@ -1436,15 +1345,40 @@ const CookieBanner = ({ onAccept }) => (
         // 'analyses' est déjà le bon état (local ou cloud)
         const analysisToLoad = analyses.find(a => a.id === id);
         if (analysisToLoad) {
-            // Si c'est du cloud (format {data, result}), ou local (format {data, result})
-            // L'ancien format local était { id, data, result }.
-            // Le format cloud est { id, user_id, project_name, ville, data, result }
-            // L'objet 'data' contient tout, c'est ce qu'on charge.
-            setData(analysisToLoad.data);
+            const loadedData = analysisToLoad.data || initialDataState;
+            setData(loadedData);
             setResult(analysisToLoad.result);
+            // Recalculer les finances immédiatement pour éviter l'erreur de rendu
+            setFinances(calculateFinances(loadedData));
             setCurrentAnalysisId(id);
             setPage('main');
+
+            // --- RÉINITIALISATION DE L'ASSISTANT IA ---
+            setAiInput('');
+            setAiPrompt('');
+            setGeminiResponse('');
+            setGeminiError('');
+            setShowAiResponseActions(false);
+            setIsAiAssistantOpen(false); // On ferme l'accordéon pour une interface propre
         }
+    };
+
+    const handleNewProject = () => {
+        setData(initialDataState);
+        setResult(null);
+        setCurrentAnalysisId(null);
+        setFinances(calculateFinances(initialDataState));
+
+        // Réinitialisation de l'assistant IA
+        setAiInput('');
+        setAiPrompt('');
+        setGeminiResponse('');
+        setGeminiError('');
+        setShowAiResponseActions(false);
+        setIsAiAssistantOpen(false);
+
+        setNotification({ msg: 'Formulaire réinitialisé pour un nouveau projet.', type: 'success' });
+        setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
     };
 
     // Fonction pour supprimer une analyse (locale ou cloud)
@@ -1608,10 +1542,14 @@ const CookieBanner = ({ onAccept }) => (
                 }
             }
 
-            setData(prev => ({ ...prev, ...updatedData }));
+            if (Object.keys(updatedData).length > 0) {
+                setData(prev => ({ ...prev, ...updatedData }));
+                setNotification({ msg: 'Les informations ont été appliquées au formulaire !', type: 'success' });
+            } else {
+                setNotification({ msg: "Aucune information n'a pu être extraite de la réponse.", type: 'error' });
+            }
 
             setShowAiResponseActions(false);
-            setNotification({ msg: 'Les informations ont été appliquées au formulaire !', type: 'success' });
             setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
             setIsApplyingAi(false);
         }, 100);
@@ -1647,7 +1585,9 @@ const CookieBanner = ({ onAccept }) => (
     const renderPage = () => {
         console.log('Rendering page:', page);
         switch (page) {
-            case 'aide': return <HelpPage onBack={() => setPage('main')} />;
+            case 'aide': return <HelpHubPage onNavigate={setPage} />;
+            case 'user-manual': return <UserManualPage onBack={() => setPage('aide')} />;
+            case 'knowledge': return <KnowledgePage onBack={() => setPage('aide')} />;
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
@@ -1945,8 +1885,8 @@ const CookieBanner = ({ onAccept }) => (
                             </div>
                             <div className="mt-4 pt-4 border-t-2 border-dashed"><div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                                 <div><p className="text-sm text-gray-600">Coût total du projet</p><p className="text-lg font-bold">{finances.coutTotalProjet.toLocaleString('fr-BE')} €</p></div>
-                                <div><p className="text-sm text-gray-600">Montant à financer</p><p className="text-lg font-bold text-blue-700">{finances.montantAFinancer.toLocaleString('fr-BE')} €</p></div>
-                                <div><p className="text-sm text-gray-600">Mensualité estimée</p><p className="text-lg font-bold text-red-600">{finances.mensualiteEstimee.toFixed(2)} €</p></div>
+                                <div><p className="text-sm text-gray-600">Montant à financer</p><p className="text-lg font-bold text-blue-700">{(finances.montantAFinancer || 0).toLocaleString('fr-BE')} €</p></div>
+                                <div><p className="text-sm text-gray-600">Mensualité estimée</p><p className="text-lg font-bold text-red-600">{(finances.mensualiteEstimee || 0).toFixed(2)} €</p></div>
                             </div></div>
                         </div>
 
@@ -2158,6 +2098,9 @@ const CookieBanner = ({ onAccept }) => (
                             <footer className="bg-white border-t-2 shadow-top">
                                 <nav className="max-w-4xl mx-auto flex justify-around p-2 sticky bottom-0 left-0 right-0 bg-white">
                                     <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
+                                    <button onClick={handleNewProject} className="flex flex-col items-center gap-1 p-2 rounded-lg text-gray-500 hover:text-blue-500">
+                                        <PlusCircleIcon /><span className="text-xs font-medium">Nouveau</span>
+                                    </button>
                                     {user && (
                                     <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Mes analyses</span></button>
                                     )}
