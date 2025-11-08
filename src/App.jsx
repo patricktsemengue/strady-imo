@@ -676,6 +676,52 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
     );
 };
 
+// --- Composant Modal pour l'explication des métriques ---
+const MetricExplanationModal = ({ isOpen, onClose, metric }) => {
+    if (!isOpen || !metric) return null;
+
+    const explanations = {
+        rendementNet: {
+            title: "Rendement Net",
+            explanation: "Le rendement net mesure la rentabilité de votre investissement en prenant en compte les charges annuelles (hors crédit). C'est un indicateur clé pour comparer la performance intrinsèque de différents biens.",
+            formula: "((Loyer Annuel Brut - Charges Annuelles) / Coût Total d'Acquisition) x 100"
+        },
+        cashOnCash: {
+            title: "Cash-on-Cash (CoC)",
+            explanation: "Le 'Cash-on-Cash' (ou retour sur fonds propres) mesure le rendement de l'argent que vous avez personnellement investi (votre apport). C'est l'indicateur le plus important pour évaluer l'efficacité de votre mise de départ.",
+            formula: "(Cash-Flow Annuel Net / Apport Personnel) x 100"
+        }
+        ,
+        cashflow: {
+            title: "Cash-Flow / mois",
+            explanation: "Le cash-flow est l'argent qu'il vous reste (ou que vous devez ajouter) chaque mois une fois que toutes les charges et la mensualité du crédit ont été payées. C'est le principal indicateur de la rentabilité de votre trésorerie.",
+            formula: "Loyer Mensuel - Charges Mensuelles - Mensualité du Crédit"
+        },
+        mensualiteCredit: {
+            title: "Mensualité Crédit",
+            explanation: "C'est le montant que vous remboursez chaque mois à la banque pour votre prêt hypothécaire. Ce montant inclut à la fois le capital et les intérêts.",
+            formula: "Calcul basé sur le montant financé, le taux et la durée du crédit."
+        },
+        coutTotal: {
+            title: "Coût Total d'Acquisition",
+            explanation: "C'est le montant total que vous devez débourser pour acquérir le bien, incluant le prix d'achat, les travaux, les frais d'acquisition (notaire, droits d'enregistrement) et les frais annexes (hypothèque, agence).",
+            formula: "Prix d'Achat + Coût Travaux + Frais d'Acquisition + Frais Annexes"
+        }
+    };
+
+    const content = explanations[metric];
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-2xl font-bold mb-4">{content.title}</h2>
+                <p className="text-gray-700 mb-4">{content.explanation}</p>
+                <p className="p-3 bg-gray-100 rounded-md border text-center font-mono text-sm text-gray-800">{content.formula}</p>
+                <div className="flex justify-end mt-6"><button onClick={onClose} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Fermer</button></div>
+            </div>
+        </div>
+    );
+};
 
 
 // --- Composant Modal de Profil ---
@@ -799,6 +845,8 @@ export default function App() {
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
     const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
     const [isScoreModalOpen, setIsScoreModalOpen] = React.useState(false);
+    const [isMetricModalOpen, setIsMetricModalOpen] = React.useState(false);
+    const [selectedMetric, setSelectedMetric] = React.useState(null);
 
     const [showCookieBanner, setShowCookieBanner] = React.useState(() => {
         return !localStorage.getItem('cookie_consent');
@@ -816,6 +864,12 @@ const CookieBanner = ({ onAccept }) => (
         <button onClick={onAccept} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex-shrink-0">J'ai compris</button>
     </div>
 );
+
+    const handleOpenMetricModal = (metric) => {
+        setSelectedMetric(metric);
+        setIsMetricModalOpen(true);
+    };
+
     const typeBienOptions = ['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre'];
     const pebOptions = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C'];
     const dureeOptions = [15, 20, 25, 30];
@@ -1757,20 +1811,68 @@ const CookieBanner = ({ onAccept }) => (
                                  
                                     {user && (
                                         <>
-                                            <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Rendement Net</p><p className="text-xl font-bold text-blue-700">{result.rendementNet} %</p></div>
-                                            <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-on-Cash</p><p className={`text-xl font-bold ${
+                                            <div className="p-3 bg-gray-50 rounded-lg">
+                                                <p className="text-sm flex items-center justify-center gap-1">
+                                                    Rendement Net
+                                                    <button onClick={() => handleOpenMetricModal('rendementNet')} className="text-gray-400 hover:text-blue-600">
+                                                        <QuestionMarkIcon />
+                                                    </button>
+                                                </p>
+                                                <p className={`text-xl font-bold ${
                                                 result.grade === 'A' ? 'text-green-800' :
                                                 result.grade === 'B' ? 'text-green-500' :
                                                 result.grade === 'C' ? 'text-yellow-500' :
                                                 result.grade === 'D' ? 'text-orange-500' :
                                                 'text-red-800'
-                                            }`}>{result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'}</p></div>
+                                            }`}>{result.rendementNet} %</p>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-lg">
+                                                <p className="text-sm flex items-center justify-center gap-1">
+                                                    Cash-on-Cash
+                                                    <button onClick={() => handleOpenMetricModal('cashOnCash')} className="text-gray-400 hover:text-blue-600">
+                                                        <QuestionMarkIcon />
+                                                    </button>
+                                                </p>
+                                                <p className={`text-xl font-bold ${
+                                                result.grade === 'A' ? 'text-green-800' :
+                                                result.grade === 'B' ? 'text-green-500' :
+                                                result.grade === 'C' ? 'text-yellow-500' :
+                                                result.grade === 'D' ? 'text-orange-500' :
+                                                'text-red-800'
+                                            }`}>{result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'}</p>
+                                            </div>
                                         </>
                                     )}
                                     
-                                    <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Cash-Flow / mois</p><p className={`text-xl font-bold ${result.cashflowMensuel > 0 ? 'text-green-600' : 'text-red-600'}`}>{result.cashflowMensuel} €</p></div>
-                                    <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Mensualité Crédit</p><p className="text-xl font-bold">{result.mensualiteCredit} €</p></div>
-                                    <div className="p-3 bg-gray-50 rounded-lg"><p className="text-sm">Coût Total</p><p className="text-xl font-bold">{parseInt(result.coutTotal).toLocaleString('fr-BE')} €</p></div>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <p className="text-sm flex items-center justify-center gap-1">
+                                            Cash-Flow / mois
+                                            <button onClick={() => handleOpenMetricModal('cashflow')} className="text-gray-400 hover:text-blue-600">
+                                                <QuestionMarkIcon />
+                                            </button>
+                                        </p>
+                                        <p className={`text-xl font-bold ${
+                                        result.grade === 'A' ? 'text-green-800' :
+                                        result.grade === 'B' ? 'text-green-500' :
+                                        result.grade === 'C' ? 'text-yellow-500' :
+                                        result.grade === 'D' ? 'text-orange-500' :
+                                        'text-red-800'
+                                    }`}>{result.cashflowMensuel} €</p>
+                                    </div>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <p className="text-sm flex items-center justify-center gap-1">
+                                            Mensualité Crédit
+                                            <button onClick={() => handleOpenMetricModal('mensualiteCredit')} className="text-gray-400 hover:text-blue-600">
+                                                <QuestionMarkIcon />
+                                            </button>
+                                        </p><p className="text-xl font-bold">{result.mensualiteCredit} €</p></div>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <p className="text-sm flex items-center justify-center gap-1">
+                                            Coût Total
+                                            <button onClick={() => handleOpenMetricModal('coutTotal')} className="text-gray-400 hover:text-blue-600">
+                                                <QuestionMarkIcon />
+                                            </button>
+                                        </p><p className="text-xl font-bold">{parseInt(result.coutTotal).toLocaleString('fr-BE')} €</p></div>
                                 </div>
                             </div>
                         ) : (
@@ -1862,6 +1964,11 @@ const CookieBanner = ({ onAccept }) => (
                     onClose={() => setIsAcquisitionFeesEstimatorOpen(false)}
                     onApply={handleAcquisitionFeesUpdate}
                     prixAchat={data.prixAchat}
+                />
+                <MetricExplanationModal 
+                    isOpen={isMetricModalOpen} 
+                    onClose={() => setIsMetricModalOpen(false)} 
+                    metric={selectedMetric} 
                 />
                 <ScoreExplanationModal isOpen={isScoreModalOpen} onClose={() => setIsScoreModalOpen(false)} />
                 <SaveAnalysisModal
