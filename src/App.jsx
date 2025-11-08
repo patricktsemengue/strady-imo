@@ -11,6 +11,7 @@ import HelpHubPage from './HelpHubPage';
 import UserManualPage from './UserManualPage';
 import KnowledgePage from './KnowledgePage';
 import GlossaryPage from './GlossaryPage';
+import AnalysisViewPage from './AnalysisViewPage';
 import ConfirmationModal from './ConfirmationModal';
 
 const StarIcon = () => (
@@ -42,6 +43,9 @@ const CalculatorIcon = () => (
 const PlusCircleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
 );
+const PlusIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus h-6 w-6"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+);
 const TrashIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
 );
@@ -57,6 +61,9 @@ const ClipboardListIcon = () => (
 const SaveIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
 );
+const FileCheckIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-check-2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="m3 15 2 2 4-4"/></svg>
+);
 const SparklesIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
 );
@@ -69,9 +76,24 @@ const EllipsisVerticalIcon = () => (
 const PencilIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
 );
+const ArrowUpDownIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up-down h-5 w-5"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+);
+const EyeIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+);
+const TextCursorInputIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-text-cursor-input h-4 w-4"><path d="M5 4h1a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H5"/><path d="M19 4h-1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h1"/><path d="M12 12h.01"/></svg>
+);
 
 const ChevronDownIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down ${className || ''}`}><path d="m6 9 6 6 6-6"/></svg>
+);
+
+const InfoIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info h-5 w-5">
+        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+    </svg>
 );
 
 const QuestionMarkIcon = () => (
@@ -137,7 +159,7 @@ const SettingsPage = ({ onBack, maxAnalyses }) => {
 
 
 // --- Composant pour la page Dashboard ---
-const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAnalyses }) => {
+const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAnalyses, onView }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
@@ -201,18 +223,22 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAn
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Mes analyses</h1>
+            {/* 
             <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Continuer &rarr;</button>
-            
-            <div className="mb-4 flex flex-col items-center gap-3">
-                <div className="flex justify-center gap-2">
+            */}
+            <div className="mb-4 flex flex-wrap justify-center items-center gap-2">
+                <div className="flex justify-center gap-2" role="group">
                     <button onClick={() => setSortOrder('createdAt')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'createdAt' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Date</button>
                     <button onClick={() => setSortOrder('name')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'name' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Nom</button>
                     <button onClick={() => setSortOrder('profitability')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'profitability' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Rentabilité</button>
                 </div>
-                <div className="flex justify-center gap-2">
-                    <button onClick={() => setSortDirection('desc')} className={`px-3 py-1 text-xs font-medium rounded-lg border-2 transition-all ${sortDirection === 'desc' ? 'bg-gray-600 text-white border-gray-600' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500'}`}>Décroissant</button>
-                    <button onClick={() => setSortDirection('asc')} className={`px-3 py-1 text-xs font-medium rounded-lg border-2 transition-all ${sortDirection === 'asc' ? 'bg-gray-600 text-white border-gray-600' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500'}`}>Croissant</button>
-                </div>
+                <button 
+                    onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')} 
+                    className="p-2.5 rounded-lg border-2 bg-white text-gray-700 border-gray-300 hover:border-blue-500 transition-all"
+                    title={`Trier par ordre ${sortDirection === 'asc' ? 'décroissant' : 'croissant'}`}
+                >
+                    <ArrowUpDownIcon />
+                </button>
             </div>
 
             <div className="space-y-4">
@@ -220,8 +246,8 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAn
                     <p className="text-center text-gray-500 py-8">Aucune analyse sauvegardée. Augmentez la limite dans les paramètres pour en ajouter.</p>
                 )}
                 {sortedAnalyses.map(analysis => (
-                    <div key={analysis.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div className="flex-grow">
+                    <div key={analysis.id} className="relative p-4 border rounded-lg">
+                        <div className="flex-grow pr-10">
                             {renamingId === analysis.id ? (
                                 <input
                                     type="text"
@@ -247,17 +273,20 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAn
                                 </div>                                
                             )}
                         </div>
-                        <div className="relative context-menu-container">
+                        <div className="absolute top-2 right-2 context-menu-container flex-shrink-0">
                             <button onClick={() => setOpenMenuId(openMenuId === analysis.id ? null : analysis.id)} className="p-2 rounded-full hover:bg-gray-100">
                                 <EllipsisVerticalIcon />
                             </button>
                             {openMenuId === analysis.id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border animate-fade-in-fast">
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border animate-fade-in-fast">
                                     <button onClick={() => { onLoad(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                                        <HomeIcon /> Charger
+                                        <PencilIcon /> Modifier
+                                    </button>
+                                    <button onClick={() => { onView(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                                        <EyeIcon /> Visualiser
                                     </button>
                                     <button onClick={() => handleStartRename(analysis)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> Renommer
+                                        <TextCursorInputIcon /> Renommer
                                     </button>
                                     <button onClick={() => { onDelete(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
                                         <TrashIcon /> Supprimer
@@ -350,7 +379,7 @@ const RenovationEstimatorModal = ({ isOpen, onClose, onApply }) => {
                 </div>
                 <div className="mt-6 pt-4 border-t">
                     <div className="text-right mb-4"><span className="text-lg font-medium">Coût total (TVA incl.):</span><span className="text-2xl font-bold text-blue-600 ml-2">{Math.round(totalCost).toLocaleString('fr-BE')} €</span></div>
-                    <div className="flex justify-end gap-3"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Annuler</button><button onClick={() => onApply(Math.round(totalCost))} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Appliquer</button></div>
+                    <div className="flex justify-end gap-3"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Annuler</button><button onClick={() => onApply(Math.round(totalCost), items)} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Appliquer</button></div>
                 </div>
             </div>
         </div>
@@ -474,7 +503,7 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
                 </div>
                 <div className="mt-6 pt-4 border-t">
                     <div className="text-right mb-4"><span className="text-lg font-medium">Total Mensuel Estimé:</span><span className="text-2xl font-bold text-red-600 ml-2">{Math.round(totalMonthlyCost).toLocaleString('fr-BE')} € / mois</span></div>
-                    <div className="flex justify-end gap-3"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Annuler</button><button onClick={() => onApply(Math.round(totalMonthlyCost))} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Appliquer</button></div>
+                    <div className="flex justify-end gap-3"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Annuler</button><button onClick={() => onApply(Math.round(totalMonthlyCost), items)} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Appliquer</button></div>
                 </div>
             </div>
         </div>
@@ -629,10 +658,14 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
-                <h2 className="text-2xl font-bold mb-4">{isUpdateMode ? "Mettre à jour ou Sauvegarder" : "Sauvegarder l'Analyse"}</h2>
+                <h2 className="text-2xl font-bold mb-4">{isUpdateMode ? "Que souhaitez-vous faire ?" : "Sauvegarder l'Analyse"}</h2>
 
                 {isUpdateMode ? (
-                    <p className="text-gray-600 mb-4">Cette analyse a été chargée. Voulez-vous la mettre à jour ou en créer une nouvelle copie ?</p>
+                    <div className="text-gray-600 mb-4 space-y-2">
+                        <p>Vous modifiez une analyse existante.</p>
+                        <p>• <strong>Mettre à jour :</strong> Écrase les données de l'analyse actuelle avec vos modifications.</p>
+                        <p>• <strong>Créer une nouvelle analyse :</strong> Garde l'analyse originale intacte et sauvegarde vos modifications comme une nouvelle entrée.</p>
+                    </div>
                 ) : (
                     <p className="text-gray-600 mb-4">Veuillez confirmer ou modifier le nom du projet avant de sauvegarder.</p>
                 )}
@@ -653,8 +686,8 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
                     <button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Annuler</button>
                     {isUpdateMode ? (
                         <>
-                            <button onClick={onUpdate} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Mettre à jour</button>
-                            <button onClick={onSave} className="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Sauvegarder comme copie</button>
+                            <button onClick={onUpdate} className="bg-orange-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-orange-600">Mettre à jour</button>
+                            <button onClick={onSave} className="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Créer une nouvelle analyse</button>
                         </>
                     ) : (
                         <button onClick={onSave} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Confirmer</button>
@@ -811,7 +844,7 @@ export default function App() {
         revenuCadastral: 1000,
         tensionLocative: 7, loyerEstime: 900, chargesMensuelles: 100, vacanceLocative: 8,
         quotite: 80,
-        enOrdreUrbanistique: false,
+        chargesDetail: [], travauxDetail: [], enOrdreUrbanistique: false,
         electriciteConforme: false,
     };
 
@@ -839,7 +872,9 @@ export default function App() {
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
     const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
     const [isScoreModalOpen, setIsScoreModalOpen] = React.useState(false);
+    const [viewingAnalysis, setViewingAnalysis] = React.useState(null);
     const [isMetricModalOpen, setIsMetricModalOpen] = React.useState(false);
+    const [isLegalMenuOpen, setIsLegalMenuOpen] = React.useState(false);
     const [selectedMetric, setSelectedMetric] = React.useState(null);
 
     // --- NOUVEAUX ÉTATS POUR L'ASSISTANT IA ---
@@ -968,6 +1003,16 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     React.useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (isLegalMenuOpen && !event.target.closest('.legal-menu-container')) {
+                setIsLegalMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, [isLegalMenuOpen]);
+
+    React.useEffect(() => {
         const fontLink = document.createElement('link');
         fontLink.href = "https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Poppins:wght@500&family=The+Girl+Next+Door&display=swap";
         fontLink.rel = "stylesheet";
@@ -1031,6 +1076,15 @@ const CookieBanner = ({ onAccept }) => (
         }
         .range-slider-good-low::-moz-range-track {
              background: linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+        }
+
+        @media print {
+            .print-hidden { display: none; }
+            .print-block { display: block; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .printable-area { box-shadow: none; border: none; }
+            main { padding: 0; }
+            header, footer { display: none; }
         }
         `;
         document.head.appendChild(fontLink);
@@ -1149,14 +1203,22 @@ const CookieBanner = ({ onAccept }) => (
         handleDataChange(name, processedValue);
     };
 
-    const handleTravauxUpdate = (newValue) => {
-        setData(d => ({ ...d, coutTravaux: newValue }));
+    const handleTravauxUpdate = (total, items) => {
+        setData(d => ({ ...d, coutTravaux: total, travauxDetail: items }));
         setIsEstimatorOpen(false);
         // La ligne de calcul d'apport a été supprimée, l'useEffect s'en charge
     };
+    // const handleTravauxUpdate = (newValue) => {
+    //     setData(d => ({ ...d, coutTravaux: newValue }));
+    //     setIsEstimatorOpen(false);
+    // };
     const handleTensionUpdate = (newValue) => { setData(d => ({ ...d, tensionLocative: newValue })); setIsTensionEstimatorOpen(false); };
     const handleVacancyUpdate = (newValue) => { setData(d => ({ ...d, vacanceLocative: newValue })); setIsVacancyEstimatorOpen(false); };
-    const handleChargesUpdate = (newValue) => { setData(d => ({ ...d, chargesMensuelles: newValue })); setIsChargesEstimatorOpen(false); };
+    const handleChargesUpdate = (total, items) => {
+        setData(d => ({ ...d, chargesMensuelles: total, chargesDetail: items }));
+        setIsChargesEstimatorOpen(false);
+    };
+
     const handleAcquisitionFeesUpdate = (newValue) => {
         setData(d => ({ ...d, fraisAcquisition: newValue }));
         setIsAcquisitionFeesEstimatorOpen(false);
@@ -1442,6 +1504,15 @@ const CookieBanner = ({ onAccept }) => (
         }
     };
 
+    const viewAnalysis = (id) => {
+        const analysisToView = analyses.find(a => a.id === id);
+        if (analysisToView) {
+            setViewingAnalysis(analysisToView);
+            setPage('view-analysis');
+        }
+    };
+
+
     const handleNewProject = () => {
         setData(initialDataState);
         setResult(null);
@@ -1458,6 +1529,8 @@ const CookieBanner = ({ onAccept }) => (
 
         setNotification({ msg: 'Formulaire réinitialisé pour un nouveau projet.', type: 'success' });
         setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+
+        setPage('main'); // Redirige vers la page d'analyse
     };
 
     const handleUpdateAnalysisName = async (id, newName) => {
@@ -1697,8 +1770,9 @@ const CookieBanner = ({ onAccept }) => (
             case 'user-manual': return <UserManualPage onBack={() => setPage('aide')} />;
             case 'knowledge': return <KnowledgePage onBack={() => setPage('aide')} />;
             case 'glossary': return <GlossaryPage onBack={() => setPage('aide')} />;
+            case 'view-analysis': return <AnalysisViewPage analysis={viewingAnalysis} onBack={() => setPage('dashboard')} />;
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
-            case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
+            case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} onView={viewAnalysis} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
             case 'account': return <AccountPage onBack={() => setPage('main')} />;
             case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
@@ -2046,9 +2120,20 @@ const CookieBanner = ({ onAccept }) => (
                                     {notification.msg ? (
                                         <span className={`font-semibold animate-fade-in ${notification.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{notification.msg}</span>
                                     ) : (
-                                        <button onClick={handleOpenSaveModal} className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center gap-2">
-                                            <SaveIcon /> Sauvegarder
-                                        </button>
+                                        <div className="flex gap-2">
+                                            {currentAnalysisId && (
+                                                <button onClick={() => viewAnalysis(currentAnalysisId)} className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 flex items-center gap-2" title="Visualiser le rapport de synthèse">
+                                                    <EyeIcon /> Visualiser
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={handleOpenSaveModal}
+                                                className={`text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all ${currentAnalysisId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'}`}
+                                                title={currentAnalysisId ? "Met à jour l'analyse actuelle" : "Sauvegarder l'analyse"}>
+                                                {currentAnalysisId ? <FileCheckIcon /> : <SaveIcon />}
+                                                {currentAnalysisId ? 'Mettre à jour' : 'Sauvegarder'}
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                                 <div className={`text-center p-4 rounded-lg mb-4 ${
@@ -2214,13 +2299,19 @@ const CookieBanner = ({ onAccept }) => (
                 </ConfirmationModal>
                                 {renderPage()}
                             </main>
-                
-                            <footer className="bg-white border-t-2 shadow-top">
-                                <nav className="max-w-4xl mx-auto flex justify-around p-2 sticky bottom-0 left-0 right-0 bg-white">
+                            
+                            {/* --- FAB (Floating Action Button) --- */}
+                            <button
+                                onClick={handleNewProject}
+                                className="fixed bottom-28 right-6 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 transition-all duration-300 z-30 transform hover:scale-110 hover:shadow-xl hover:shadow-blue-400/50 print:hidden"
+                                title="Nouvelle analyse"
+                            >
+                                <PlusIcon />
+                            </button>
+                            <footer className="bg-white border-t-2 shadow-top sticky bottom-0 left-0 right-0 z-20">
+
+                                <nav className="max-w-4xl mx-auto flex justify-around p-2">
                                     <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
-                                    <button onClick={handleNewProject} className="flex flex-col items-center gap-1 p-2 rounded-lg text-gray-500 hover:text-blue-500">
-                                        <PlusCircleIcon /><span className="text-xs font-medium">Nouveau</span>
-                                    </button>
                                     {user && (
                                     <button onClick={() => setPage('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><DashboardIcon /><span className="text-xs font-medium">Mes analyses</span></button>
                                     )}
@@ -2240,13 +2331,27 @@ const CookieBanner = ({ onAccept }) => (
                                         </button>
                                     )}
                                 </nav>
-                                <div className="text-center py-4 border-t">
-                                    <div className="text-sm text-gray-600 space-x-4">
-                                        <button onClick={() => setPage('privacy')} className="hover:underline">Politique de Confidentialité</button>
-                                        <span>•</span>
-                                        <button onClick={() => setPage('terms')} className="hover:underline">Conditions d'Utilisation</button>
+                                <div className="relative text-center py-4 border-t legal-menu-container">
+                                    {isLegalMenuOpen && (
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-white rounded-md shadow-lg z-30 border animate-fade-in-fast">
+                                            <button onClick={() => { setPage('privacy'); setIsLegalMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                Politique de Confidentialité
+                                            </button>
+                                            <button onClick={() => { setPage('terms'); setIsLegalMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                Conditions d'Utilisation
+                                            </button>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-center items-center gap-4">
+                                        <p className="text-xs text-gray-500">© 2025 Strady.imo</p>
+                                        <button 
+                                            onClick={() => setIsLegalMenuOpen(!isLegalMenuOpen)} 
+                                            className="text-gray-400 hover:text-blue-600"
+                                            title="Informations légales"
+                                        >
+                                            <InfoIcon />
+                                        </button>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">© 2025 Strady.imo - Tous droits réservés.</p>
                                 </div>
                             </footer>
                 
