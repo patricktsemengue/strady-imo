@@ -117,6 +117,12 @@ export const Logo = () => (
     </div>
 );
 
+// --- Fonction utilitaire pour ID unique ---
+let idCounter = 0;
+const generateUniqueId = () => {
+    return `${Date.now()}-${idCounter++}`;
+};
+
 // Fonction utilitaire pour les calculs de financement
 const calculateFinances = (data) => {
     const coutTotal = (data.prixAchat || 0) + (data.coutTravaux || 0) + (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
@@ -314,7 +320,7 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAn
 
 // --- Modals d'estimation (Travaux, Tension, Vacance, Charges, Frais d'acquisition) ---
 const RenovationEstimatorModal = ({ isOpen, onClose, onApply }) => {
-    const [items, setItems] = React.useState([{ id: Date.now(), object: 'Cuisine', type: 'Rénovation complète', cost: 8000 }]);
+    const [items, setItems] = React.useState([{ id: generateUniqueId(), object: 'Cuisine', type: 'Rénovation complète', cost: 8000 }]);
     const [tempValue, setTempValue] = React.useState(null); // State for onFocus/onBlur
 
     const addItem = () => setItems([...items, { id: Date.now(), object: '', type: '', cost: 0 }]);
@@ -464,12 +470,12 @@ const VacancyEstimatorModal = ({ isOpen, onClose, onApply, currentTension }) => 
 
 const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
     const [items, setItems] = React.useState([
-        { id: Date.now(), object: 'Précompte immobilier', periodicity: 'An', price: data.revenuCadastral ? Math.round(data.revenuCadastral * 1.25) : 0 },
-        { id: Date.now(), object: 'Assurance PNO', periodicity: 'An', price: 250 },
-        { id: Date.now() + 1, object: 'Charges copropriété non-récup.', periodicity: 'Mois', price: 50 },
-        { id: Date.now() + 1, object: 'Vacance locative', periodicity: 'Mois', price: data.loyerEstime ? Math.round(data.loyerEstime * 0.1) : 0 },
+        { id: generateUniqueId(), object: 'Précompte immobilier', periodicity: 'An', price: data.revenuCadastral ? Math.round(data.revenuCadastral * 1.25) : 0 },
+        { id: generateUniqueId(), object: 'Assurance PNO', periodicity: 'An', price: 250 },
+        { id: generateUniqueId(), object: 'Charges copropriété non-récup.', periodicity: 'Mois', price: 50 },
+        { id: generateUniqueId(), object: 'Vacance locative', periodicity: 'Mois', price: data.loyerEstime ? Math.round(data.loyerEstime * 0.1) : 0 },
     ]);
-    const addItem = () => setItems([...items, { id: Date.now(), object: '', periodicity: 'Mois', price: 0 }]);
+    const addItem = () => setItems([...items, { id: generateUniqueId(), object: '', periodicity: 'Mois', price: 0 }]);
     const removeItem = (id) => setItems(items.filter(item => item.id !== id));
     const updateItem = (id, field, value) => {
         setItems(items.map(item =>
@@ -1467,7 +1473,7 @@ const CookieBanner = ({ onAccept }) => (
             setCurrentAnalysisId(newCloudAnalysis.id);
         } else {
             // --- Logique Locale ---
-            const newAnalysis = { id: Date.now(), data: currentDataWithNewName, result: result };
+            const newAnalysis = { id: generateUniqueId(), data: currentDataWithNewName, result: result };
             const updatedAnalyses = [newAnalysis, ...analyses];
             setAnalyses(updatedAnalyses);
             localStorage.setItem('immoAnalyses', JSON.stringify(updatedAnalyses));

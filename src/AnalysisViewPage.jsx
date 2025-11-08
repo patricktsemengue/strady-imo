@@ -29,6 +29,56 @@ const DataRow = ({ label, value, unit = '', isHighlighted = false }) => (
     </div>
 );
 
+const getArcPath = (x, y, radius, startAngle, endAngle) => {
+    const start = { x: x + radius * Math.cos(startAngle), y: y + radius * Math.sin(startAngle) };
+    const end = { x: x + radius * Math.cos(endAngle), y: y + radius * Math.sin(endAngle) };
+    const largeArcFlag = endAngle - startAngle <= Math.PI ? "0" : "1";
+    return [
+        "M", x, y,
+        "L", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 1, end.x, end.y,
+        "Z"
+    ].join(" ");
+};
+
+const PieChart = ({ data }) => {
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    if (total === 0) {
+        return <div className="text-center text-gray-500 p-4">Aucune donnée de coût à afficher.</div>;
+    }
+
+    let cumulativeAngle = -Math.PI / 2; // Start at the top
+
+    return (
+        <div className="flex flex-col md:flex-row items-center gap-6 my-4 p-4 bg-gray-50 rounded-lg">
+            <svg width="150" height="150" viewBox="0 0 100 100" className="flex-shrink-0">
+                {data.map(item => {
+                    if (item.value <= 0) return null;
+                    const angle = (item.value / total) * 2 * Math.PI;
+                    const path = getArcPath(50, 50, 50, cumulativeAngle, cumulativeAngle + angle);
+                    cumulativeAngle += angle;
+                    return <path key={item.label} d={path} fill={item.color} />;
+                })}
+            </svg>
+            <ul className="space-y-2 text-sm w-full">
+                {data.map(item => {
+                    if (item.value <= 0) return null;
+                    const percentage = ((item.value / total) * 100).toFixed(1);
+                    return (
+                        <li key={item.label} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
+                                <span>{item.label} ({percentage}%)</span>
+                            </div>
+                            <span className="font-semibold">{item.value.toLocaleString('fr-BE')} €</span>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+    );
+};
+
 const RevenueExpenseChart = ({ revenue, expenses }) => {
     const total = Math.max(revenue, expenses, 1); // Avoid division by zero
     const revenuePercentage = (revenue / total) * 100;
@@ -119,6 +169,13 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
         montantAFinancer: coutTotal - (data.apport || 0),
         mensualiteCredit: result?.mensualiteCredit ? parseFloat(result.mensualiteCredit) : 0,
     };
+    const costBreakdownData = [
+        { label: "Prix d'achat", value: data.prixAchat || 0, color: '#3b82f6' }, // blue-500
+        { label: "Coût des travaux", value: data.coutTravaux || 0, color: '#f59e0b' }, // amber-500
+        { label: "Frais d'acquisition", value: data.fraisAcquisition || 0, color: '#84cc16' }, // lime-500
+        { label: "Frais annexes", value: data.fraisAnnexe || 0, color: '#a855f7' }, // purple-500
+    ];
+
 
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in printable-area">
@@ -165,6 +222,7 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
 
             <Section title="Structure de l'Investissement et du Financement" icon={<EuroIcon />}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div className="md:col-span-2"><PieChart data={costBreakdownData} /></div>
                     {/* --- Détail de l'investissement --- */}
                     <div className="bg-gray-50 p-4 rounded-lg border">
                         <h3 className="font-semibold text-lg mb-3">Structure des Coûts</h3>
