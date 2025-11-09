@@ -14,100 +14,15 @@ import GlossaryPage from './GlossaryPage';
 import AnalysisViewPage from './AnalysisViewPage';
 import ConfirmationModal from './ConfirmationModal';
 import PlansPage from './PlansPage';
+import WelcomePage from './WelcomePage';
+import DashboardPage from './DashboardPage';
+import {
+    StarIcon, WalletIcon, HomeIcon, HelpIcon, UserIcon, LogOutIcon, SettingsIcon,
+    DashboardIcon, CalculatorIcon, PlusCircleIcon, PlusIcon, TrashIcon, TrendingUpIcon,
+    PercentIcon, ClipboardListIcon, SaveIcon, FileCheckIcon, SparklesIcon,
+    AlertTriangleIcon, PencilIcon, ChevronDownIcon, InfoIcon, QuestionMarkIcon
+} from './Icons';
 
-const StarIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-);
-
-const WalletIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wallet"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
-);
-
-// --- Icônes SVG pour une interface plus propre ---
-const HomeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-);
-const HelpIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open-text"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /><path d="M6 8h2" /><path d="M6 12h2" /><path d="M16 8h2" /><path d="M16 12h2" /></svg>
-);
-const UserIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg>
-);
-const LogOutIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
-);
-const SettingsIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
-);
-const DashboardIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></svg>
-);
-const CalculatorIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calculator"><rect width="16" height="20" x="4" y="2" rx="2" /><line x1="8" x2="16" y1="6" y2="6" /><line x1="16" x2="16" y1="14" y2="18" /><line x1="16" x2="12" y1="14" y2="14" /><line x1="12" x2="12" y1="14" y2="18" /><line x1="12" x2="8" y1="10" y2="10" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="12" x2="12" y1="10" y2="10" /></svg>
-);
-const PlusCircleIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
-);
-const PlusIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus h-6 w-6"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-);
-const TrashIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
-);
-const TrendingUpIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
-);
-const PercentIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-percent"><line x1="19" x2="5" y1="5" y2="19" /><circle cx="6.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /></svg>
-);
-const ClipboardListIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></svg>
-);
-const SaveIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
-);
-const FileCheckIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-check-2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="m3 15 2 2 4-4"/></svg>
-);
-const SparklesIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
-);
-const AlertTriangleIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle h-5 w-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-);
-const EllipsisVerticalIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis-vertical h-6 w-6 text-gray-600"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
-);
-const PencilIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-);
-const ArrowUpDownIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up-down h-5 w-5"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-);
-const EyeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-);
-const TextCursorInputIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-text-cursor-input h-4 w-4"><path d="M5 4h1a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H5"/><path d="M19 4h-1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h1"/><path d="M12 12h.01"/></svg>
-);
-
-const ChevronDownIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down ${className || ''}`}><path d="m6 9 6 6 6-6"/></svg>
-);
-
-const InfoIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info h-5 w-5">
-        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
-    </svg>
-);
-
-const QuestionMarkIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-help-circle">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-);
 
 // env
 const cacheDuration = import.meta.env.VITE_STRADY_CACHE_DURATION_HOURS;
@@ -149,7 +64,6 @@ const SettingsPage = ({ onBack, maxAnalyses }) => {
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Paramètres</h1>
-            <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour à l'analyse</button>
             <div className="space-y-4 text-gray-700">
                 <p className="p-3 bg-gray-100 rounded-md border">
                     <strong>Clé API Gemini:</strong> Configurée de manière sécurisée sur le serveur.
@@ -163,169 +77,6 @@ const SettingsPage = ({ onBack, maxAnalyses }) => {
                 <p className="mt-6 text-sm text-gray-500 italic">
                     Ces paramètres sont définis dans le fichier <code>.env</code> (pour le local) ou dans les variables d'environnement de Netlify (en production).
                 </p>
-            </div>
-        </div>
-    );
-};
-
-
-// --- Composant pour la page Dashboard ---
-const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAnalyses, onView }) => {
-    const [sortOrder, setSortOrder] = React.useState('createdAt');
-    const [sortDirection, setSortDirection] = React.useState('desc');
-    const [openMenuId, setOpenMenuId] = React.useState(null);
-
-    // Logique améliorée pour l'affichage des emplacements vides
-    const emptySlotsCount = React.useMemo(() => {
-        if (maxAnalyses === -1) { // Cas "illimité"
-            return 3;
-        }
-        const availableSlots = maxAnalyses - analyses.length;
-        // On affiche au maximum 3 slots, ou moins si la limite est plus basse.
-        return Math.min(Math.max(0, availableSlots), 3);
-    }, [analyses.length, maxAnalyses]);
-    const emptySlots = Array.from({ length: emptySlotsCount });    
-
-    // --- États pour le renommage ---
-    const [renamingId, setRenamingId] = React.useState(null);
-    const [renameValue, setRenameValue] = React.useState('');
-
-    const sortedAnalyses = React.useMemo(() => {
-        return [...analyses].sort((a, b) => {
-            let comparison = 0;
-            if (sortOrder === 'name') {
-                const nameA = a.data.projectName || '';
-                const nameB = b.data.projectName || '';
-                comparison = nameA.localeCompare(nameB);
-            } else if (sortOrder === 'profitability') {
-                const rentaA = a.result ? parseFloat(a.result.rendementNet) : -Infinity;
-                const rentaB = b.result ? parseFloat(b.result.rendementNet) : -Infinity;
-                comparison = rentaB - rentaA;
-            } else { // Default to sorting by creation date
-                const dateA = new Date(a.created_at);
-                const dateB = new Date(b.created_at);
-                comparison = dateB - dateA;
-            }
-            return sortDirection === 'asc' ? comparison : -comparison;
-        });
-    }, [analyses, sortOrder, sortDirection]);
-
-    React.useEffect(() => {
-        const handleOutsideClick = (event) => {
-            if (openMenuId && !event.target.closest('.context-menu-container')) {
-                setOpenMenuId(null);
-            }
-        };
-        document.addEventListener('mousedown', handleOutsideClick);
-        return () => {
-            document.removeEventListener('mousedown', handleOutsideClick);
-        };
-    }, [openMenuId]);
-
-    const handleStartRename = (analysis) => {
-        setRenamingId(analysis.id);
-        setRenameValue(analysis.project_name || analysis.data.projectName);
-        setOpenMenuId(null);
-    };
-
-    const handleConfirmRename = () => {
-        if (renamingId && renameValue.trim()) {
-            onUpdateName(renamingId, renameValue.trim());
-        }
-        setRenamingId(null);
-    };
-
-    const handleRenameKeyDown = (e) => {
-        if (e.key === 'Enter') handleConfirmRename();
-        if (e.key === 'Escape') setRenamingId(null);
-    };
-
-    return (
-        <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Mes analyses</h1>
-            {/* 
-            <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Continuer &rarr;</button>
-            */}
-            <div className="mb-4 flex flex-wrap justify-center items-center gap-2">
-                <div className="flex justify-center gap-2" role="group">
-                    <button onClick={() => setSortOrder('createdAt')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'createdAt' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Date</button>
-                    <button onClick={() => setSortOrder('name')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'name' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Nom</button>
-                    <button onClick={() => setSortOrder('profitability')} className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'profitability' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Trier par Rentabilité</button>
-                </div>
-                <button 
-                    onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')} 
-                    className="p-2.5 rounded-lg border-2 bg-white text-gray-700 border-gray-300 hover:border-blue-500 transition-all"
-                    title={`Trier par ordre ${sortDirection === 'asc' ? 'décroissant' : 'croissant'}`}
-                >
-                    <ArrowUpDownIcon />
-                </button>
-            </div>
-
-            <div className="space-y-4">
-                {sortedAnalyses.length === 0 && emptySlotsCount === 0 && (
-                    <p className="text-center text-gray-500 py-8">Aucune analyse sauvegardée. Augmentez la limite dans les paramètres pour en ajouter.</p>
-                )}
-                {sortedAnalyses.map(analysis => (
-                    <div key={analysis.id} className="relative p-4 border rounded-lg">
-                        <div className="flex-grow pr-10">
-                            {renamingId === analysis.id ? (
-                                <input
-                                    type="text"
-                                    value={renameValue}
-                                    onChange={(e) => setRenameValue(e.target.value)}
-                                    onBlur={handleConfirmRename}
-                                    onKeyDown={handleRenameKeyDown}
-                                    className="font-bold text-lg p-1 border rounded-md w-full"
-                                    autoFocus
-                                />
-                            ) : (
-                                <h2 className="font-bold text-lg">{analysis.project_name || analysis.data.projectName}</h2>
-                            )}
-                            <p className="text-sm text-gray-600">{analysis.data.ville}</p>
-                            {analysis.result && (
-                                <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                    <div className={`p-2 rounded-md ${analysis.result.grade.startsWith('A') ? 'bg-green-100 text-green-800' : analysis.result.grade.startsWith('B') ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                        <div className="text-xs font-medium">Score</div><div className="font-bold">{analysis.result.grade}</div>
-                                    </div>
-                                    <div className="p-2 bg-gray-100 rounded-md"><div className="text-xs font-medium">Rend. Net</div><div className="font-bold">{analysis.result.rendementNet}%</div></div>
-                                    <div className="p-2 bg-gray-100 rounded-md"><div className="text-xs font-medium">Cash-Flow</div><div className="font-bold">{analysis.result.cashflowMensuel}€</div></div>
-                                    <div className="p-2 bg-gray-100 rounded-md"><div className="text-xs font-medium">CoC</div><div className="font-bold">{analysis.result.cashOnCash !== null && isFinite(analysis.result.cashOnCash) ? `${analysis.result.cashOnCash.toFixed(1)}%` : 'N/A'}</div></div>
-                                </div>                                
-                            )}
-                        </div>
-                        <div className="absolute top-2 right-2 context-menu-container flex-shrink-0">
-                            <button onClick={() => setOpenMenuId(openMenuId === analysis.id ? null : analysis.id)} className="p-2 rounded-full hover:bg-gray-100">
-                                <EllipsisVerticalIcon />
-                            </button>
-                            {openMenuId === analysis.id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border animate-fade-in-fast">
-                                    <button onClick={() => { onLoad(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                                        <PencilIcon /> Modifier
-                                    </button>
-                                    <button onClick={() => { onView(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                                        <EyeIcon /> Visualiser
-                                    </button>
-                                    <button onClick={() => handleStartRename(analysis)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                                        <TextCursorInputIcon /> Renommer
-                                    </button>
-                                    <button onClick={() => { onDelete(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
-                                        <TrashIcon /> Supprimer
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-                {emptySlots.map((_, index) => (
-                    <div key={`empty-${index}`} className="p-8 border-2 border-dashed rounded-lg flex justify-center items-center text-gray-400">
-                        <p>Emplacement d'analyse vide</p>
-                    </div>
-                ))}
-                {analyses.length >= maxAnalyses && maxAnalyses > 0 && (
-                    <div className="p-4 border border-red-200 bg-red-50 rounded-lg flex justify-center items-center text-red-600 font-semibold text-center">
-                        <p>Vous ne pouvez plus sauvegarder de nouvelle analyse. La limite de {maxAnalyses} est atteinte.</p>
-                    </div>
-                )}
             </div>
         </div>
     );
@@ -811,46 +562,6 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user, userPlan, 
     );
 };
 
-
-// --- Composant pour la page de bienvenue ---
-const WelcomePage = ({ onStart, onNavigate, user }) => (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-slate-100 animate-fade-in">
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
-            <Logo />
-            <h1 className="text-3xl font-bold text-gray-800 mt-6 mb-2">
-                {user?.user_metadata?.prenom
-                    ? `Hey ${user.user_metadata.prenom} !`
-                    : "Bienvenue sur Strady.imo !"}
-            </h1>
-            <p className="text-lg text-gray-600 mb-6">
-                {user?.user_metadata?.prenom
-                    ? "Ravi de vous revoir. Prêt à analyser votre prochain investissement ?"
-                    : "Votre copilote pour l'investissement locatif en Belgique."
-                }
-            </p>
-            <div className="text-left space-y-3 mb-8">
-                <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Analysez</strong> la rentabilité d'un bien (score, rendement, cash-flow).</span></p>
-                <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Estimez</strong> vos coûts (travaux, frais d'acquisition, charges).</span></p>
-                <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Évaluez</strong> le marché (tension locative, loyers).</span></p>
-                <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Gagnez du temps</strong> avec notre assistant IA pour extraire les données d'une annonce.</span></p>
-                <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Sauvegardez & Synchronisez</strong> vos analyses en créant un compte.</span></p>
-            </div>
-            <p className="text-gray-600 mb-8 italic">
-                Prêt à transformer vos intuitions en décisions chiffrées ? Bonne utilisation !
-            </p>
-            <div className="flex flex-col gap-4 mb-8">
-                <button
-                    onClick={onStart}
-                    className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg"
-                >
-                    Commencer une analyse
-                </button>
-                
-            </div>
-            <p className="text-xs text-gray-500 mt-4">En continuant, vous confirmez avoir lu et accepté notre <button onClick={() => onNavigate('terms')} className="underline">Conditions d'Utilisation</button> et notre <button onClick={() => onNavigate('privacy')} className="underline">Politique de Confidentialité</button>.</p>
-        </div>
-    </div>
-);
 
 // --- Composant pour la notification ---
 const Notification = ({ message, type, onClose }) => {
@@ -1949,10 +1660,10 @@ const CookieBanner = ({ onAccept }) => (
             case 'knowledge': return <KnowledgePage onBack={() => setPage('aide')} />;
             case 'glossary': return <GlossaryPage onBack={() => setPage('aide')} />;
             case 'view-analysis': return <AnalysisViewPage analysis={viewingAnalysis} onBack={() => setPage('dashboard')} />;
-            case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} setMaxAnalyses={setMaxAnalyses} />;
-            case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} onBack={() => setPage('main')} maxAnalyses={maxAnalyses} onView={viewAnalysis} />;
+            case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
+            case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} maxAnalyses={maxAnalyses} onView={viewAnalysis} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
-            case 'account': return <AccountPage onBack={() => setPage('main')} />;
+            case 'account': return <AccountPage onBack={() => setPage('main')} onNavigate={setPage} userPlan={userPlan} analysesCount={analyses.length} />;
             case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
             case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;
             case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;

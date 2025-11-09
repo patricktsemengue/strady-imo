@@ -124,7 +124,6 @@ const PlansPage = ({ userPlan, onBack, setNotification, onNavigate }) => {
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Plans</h1>
-            <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour</button>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {plans.map((plan) => (
                     <PlanCard

@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 import ConfirmationModal from './ConfirmationModal';
+import { WalletIcon, UserIcon, ShieldCheckIcon, AlertTriangleIcon } from './Icons';
 
-const AccountPage = ({ onBack }) => {
+const AccountPage = ({ onBack, onNavigate, userPlan, analysesCount }) => {
     const { user, updatePassword, updateUserData, signOut } = useAuth();
-
+ 
     const [prenom, setPrenom] = useState(user.user_metadata?.prenom || '');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,7 +17,7 @@ const AccountPage = ({ onBack }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+ 
     const handleNameUpdate = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -90,91 +91,89 @@ const AccountPage = ({ onBack }) => {
 
     return (
         <>
-            <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in space-y-8 max-w-lg mx-auto">
-                <h1 className="text-2xl font-bold text-gray-800">Mon profil</h1>
-                <button class="hidden" onClick={onBack} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour à l'analyse</button>
+            <div className="p-4 md:p-6 bg-slate-50 animate-fade-in space-y-8 max-w-4xl mx-auto">
+                <h1 className="text-3xl font-bold text-gray-800">Mon Espace</h1>
 
-                <div className="border-t pt-6">
-                    <h2 className="text-xl font-semibold text-gray-700">Compte</h2>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Adresse e-mail</label>
-                        <input
-                            type="email"
-                            value={user.email}
-                            readOnly
-                            className="mt-1 w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed"
-                        />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* --- Colonne de gauche : Profil & Sécurité --- */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* --- Carte Profil --- */}
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 mb-4"><UserIcon /> Informations Personnelles</h2>
+                            <form onSubmit={handleNameUpdate} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+                                    <input type="email" value={user.email} readOnly className="mt-1 w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Prénom</label>
+                                    <input type="text" value={prenom} onChange={(e) => setPrenom(e.target.value)} className="mt-1 w-full p-2 border rounded-md" />
+                                </div>
+                                {nameMessage && <p className="text-green-600 font-semibold">{nameMessage}</p>}
+                                <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300">
+                                    {loading ? '...' : 'Mettre à jour le prénom'}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* --- Carte Sécurité --- */}
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 mb-4"><ShieldCheckIcon /> Sécurité</h2>
+                            <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
+                                    <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full p-2 border rounded-md" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
+                                    <input type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1 w-full p-2 border rounded-md" />
+                                </div>
+                                {passwordMessage && <p className="text-green-600 font-semibold">{passwordMessage}</p>}
+                                <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300">
+                                    {loading ? '...' : 'Changer le mot de passe'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {/* --- Colonne de droite : Abonnement & Danger Zone --- */}
+                    <div className="space-y-8">
+                        {/* --- Carte Abonnement --- */}
+                        {userPlan && (
+                            <div className="bg-white p-6 rounded-lg shadow-md">
+                                <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 mb-4"><WalletIcon /> Mon Abonnement</h2>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-baseline">
+                                        <span className="text-gray-600">Plan actuel :</span>
+                                        <span className="font-bold text-lg text-blue-600">{userPlan.profile_plans.plan_name}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                        <span className="text-gray-600">Crédits IA restants :</span>
+                                        <span className="font-bold">{userPlan.current_ai_credits === -1 ? 'Illimités' : userPlan.current_ai_credits}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                        <span className="text-gray-600">Analyses sauvegardées :</span>
+                                        <span className="font-bold">{userPlan.profile_plans.stored_analysis === -1 ? 'Illimitées' : `${analysesCount} / ${userPlan.profile_plans.stored_analysis}`}</span>
+                                    </div>
+                                </div>
+                                <button onClick={() => onNavigate('plans')} className="mt-6 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+                                    Gérer mon abonnement
+                                </button>
+                            </div>
+                        )}
+
+                        {/* --- Carte Danger Zone --- */}
+                        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-red-500">
+                            <h2 className="text-xl font-bold text-red-600 flex items-center gap-2 mb-4"><AlertTriangleIcon /> Zone de Danger</h2>
+                            <p className="text-sm text-gray-600 mt-2">La suppression de votre compte est irréversible et entraînera la perte de toutes vos analyses sauvegardées.</p>
+                            <button onClick={handleDeleteAccount} disabled={loading} className="mt-4 w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300 disabled:bg-red-300">
+                                Supprimer mon compte
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                {/* Formulaire Nom */}
-                <form onSubmit={handleNameUpdate} className="space-y-4 border-t pt-6">
-                    <h2 className="text-xl font-semibold text-gray-700">Modifier le nom </h2>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Nom</label>
-                        <input
-                            type="text"
-                            value={prenom}
-                            onChange={(e) => setPrenom(e.target.value)}
-                            className="mt-1 w-full p-2 border rounded-md"
-                        />
-                    </div>
-                    {nameMessage && <p className="text-green-600 font-semibold">{nameMessage}</p>}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
-                    >
-                        {loading ? '...' : 'Mettre à jour le nom'}
-                    </button>
-                </form>
-
-                {/* Formulaire Mot de passe */}
-                <form onSubmit={handlePasswordUpdate} className="space-y-4 border-t pt-6">
-                    <h2 className="text-xl font-semibold text-gray-700">Changer le mot de passe</h2>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
-                        <input
-                            type="password"
-                            placeholder="Nouveau mot de passe"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 w-full p-2 border rounded-md"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
-                        <input
-                            type="password"
-                            placeholder="Confirmer le mot de passe"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="mt-1 w-full p-2 border rounded-md"
-                        />
-                    </div>
-                    {passwordMessage && <p className="text-green-600 font-semibold">{passwordMessage}</p>}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
-                    >
-                        {loading ? '...' : 'Changer le mot de passe'}
-                    </button>
-                </form>
-
+                
                 {error && <p className="text-red-600 font-semibold text-center mt-4">{error}</p>}
-
-                <div className="border-t pt-6">
-                    <h2 className="text-xl font-semibold text-red-600">Zone de Danger</h2>
-                    <p className="text-sm text-gray-600 mt-2">Cette action est irréversible. La suppression de votre compte entraînera la désactivation de votre compte et la suppression de toutes vos analyses sauvegardées.</p>
-                    <button
-                        onClick={handleDeleteAccount}
-                        disabled={loading}
-                        className="mt-4 w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300 disabled:bg-red-300"
-                    >
-                        Supprimer mon compte
-                    </button>
-                </div>
             </div>
 
             <ConfirmationModal
