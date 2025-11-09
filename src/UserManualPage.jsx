@@ -3,7 +3,6 @@ import React from 'react';
 const UserManualPage = ({ onBack }) => (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Manuel Utilisateur</h1>
-        <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour</button>
         <div className="prose max-w-none text-gray-700 space-y-6">
 
             <h2 className="text-xl font-semibold">1. Section "Bien Immobilier"</h2>
@@ -13,7 +12,7 @@ const UserManualPage = ({ onBack }) => (
 
             <h2 className="text-xl font-semibold">2. Assistant Immobilier IA</h2>
             <p>
-                Pour gagner du temps, collez le texte d'une annonce immobilière ou son URL dans le champ prévu. Choisissez ensuite une action (comme "Extraire la description") et cliquez sur "Interroger l'IA". L'assistant remplira automatiquement les champs du formulaire pour vous. Vous pouvez ensuite sauvegarder sa réponse dans vos notes.
+                Pour gagner du temps, collez le texte d'une annonce immobilière ou son URL dans le champ prévu. Choisissez ensuite une action (comme "Extraire les données" ou "Analyser les risques") et cliquez sur "Interroger l'IA". L'assistant peut remplir automatiquement les champs du formulaire pour vous ("Appliquer au formulaire") ou simplement ajouter sa réponse à vos notes.
             </p>
 
             <h2 className="text-xl font-semibold">3. Section "Financement"</h2>
@@ -36,7 +35,7 @@ const UserManualPage = ({ onBack }) => (
 
             <h2 className="text-xl font-semibold">6. Sauvegarde et Gestion</h2>
             <p>
-                Si vous êtes connecté, vous pouvez sauvegarder votre analyse en cliquant sur le bouton "Sauvegarder". Toutes vos analyses sont accessibles depuis l'onglet "Mes analyses" dans la barre de navigation inférieure.
+                Si vous êtes connecté, vous pouvez sauvegarder votre analyse en cliquant sur le bouton "Sauvegarder". Toutes vos analyses sont accessibles depuis l'onglet "Mes analyses" dans la barre de navigation inférieure. Vous pouvez y visualiser, modifier, renommer ou supprimer vos projets.
             </p>
 
         </div>

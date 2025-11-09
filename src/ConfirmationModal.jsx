@@ -2,7 +2,7 @@
 import React from 'react';
 
 // ---  Composant Modal de  Confirmation ---
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isLoading }) => {
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isLoading, confirmText = 'Confirmer', confirmDisabled = false }) => {
     if (!isOpen) return null;
 
     return (
@@ -22,10 +22,10 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isLoad
                     </button>
                     <button
                         onClick={onConfirm}
-                        disabled={isLoading}
-                        className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 disabled:bg-red-300"
+                        disabled={isLoading || confirmDisabled}
+                        className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
                     >
-                        {isLoading ? 'Suppression...' : 'Confirmer la suppression'}
+                        {isLoading ? 'Chargement...' : confirmText}
                     </button>
                 </div>
             </div>

@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE OR REPLACE FUNCTION purge_deleted_user_data_4_weeks()
 RETURNS void
 LANGUAGE plpgsql
-SECURITY DEFINER -- Exécuter en tant qu'admin
+SECURITY DEFINER SET search_path = public -- Exécuter en tant qu'admin
 AS $$
 DECLARE
   four_weeks_ago timestamptz := now() - interval '4 weeks';
@@ -35,7 +35,7 @@ $$;
 CREATE OR REPLACE FUNCTION purge_deleted_users_6_weeks()
 RETURNS void
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY DEFINER SET search_path = public, auth
 AS $$
 DECLARE
     six_weeks_ago timestamptz := now() - interval '6 weeks';

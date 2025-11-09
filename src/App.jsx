@@ -13,9 +13,14 @@ import KnowledgePage from './KnowledgePage';
 import GlossaryPage from './GlossaryPage';
 import AnalysisViewPage from './AnalysisViewPage';
 import ConfirmationModal from './ConfirmationModal';
+import PlansPage from './PlansPage';
 
 const StarIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+);
+
+const WalletIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wallet"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
 );
 
 // --- Icônes SVG pour une interface plus propre ---
@@ -169,8 +174,17 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, onBack, maxAn
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
-    const emptySlotsCount = maxAnalyses > analyses.length ? maxAnalyses - analyses.length : 0;
-    const emptySlots = Array.from({ length: emptySlotsCount });
+
+    // Logique améliorée pour l'affichage des emplacements vides
+    const emptySlotsCount = React.useMemo(() => {
+        if (maxAnalyses === -1) { // Cas "illimité"
+            return 3;
+        }
+        const availableSlots = maxAnalyses - analyses.length;
+        // On affiche au maximum 3 slots, ou moins si la limite est plus basse.
+        return Math.min(Math.max(0, availableSlots), 3);
+    }, [analyses.length, maxAnalyses]);
+    const emptySlots = Array.from({ length: emptySlotsCount });    
 
     // --- États pour le renommage ---
     const [renamingId, setRenamingId] = React.useState(null);
@@ -753,20 +767,35 @@ const MetricExplanationModal = ({ isOpen, onClose, metric }) => {
 
 
 // --- Composant Modal de Profil ---
-const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user }) => {
+const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user, userPlan, analyses }) => {
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-end p-4" onClick={onClose}>
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
                 <div className="p-4 border-b">
-                    <h2 className="text-lg font-semibold">Profil</h2>
-                    {user.user_metadata?.prenom && <p className="text-sm text-gray-500">Connecté en tant que {user.user_metadata.prenom}</p>}
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h2 className="text-lg font-semibold">Profil</h2>
+                            {user.user_metadata?.prenom && <p className="text-sm text-gray-500">Connecté en tant que {user.user_metadata.prenom}</p>}
+                        </div>
+                        {userPlan && (
+                            <div className="text-right text-sm">
+                                <p className="font-semibold text-blue-600">{userPlan.profile_plans.plan_name}</p>
+                                <p className="text-gray-500">Crédits IA: {userPlan.current_ai_credits === -1 ? 'Illimités' : userPlan.current_ai_credits}</p>
+                                <p className="text-gray-500">Analyses: {userPlan.profile_plans.stored_analysis === -1 ? 'Illimitées' : `${analyses.length} / ${userPlan.profile_plans.stored_analysis}`}</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className="p-2">
                     <button onClick={() => { onNavigate('account'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
                         <SettingsIcon />
                         <span>Mon profil</span>
+                    </button>
+                    <button onClick={() => { onNavigate('plans'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                        <WalletIcon />
+                        <span>Abonnement</span>
                     </button>
                     <button onClick={() => { onNavigate('feedback'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
                         <StarIcon />
@@ -803,6 +832,7 @@ const WelcomePage = ({ onStart, onNavigate, user }) => (
                 <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Analysez</strong> la rentabilité d'un bien (score, rendement, cash-flow).</span></p>
                 <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Estimez</strong> vos coûts (travaux, frais d'acquisition, charges).</span></p>
                 <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Évaluez</strong> le marché (tension locative, loyers).</span></p>
+                <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Gagnez du temps</strong> avec notre assistant IA pour extraire les données d'une annonce.</span></p>
                 <p className="flex items-start"><span className="text-green-500 mr-3 mt-1 flex-shrink-0">✔️</span><span><strong>Sauvegardez & Synchronisez</strong> vos analyses en créant un compte.</span></p>
             </div>
             <p className="text-gray-600 mb-8 italic">
@@ -821,6 +851,32 @@ const WelcomePage = ({ onStart, onNavigate, user }) => (
         </div>
     </div>
 );
+
+// --- Composant pour la notification ---
+const Notification = ({ message, type, onClose }) => {
+    if (!message) return null;
+ 
+    const styles = {
+        success: {
+            bg: 'bg-green-600',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        },
+        error: {
+            bg: 'bg-red-600',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        }
+    };
+ 
+    const currentStyle = styles[type] || styles.success;
+ 
+    return (
+        <div className={`fixed top-5 left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-2xl text-white z-50 flex items-center gap-4 animate-fade-in-down ${currentStyle.bg}`}>
+            <div className="flex-shrink-0">{currentStyle.icon}</div>
+            <span className="font-medium">{message}</span>
+            <button onClick={onClose} className="ml-4 font-bold text-xl opacity-70 hover:opacity-100">&times;</button>
+        </div>
+    );
+};
 
 // --- Composant principal de l'application ---
 export default function App() {
@@ -865,10 +921,8 @@ export default function App() {
     const [isSaveModalOpen, setIsSaveModalOpen] = React.useState(false);
     const [projectNameForSave, setProjectNameForSave] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
-    const [notification, setNotification] = React.useState({ msg: '', type: '' });
-    const [maxAnalyses, setMaxAnalyses] = React.useState(() => {
-        return parseInt(import.meta.env.VITE_STRADY_MAX_ANALYZES || '3', 10);
-    });
+    const [notification, setNotification] = React.useState({ msg: '', type: '' });    
+    const [maxAnalyses, setMaxAnalyses] = React.useState(3); // Default for logged-out users
     const [allSettingsConfigured, setAllSettingsConfigured] = React.useState(false);
     const [isDataLoading, setIsDataLoading] = React.useState(true);
     const [tempNumericValue, setTempNumericValue] = React.useState(null);
@@ -876,10 +930,12 @@ export default function App() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
+    const [userPlan, setUserPlan] = React.useState(null);
     const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
     const [isScoreModalOpen, setIsScoreModalOpen] = React.useState(false);
     const [viewingAnalysis, setViewingAnalysis] = React.useState(null);
     const [isMetricModalOpen, setIsMetricModalOpen] = React.useState(false);
+    const [isCreditModalOpen, setIsCreditModalOpen] = React.useState(false);
     const [isLegalMenuOpen, setIsLegalMenuOpen] = React.useState(false);
     const [selectedMetric, setSelectedMetric] = React.useState(null);
 
@@ -1002,6 +1058,37 @@ const CookieBanner = ({ onAccept }) => (
 
     }, [user]);
 
+    React.useEffect(() => {
+        const fetchUserPlan = async () => {
+            if (user) {
+                const { data: planData, error } = await supabase
+                    .from('user_profile_plans')
+                    .select(`
+                        current_ai_credits,
+                        profile_plans (
+                            plan_name,
+                            ai_credits,
+                            stored_analysis
+                        )
+                    `)
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { // PGRST116: no rows found
+                    console.error("Error fetching user plan:", error);
+                } else if (planData) {
+                    setUserPlan(planData);
+                    setMaxAnalyses(planData.profile_plans.stored_analysis);
+                }
+            } else {
+                setUserPlan(null);
+                setMaxAnalyses(3); // Reset to default for logged-out users
+            }
+        };
+
+        fetchUserPlan();
+    }, [user, page]); // Also re-fetch when page changes to 'plans' to get updated info
+
     const handleStart = () => {
         const newExpiry = Date.now() + (cacheDuration * 60 * 60 * 1000);
         localStorage.setItem('welcomeExpiry', newExpiry);
@@ -1093,11 +1180,32 @@ const CookieBanner = ({ onAccept }) => (
             header, footer { display: none; }
         }
         `;
+        styleElement.innerHTML += `
+        @keyframes pulse-badge {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        @keyframes fade-in-down {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in-down { animation: fade-in-down 0.5s ease-out forwards; }
+        `;
         document.head.appendChild(fontLink);
         document.head.appendChild(styleElement);
 
         // Check if all settings are configured
-        //const apiKey = localStorage.getItem('geminiApiKey');
+        // const apiKey = localStorage.getItem('geminiApiKey');
         //const cacheDuration = localStorage.getItem('welcomeCacheDuration');
         //const maxAnalysesStored = localStorage.getItem('maxAnalyses');
 
@@ -1107,7 +1215,7 @@ const CookieBanner = ({ onAccept }) => (
         }
 
         return () => { document.head.removeChild(fontLink); document.head.removeChild(styleElement); };
-    }, [page]);
+    }, []);
 
     // [NOUVEAU HOOK] Recalcul automatique de l'apport basé sur la quotité
     React.useEffect(() => {
@@ -1645,9 +1753,31 @@ const CookieBanner = ({ onAccept }) => (
         callGeminiAPI(systemPrompt, finalPrompt, setIsGeminiLoading, setGeminiError, (response) => {
             setGeminiResponse(response);
             if (response) { 
-                // Vérifie si la réponse est un refus poli avant d'afficher les boutons
                 const isOutOfScopeResponse = /désolé|sort de mon cadre|ma spécialité|mon rôle est limité|sort du cadre de l'immobilier/i.test(response);
                 setShowAiResponseActions(!isOutOfScopeResponse);
+
+                // Décompter un crédit si la réponse est pertinente et que l'utilisateur est connecté
+                if (!isOutOfScopeResponse && user && userPlan && userPlan.current_ai_credits !== -1) {
+                    const newCreditCount = Math.max(0, userPlan.current_ai_credits - 1);
+
+                    // Mettre à jour l'état local immédiatement
+                    setUserPlan(prevPlan => ({
+                        ...prevPlan,
+                        current_ai_credits: newCreditCount
+                    }));
+
+                    // Mettre à jour la base de données en arrière-plan
+                    const decrementCredits = async () => {
+                        const { error } = await supabase
+                            .from('user_profile_plans')
+                            .update({ current_ai_credits: newCreditCount })
+                            .eq('user_id', user.id);
+                        if (error) {
+                            console.error("Erreur lors de la mise à jour des crédits :", error);
+                        }
+                    };
+                    decrementCredits();
+                }
             }
         });
     };
@@ -1769,6 +1899,48 @@ const CookieBanner = ({ onAccept }) => (
         setTempNumericValue(null);
     };
 
+    const handleAiAssistantToggle = () => {
+        const hasCredits = userPlan && (userPlan.current_ai_credits > 0 || userPlan.current_ai_credits === -1);
+        if (user && !hasCredits) {
+            setNotification({
+                msg: "Vous n'avez plus de crédits IA. Rechargez pour continuer.",
+                type: 'error'
+            });
+            setTimeout(() => {
+                setNotification({ msg: '', type: '' });
+                setPage('plans'); // Navigate to plans page
+            }, 2500);
+        } else {
+            setIsAiAssistantOpen(!isAiAssistantOpen);
+        }
+    };
+
+    const checkAiCredits = () => {
+        const hasNoCredits = user && userPlan && userPlan.current_ai_credits === 0;
+        if (hasNoCredits) {
+            setIsCreditModalOpen(true); // Ouvre la modale de confirmation
+            return false; // Indique que l'utilisateur n'a pas de crédits
+        }
+        return true; // Indique que l'utilisateur a des crédits
+    };
+
+    const getAiButtonTooltip = () => {
+        if (isGeminiLoading) {
+            return "L'IA est déjà en train de réfléchir...";
+        }
+        if (!aiInput) {
+            return "Veuillez coller le texte d'une annonce ou une URL.";
+        }
+        if (!aiPrompt) {
+            return "Veuillez choisir une action à effectuer.";
+        }
+        if (userPlan && userPlan.current_ai_credits === 0) {
+            return "Vous n'avez plus de crédits IA.";
+        }
+        return "Lancer l'analyse par l'IA"; // Texte par défaut quand le bouton est actif
+    };
+
+
     const renderPage = () => {
         console.log('Rendering page:', page);
         switch (page) {
@@ -1784,6 +1956,7 @@ const CookieBanner = ({ onAccept }) => (
             case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
             case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;
             case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;
+            case 'plans': return <PlansPage userPlan={userPlan} onBack={() => setPage('main')} setNotification={setNotification} onNavigate={setPage} />;
             default:
 
                 // --- NOUVEAU CALCUL POUR QUOTITÉ MANUELLE ---
@@ -1903,21 +2076,31 @@ const CookieBanner = ({ onAccept }) => (
                         {/* ---  Assistant IA Général (Déplacé et modifiable) --- */}
                         {user && (
                         <div className="bg-white p-4 rounded-lg shadow-md">
-                            <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)}>
+                            <div className="flex justify-between items-center cursor-pointer" onClick={handleAiAssistantToggle}>
                                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                     <SparklesIcon /> Assistant Immobilier IA
                                 </h2>
+                                <div className="flex items-center gap-4">
+                                    {userPlan && (
+                                        <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${userPlan.current_ai_credits > 0 || userPlan.current_ai_credits === -1 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                                            Crédits restants: {userPlan.current_ai_credits === -1 ? 'Illimités' : userPlan.current_ai_credits}
+                                        </span>
+                                    )}
                                 <ChevronDownIcon className={`transition-transform ${isAiAssistantOpen ? 'rotate-180' : ''}`} />
+                                </div>
                             </div>
                             
                             {isAiAssistantOpen && (
                                 <div className="mt-4 pt-4 border-t animate-fade-in">
                                     <p className="text-sm text-gray-500 mb-3">Collez le texte d'une annonce ou une URL, choisissez une action, puis interrogez l'IA.</p>
-                                                    
+                                     
                                     <div className="space-y-4">
                                         <textarea
+                                            name="aiInput"
                                             value={aiInput}
-                                            onChange={(e) => setAiInput(e.target.value)}
+                                            onChange={(e) => {
+                                                if (checkAiCredits()) setAiInput(e.target.value);
+                                            }}
                                             rows="5"
                                             placeholder="Collez un texte, une URL..."
                                             className="w-full p-2 border rounded-md"
@@ -1931,7 +2114,9 @@ const CookieBanner = ({ onAccept }) => (
                                                 {group.prompts.map((promptText) => (
                                                 <button
                                                     key={promptText}
-                                                    onClick={() => setAiPrompt(promptText)}
+                                                    onClick={() => {
+                                                        if (checkAiCredits()) setAiPrompt(promptText);
+                                                    }}
                                                     className={`text-sm py-1 px-3 rounded-full transition border-2 ${aiPrompt === promptText ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-800 border-gray-100 hover:border-gray-300'}`}
                                                 >
                                                     {promptText}
@@ -1944,8 +2129,9 @@ const CookieBanner = ({ onAccept }) => (
 
                                         <button
                                             onClick={handleGeneralQuery}
-                                            disabled={isGeminiLoading || !aiInput || !aiPrompt}
-                                            className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-purple-300"
+                                            disabled={isGeminiLoading || !aiInput || !aiPrompt || (userPlan && userPlan.current_ai_credits === 0)}
+                                            className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-purple-300 disabled:cursor-help"
+                                            title={getAiButtonTooltip()}
                                         >
                                             {isGeminiLoading ? 'Recherche...' : "Interroger l'IA"}
                                         </button>
@@ -2249,6 +2435,11 @@ const CookieBanner = ({ onAccept }) => (
     return (
         <div className="bg-slate-100 min-h-screen font-sans text-gray-800">
             <header className="bg-white shadow-md sticky top-0 left-0 right-0 z-10"><div className="max-w-4xl mx-auto p-4"><Logo /></div></header>
+            <Notification 
+                message={notification.msg} 
+                type={notification.type} 
+                onClose={() => setNotification({ msg: '', type: '' })} 
+            />
 
                         <main className="max-w-4xl mx-auto p-4 md:p-6 pb-24 pt-20">
                 <ProfileModal
@@ -2257,6 +2448,8 @@ const CookieBanner = ({ onAccept }) => (
                     onNavigate={setPage}
                     onSignOut={signOut}
                     user={user}
+                    userPlan={userPlan}
+                    analyses={analyses}
                 />
                 <RenovationEstimatorModal isOpen={isEstimatorOpen} onClose={() => setIsEstimatorOpen(false)} onApply={handleTravauxUpdate} />
                 <TensionLocativeEstimatorModal isOpen={isTensionEstimatorOpen} onClose={() => setIsTensionEstimatorOpen(false)} onApply={handleTensionUpdate} />
@@ -2287,6 +2480,23 @@ const CookieBanner = ({ onAccept }) => (
                 />
 
                 <ConfirmationModal
+                    isOpen={isCreditModalOpen}
+                    onClose={() => setIsCreditModalOpen(false)}
+                    onConfirm={() => {
+                        setIsCreditModalOpen(false);
+                        setPage('plans');
+                    }}
+                    title="Crédits IA épuisés"
+                    confirmText="Voir les plans"
+                >
+                    <p>Vous n'avez plus de crédits IA pour ce mois-ci.</p>
+                    <p className="mt-2">
+                        Souhaitez-vous consulter nos plans d'abonnement pour recharger vos crédits et débloquer plus de fonctionnalités ?
+                    </p>
+                </ConfirmationModal>
+
+
+                <ConfirmationModal
                     isOpen={isDeleteModalOpen}
                     onClose={() => {
                         setIsDeleteModalOpen(false);
@@ -2309,7 +2519,7 @@ const CookieBanner = ({ onAccept }) => (
                             {/* --- FAB (Floating Action Button) --- */}
                             <button
                                 onClick={handleNewProject}
-                                className="fixed bottom-28 right-6 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 transition-all duration-300 z-30 transform hover:scale-110 hover:shadow-xl hover:shadow-blue-400/50 print:hidden"
+                                className="fixed bottom-28 right-6 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 active:bg-amber-500 transition-all duration-300 z-30 transform hover:scale-110 hover:shadow-xl hover:shadow-blue-400/50 print:hidden"
                                 title="Nouvelle analyse"
                             >
                                 <PlusIcon />
@@ -2362,5 +2572,6 @@ const CookieBanner = ({ onAccept }) => (
                             </footer>
                 
                             {showCookieBanner && <CookieBanner onAccept={handleCookieConsent} />}
-                        </div>    );
+                        </div>
+    );
 }

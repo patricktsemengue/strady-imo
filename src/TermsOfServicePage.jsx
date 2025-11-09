@@ -4,7 +4,6 @@ import { legalConfig } from './legalConfig';
 const TermsOfServicePage = ({ onBack }) => (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Conditions Générales d'Utilisation</h1>
-        <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour</button>
         <div className="prose max-w-none text-gray-700 space-y-4">
             <p>Dernière mise à jour : {legalConfig.lastUpdate}</p>
 
