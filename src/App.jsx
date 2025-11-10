@@ -553,7 +553,13 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user, userPlan, 
                         <span>Donner mon avis</span>
                     </button>
                     <button onClick={() => { onSignOut(); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50">
-                        <LogOutIcon />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" x2="9" y1="12" y2="12" />
+                        </svg>
+
+
                         <span>Déconnexion</span>
                     </button>
                 </div>
@@ -640,9 +646,12 @@ export default function App() {
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
+    const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+    const [authPageInitialMode, setAuthPageInitialMode] = React.useState('signIn');
     const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
     const [userPlan, setUserPlan] = React.useState(null);
     const [redirectAfterLogin, setRedirectAfterLogin] = React.useState(null);
+    const [isSignOutModalOpen, setIsSignOutModalOpen] = React.useState(false);
     const [isScoreModalOpen, setIsScoreModalOpen] = React.useState(false);
     const [viewingAnalysis, setViewingAnalysis] = React.useState(null);
     const [isMetricModalOpen, setIsMetricModalOpen] = React.useState(false);
@@ -800,10 +809,11 @@ const CookieBanner = ({ onAccept }) => (
         fetchUserPlan();
     }, [user, page]); // Also re-fetch when page changes to 'plans' to get updated info
 
-    const handleStart = () => {
+    const handleStart = (destination = 'main') => {
         const newExpiry = Date.now() + (cacheDuration * 60 * 60 * 1000);
         localStorage.setItem('welcomeExpiry', newExpiry);
         setShowWelcome(false);
+        setPage(destination); // Redirige vers la page d'analyse ou le dashboard
     };
 
     React.useEffect(() => {
@@ -962,15 +972,47 @@ const CookieBanner = ({ onAccept }) => (
         // Si l'utilisateur est maintenant connecté (user n'est pas null)
         // ET que l'utilisateur est toujours sur la page d'authentification
         if (user && page === 'auth') {
+            // --- CORRECTION AMÉLIORÉE ---
+            // On vérifie si l'URL (dans le hash) contient les tokens de Supabase.
+            // Si c'est le cas, cela signifie qu'on arrive d'un lien magique (confirmation, recovery, etc.).
+            // On ne redirige PAS et on laisse AuthPage.jsx gérer la situation.
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            if (hashParams.has('access_token')) return;
+
             // Redirige vers le dashboard
             if (redirectAfterLogin) {
                 setPage(redirectAfterLogin);
                 setRedirectAfterLogin(null);
             } else {
-                setPage('dashboard');
+                // --- NOUVELLE LOGIQUE ---
+                // Vérifier si la page d'accueil doit être montrée en respectant le cache
+                const expiry = localStorage.getItem('welcomeExpiry');
+                const shouldShowWelcome = !expiry || parseInt(expiry) < Date.now();
+
+                if (shouldShowWelcome) {
+                    setShowWelcome(true);
+                } else {
+                    setPage('dashboard'); // Sinon, aller directement au tableau de bord
+                }
             }
         }
     }, [user, page, redirectAfterLogin]);
+
+    const handleSignOut = async () => {
+        // Fermer toutes les modales
+        setIsSignOutModalOpen(false);
+        setIsProfileModalOpen(false);
+        // Déconnecter l'utilisateur
+        await signOut();
+        // Réinitialiser l'état de l'analyse en cours
+        setData(initialDataState);
+        setResult(null);
+        setCurrentAnalysisId(null);
+        // Afficher la notification et rediriger
+        setNotification({ msg: 'Vous avez été déconnecté avec succès.', type: 'success' });
+        setShowWelcome(false); // S'assure que la page d'accueil n'est pas affichée
+        setPage('auth'); // Redirige vers la page de connexion
+    };
 
 
     /*
@@ -1165,8 +1207,7 @@ const CookieBanner = ({ onAccept }) => (
 
     const handleOpenSaveModal = () => {
         if (!user) {
-            setRedirectAfterLogin('main');
-            setPage('auth');
+            setIsAuthModalOpen(true);
             return;
         }
 
@@ -1456,7 +1497,7 @@ const CookieBanner = ({ onAccept }) => (
     };
 
     const handleGeneralQuery = () => {
-        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique. Ton rôle est d'analyser des annonces, des textes ou des questions et de fournir des réponses structurées. Si on te demande d'extraire des informations, présente-les de façon claire, cohérente et concise. Pour une annonce, voici les champs importants : Type de bien, score PEB, Surface, Revenu Cadastral, Prix, Adresse, Conformité électrique, Conformité urbanistique, conformité locative, travaux à prévoir, travaux votés en AG, travaux de mise en conformité, et autres informations pertinentes pour un investisseur. Si une information n'est pas présente, indique "Non spécifié". Si la question sort du cadre de l'immobilier belge, décline poliment en commençant ta réponse par "Je suis désolé".`;
+        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique. Ton rôle est d'analyser des annonces, des textes ou des questions et de fournir des réponses structurées. Si on te demande d'extraire des informations, présente-les de façon claire, cohérente et concise. Pour une annonce, voici les champs importants : Type de bien, score PEB, Surface, Revenu Cadastral, Prix, Adresse, Conformité électrique, Conformité urbanistique, conformité locative, travaux à prévoir, travaux votés en AG, travaux de mise en conformité, et autres informations pertinentes pour un investisseur. Si une information n'est pas présente, indique "Non spécifié". Si la question sort du cadre de l'immobilier belge, décline poliment en commençant ta réponse par "Je suis désolé", tente de rediriger l'utilisateur vers des ressources appropriées.`;
         
         // Construit le prompt final
         const finalPrompt = `${aiPrompt}\n\nVoici le contexte à analyser (texte ou URL) :\n\n${aiInput}`;
@@ -1662,8 +1703,8 @@ const CookieBanner = ({ onAccept }) => (
             case 'view-analysis': return <AnalysisViewPage analysis={viewingAnalysis} onBack={() => setPage('dashboard')} />;
             case 'settings': return <SettingsPage onBack={() => setPage('main')} maxAnalyses={maxAnalyses} />;
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} maxAnalyses={maxAnalyses} onView={viewAnalysis} />;
-            case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} />;
-            case 'account': return <AccountPage onBack={() => setPage('main')} onNavigate={setPage} userPlan={userPlan} analysesCount={analyses.length} />;
+            case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} initialMode={authPageInitialMode} setNotification={setNotification} />;
+            case 'account': return <AccountPage onBack={() => setPage('main')} onNavigate={setPage} userPlan={userPlan} analysesCount={analyses.length} setNotification={setNotification} />;
             case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
             case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;
             case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;
@@ -2157,7 +2198,7 @@ const CookieBanner = ({ onAccept }) => (
                     isOpen={isProfileModalOpen}
                     onClose={() => setIsProfileModalOpen(false)}
                     onNavigate={setPage}
-                    onSignOut={signOut}
+                    onSignOut={() => setIsSignOutModalOpen(true)}
                     user={user}
                     userPlan={userPlan}
                     analyses={analyses}
@@ -2190,53 +2231,72 @@ const CookieBanner = ({ onAccept }) => (
                     setError={setSaveError}
                 />
 
-                <ConfirmationModal
-                    isOpen={isCreditModalOpen}
-                    onClose={() => setIsCreditModalOpen(false)}
-                    onConfirm={() => {
-                        setIsCreditModalOpen(false);
-                        setPage('plans');
-                    }}
-                    title="Crédits IA épuisés"
-                    confirmText="Voir les plans"
-                >
-                    <p>Vous n'avez plus de crédits IA pour ce mois-ci.</p>
-                    <p className="mt-2">
-                        Souhaitez-vous consulter nos plans d'abonnement pour recharger vos crédits et débloquer plus de fonctionnalités ?
-                    </p>
-                </ConfirmationModal>
+        <ConfirmationModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            onConfirm={() => {
+                setAuthPageInitialMode('signUp');
+                setPage('auth');
+                setIsAuthModalOpen(false);
+            }}
+            title="Accédez à toutes les fonctionnalités"
+            confirmText="Créer un compte"
+        >
+            <p>Pour sauvegarder et gérer vos analyses, veuillez créer un compte gratuit.</p>
+            <p className="mt-2 text-sm text-gray-600">C'est rapide et vous permettra de conserver votre historique.</p>
+        </ConfirmationModal>
 
+        <ConfirmationModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleConfirmDelete}
+            title="Confirmer la Suppression"
+            confirmText="Supprimer"
+        >
+            <p>Êtes-vous sûr de vouloir supprimer l'analyse : <strong>{analysisToDelete?.project_name || analysisToDelete?.data.projectName}</strong> ?</p>
+            <p className="mt-2 text-sm text-red-600">Cette action est irréversible.</p>
+        </ConfirmationModal>
+        
+        <ConfirmationModal
+            isOpen={isCreditModalOpen}
+            onClose={() => setIsCreditModalOpen(false)}
+            onConfirm={() => {
+                setPage('plans');
+                setIsCreditModalOpen(false);
+            }}
+            title="Crédits IA épuisés"
+            confirmText="Voir les abonnements"
+        >
+            <p>Vous n'avez plus de crédits pour utiliser l'assistant IA.</p>
+            <p className="mt-2 text-sm text-gray-600">Pour continuer à bénéficier de l'analyse intelligente, veuillez recharger vos crédits.</p>
+        </ConfirmationModal>
 
-                <ConfirmationModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={() => {
-                        setIsDeleteModalOpen(false);
-                        setAnalysisToDelete(null);
-                    }}
-                    onConfirm={handleConfirmDelete}
-                    title="Confirmer la suppression"
-                >
-                    <p>Êtes-vous sûr de vouloir supprimer définitivement cette analyse ?</p>
-                    {analysisToDelete && (
-                        <p className="font-bold mt-2">
-                            "{analysisToDelete.project_name || analysisToDelete.data.projectName}"
-                        </p>
-                    )}
-                    <p className="text-sm text-red-600 mt-2">Cette action est irréversible.</p>
-                </ConfirmationModal>
+        <ConfirmationModal
+            isOpen={isSignOutModalOpen}
+            onClose={() => setIsSignOutModalOpen(false)}
+            onConfirm={handleSignOut}
+            title="Confirmation de déconnexion"
+            confirmText="Se déconnecter"
+        >
+            <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+            <p className="mt-2 text-sm text-gray-600">Toute analyse non sauvegardée sera perdue.</p>
+        </ConfirmationModal>
+
                                 {renderPage()}
                             </main>
-                            
-                            {/* --- FAB (Floating Action Button) --- */}
-                            <button
-                                onClick={handleNewProject}
-                                className="fixed bottom-28 right-6 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 active:bg-amber-500 transition-all duration-300 z-30 transform hover:scale-110 hover:shadow-xl hover:shadow-blue-400/50 print:hidden"
-                                title="Nouvelle analyse"
-                            >
-                                <PlusIcon />
-                            </button>
-                            <footer className="bg-white border-t-2 shadow-top sticky bottom-0 left-0 right-0 z-20">
 
+                            <footer className="bg-white border-t-2 shadow-top sticky bottom-0 left-0 right-0 z-20 print:hidden">
+                                {/* --- FAB (Floating Action Button) --- */}
+                                {/* Le FAB n'est visible que sur les pages où il est pertinent */}
+                                {['dashboard', 'view-analysis'].includes(page) && (
+                                    <button
+                                        onClick={handleNewProject}
+                                        className="absolute bottom-full right-6 mb-4 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 active:bg-amber-500 transition-all duration-300 z-30 transform hover:scale-110 hover:shadow-xl hover:shadow-blue-400/50"
+                                        title="Nouvelle analyse"
+                                    >
+                                        <PlusIcon />
+                                    </button>
+                                )}
                                 <nav className="max-w-4xl mx-auto flex justify-around p-2">
                                     <button onClick={() => setPage('main')} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${page === 'main' ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}><HomeIcon /><span className="text-xs font-medium">Analyse</span></button>
                                     {user && (

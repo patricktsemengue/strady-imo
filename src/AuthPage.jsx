@@ -1,22 +1,59 @@
-import React, { useState } from 'react';
-import { useAuth } from './AuthContext'; // Notre hook
+import React, { useState, useEffect } from 'react'; // Import useEffect
+import { useAuth } from './AuthContext';
 import { Logo } from './App'; // Importer le Logo depuis App.jsx
 
-const AuthPage = ({ onBack, onNavigate }) => {
-  const [mode, setMode] = useState('signIn'); // 'signIn', 'signUp', 'reset'
+const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
+  const [mode, setMode] = useState(initialMode); // 'signIn', 'signUp', 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
   // ---  ÉTATS ---
   const [confirmPassword, setConfirmPassword] = useState('');
-    const [prenom, setPrenom] = useState('');
+  const [prenom, setPrenom] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   // -------------------------
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp, resetPassword, requestRestore, user, updatePassword, setNotification } = useAuth();
+
+  // Nouvel état pour gérer la visibilité du formulaire de mise à jour du mot de passe
+  const [showUpdatePasswordForm, setShowUpdatePasswordForm] = useState(false);
+
+  // Effet pour gérer la redirection depuis le lien de l'e-mail
+  useEffect(() => {
+    // Les paramètres de session (access_token, type) sont dans le hash de l'URL après une redirection de Supabase
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    const restoreToken = hashParams.get('token'); // Pour la restauration de compte
+
+    if (type === 'recovery' && accessToken) {
+      // L'utilisateur vient de cliquer sur le lien de réinitialisation de mot de passe.
+      // La présence de l'access_token dans l'URL suffit à autoriser la mise à jour.
+      setMode('reset');
+      setShowUpdatePasswordForm(true);
+      setMessage("Veuillez définir votre nouveau mot de passe.");
+    } else if (type === 'restore_account' && restoreToken) {
+      // --- NOUVELLE LOGIQUE DE RESTAURATION ---
+      const restoreAccount = async () => {
+        setLoading(true);
+        try {
+          const { error } = await supabase.functions.invoke('restore-user', { body: { token } });
+          if (error) throw error;
+          setNotification({ msg: 'Votre compte a été restauré avec succès ! Vous pouvez maintenant vous connecter.', type: 'success' });
+          setMode('signIn'); // Prépare le formulaire pour la connexion
+        } catch (err) {
+          setError("Le lien de restauration est invalide ou a expiré.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      restoreAccount();
+      window.history.replaceState({}, document.title, window.location.pathname); // Nettoie l'URL
+    }
+  }, [setNotification]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,9 +80,31 @@ const AuthPage = ({ onBack, onNavigate }) => {
         setMessage("Compte créé ! Veuillez vérifier votre boîte de réception pour confirmer votre e-mail.");
       
       } else if (mode === 'reset') {
-        const { error } = await resetPassword(email);
-        if (error) throw error;
-        setMessage("E-mail de réinitialisation envoyé. Veuillez vérifier votre boîte de réception.");
+        // Si nous sommes en mode reset mais que le formulaire de mise à jour n'est pas affiché,
+        // cela signifie que l'utilisateur vient de demander l'e-mail de réinitialisation.
+        if (!showUpdatePasswordForm) {
+          const { data, error: functionError } = await resetPassword(email); // Ceci appelle la Edge Function
+          if (functionError) {
+            // Gère les erreurs réseau ou autres erreurs inattendues
+            throw functionError;
+          }
+          // Analyser la réponse de la fonction
+          if (data?.status === 'ACCOUNT_DELETED') {
+            setError("ACCOUNT_DELETED");
+          } else {
+            setMessage("Si un compte existe avec cet e-mail, un lien de restauration ou de réinitialisation a été envoyé.");
+          }
+        } else {
+          // C'est la mise à jour réelle du mot de passe après avoir cliqué sur le lien de l'e-mail
+          if (password.length < 6) throw new Error("Le mot de passe doit faire au moins 6 caractères.");
+          if (password !== confirmPassword) throw new Error("Les mots de passe ne correspondent pas.");
+          const { error } = await updatePassword(password); // Ceci appelle la fonction updatePassword de useAuth
+          if (error) throw error;
+          
+          setNotification({ msg: 'Mot de passe mis à jour avec succès !', type: 'success' });
+          // Redirige explicitement vers la page de connexion
+          switchMode('signIn');
+        }
       }
     } catch (err) {
       setError(err.message || "Une erreur est survenue.");
@@ -54,20 +113,34 @@ const AuthPage = ({ onBack, onNavigate }) => {
     }
   };
 
+  const handleRequestRestore = async () => {
+    setLoading(true);
+    setError('');
+    setMessage('');
+    try {
+      const { error } = await requestRestore(email);
+      if (error) throw error;
+      setMessage("Si un compte supprimé correspond à cet e-mail, un lien de restauration a été envoyé.");
+    } catch (err) {
+      setError(err.message);
+    } finally { setLoading(false); }
+  };
   const getTitle = () => {
     if (mode === 'signIn') return "Connexion";
-    if (mode === 'signUp') return "Créer un compte";
-    if (mode === 'reset') return "Mot de passe oublié";
+    if (mode === 'signUp') return "Créer un compte"; // Si en mode reset et le formulaire de mise à jour est affiché
+    if (mode === 'reset' && showUpdatePasswordForm) return "Définir un nouveau mot de passe"; // Si en mode reset et le formulaire de mise à jour est affiché
+    if (mode === 'reset') return "Mot de passe oublié"; // Si en mode reset mais pas encore de formulaire de mise à jour
   };
   
   // Réinitialise les champs lors du changement de mode
   const switchMode = (newMode) => {
       setMode(newMode);
-      setError('');
+      setError(''); // Réinitialise l'erreur
       setMessage('');
       setPassword('');
       setConfirmPassword('');
       setPrenom('');
+      setShowUpdatePasswordForm(false); // Réinitialise cet état lors du changement de mode
   }
 
   return (
@@ -77,7 +150,7 @@ const AuthPage = ({ onBack, onNavigate }) => {
       </div>
       <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">{getTitle()}</h1>
       
-      {mode !== 'signIn' && (
+      {mode !== 'signIn' && !showUpdatePasswordForm && ( // Affiche le bouton "Retour" seulement si pas en mode "définir nouveau mot de passe"
         <button 
           onClick={() => switchMode('signIn')}
           className="mb-4 text-sm text-blue-600 hover:underline"
@@ -106,18 +179,21 @@ const AuthPage = ({ onBack, onNavigate }) => {
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">E-mail</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1 w-full p-2 border rounded-md"
-          />
-        </div>
+        {/* Le champ E-mail est maintenant caché en mode mise à jour de mot de passe */}
+        {!showUpdatePasswordForm && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">E-mail</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mt-1 w-full p-2 border rounded-md"
+            />
+          </div>
+        )}
 
-        {mode !== 'reset' && (
+        {(mode !== 'reset' || showUpdatePasswordForm) && ( // Affiche le mot de passe pour connexion, inscription ou mise à jour
           <div>
             <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
             <input
@@ -131,8 +207,8 @@ const AuthPage = ({ onBack, onNavigate }) => {
           </div>
         )}
 
-        {/* --- CHAMP CONFIRMATION (Mode Inscription uniquement) --- */}
-        {mode === 'signUp' && (
+        {/* --- CHAMP CONFIRMATION (Mode Inscription ou Mise à jour du mot de passe) --- */}
+        {(mode === 'signUp' || showUpdatePasswordForm) && ( // Affiche la confirmation pour inscription ou mise à jour
           <div>
             <label className="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
             <input
@@ -165,13 +241,38 @@ const AuthPage = ({ onBack, onNavigate }) => {
             </div>
         )}
 
-        {message && <p className="text-green-600 font-semibold">{message}</p>}
-        {error && <p className="text-red-600 font-semibold">{error}</p>}
+        {message && <p className="text-green-600 font-semibold text-center">{message}</p>}
+        {error && (
+            <div className="text-red-600 font-semibold text-center">
+                {error === 'ACCOUNT_DELETED' ? (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg space-y-3">
+                         <p>Ce compte a été désactivé.</p>
+                         <p className="text-sm">
+                             Si vous souhaitez le réactiver, cliquez sur le bouton ci-dessous pour recevoir un e-mail de restauration.
+                         </p>
+                         <button
+                            type="button"
+                            onClick={handleRequestRestore}
+                            disabled={loading}
+                            className="w-full bg-orange-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition duration-300 disabled:bg-orange-300"
+                         >
+                            {loading ? 'Envoi...' : 'Restaurer mon compte'}
+                         </button>
+                    </div>
+                ) : (
+                    <p>{error}</p>
+                )}
+            </div>
+        )}
 
         <button
           type="submit"
           disabled={loading || (mode === 'signUp' && !acceptedTerms)}
-          className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
+          className={`w-full text-white font-bold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50 ${
+            showUpdatePasswordForm 
+              ? 'bg-emerald-600 hover:bg-emerald-700' 
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
           {loading ? 'Chargement...' : getTitle()}
         </button>

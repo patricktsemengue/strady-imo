@@ -48,24 +48,33 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
-    signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
+    signIn: async (email, password) => {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      // Intercepter l'erreur de bannissement pour afficher un message personnalisé
+      if (error && error.message === 'User is banned') {
+        // Créer une nouvelle erreur avec un message plus clair pour l'utilisateur
+        const customError = new Error("ACCOUNT_DELETED");
+        return { data, error: customError };
+      }
+      return { data, error };
+    },
     signUp: (email, password, displayName) => supabase.auth.signUp({ 
       email, 
       password,
       options: {
         data: {
-          displayName: displayName 
+          prenom: displayName,
+          displayName: displayName
         }
       }
     }),
     signOut: () => supabase.auth.signOut(),
-    resetPassword: (email) => supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin, 
-    }),
+    resetPassword: (email) => supabase.functions.invoke('custom-password-reset', { body: { email } }),
     
     // --- EXPOSER LES NOUVELLES FONCTIONS ---
     updatePassword,
-    updateUserData
+    updateUserData,
+    requestRestore: (email) => supabase.functions.invoke('request-restore', { body: { email } }),
   };
 
   return (

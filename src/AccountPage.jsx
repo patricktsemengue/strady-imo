@@ -5,7 +5,7 @@ import { supabase } from './supabaseClient';
 import ConfirmationModal from './ConfirmationModal';
 import { WalletIcon, UserIcon, ShieldCheckIcon, AlertTriangleIcon } from './Icons';
 
-const AccountPage = ({ onBack, onNavigate, userPlan, analysesCount }) => {
+const AccountPage = ({ onBack, onNavigate, userPlan, analysesCount, setNotification }) => {
     const { user, updatePassword, updateUserData, signOut } = useAuth();
  
     const [prenom, setPrenom] = useState(user.user_metadata?.prenom || '');
@@ -57,7 +57,7 @@ const AccountPage = ({ onBack, onNavigate, userPlan, analysesCount }) => {
         if (error) {
             setError(error.message);
         } else {
-            setPasswordMessage('Mot de passe mis à jour avec succès !');
+            setNotification({ msg: 'Mot de passe mis à jour avec succès !', type: 'success' });
             setPassword('');
             setConfirmPassword('');
         }
@@ -83,9 +83,11 @@ const AccountPage = ({ onBack, onNavigate, userPlan, analysesCount }) => {
             localStorage.removeItem('immoAnalyses');
             localStorage.removeItem('welcomeExpiry');
             // Pas besoin de supprimer le consentement des cookies, c'est un choix de navigateur
-            
-            // Rediriger vers la page principale
-            onBack(); 
+
+            // Afficher la notification de succès
+            setNotification({ msg: 'Votre compte a été supprimé avec succès.', type: 'success' });
+            // Rediriger vers la page de connexion
+            onNavigate('auth');
         }
     };
 

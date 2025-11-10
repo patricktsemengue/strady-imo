@@ -29,10 +29,18 @@ const WelcomePage = ({ onStart, onNavigate, user }) => (
             <div className="flex flex-col gap-4 mb-8">
                 <button
                     onClick={onStart}
-                    className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg"
+                    className="w-full bg-emerald-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-lg"
                 >
                     Commencer une analyse
                 </button>
+                {user && (
+                    <button
+                        onClick={() => onStart('dashboard')}
+                        className="w-full bg-amber-500 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-amber-600 transition duration-300"
+                    >
+                        Accéder à mes analyses
+                    </button>
+                )}
             </div>
             <p className="text-xs text-gray-500 mt-4">En continuant, vous confirmez avoir lu et accepté notre <button onClick={() => onNavigate('terms')} className="underline">Conditions d'Utilisation</button> et notre <button onClick={() => onNavigate('privacy')} className="underline">Politique de Confidentialité</button>.</p>
         </div>

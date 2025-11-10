@@ -3,13 +3,16 @@ export const prePromptConfig = [
     category: '👋 Analyse de l\'annonce',
     prompts: [
       'Extraire la description du bien',
-      'Estimer les travaux à prévoir'
+      'Estimer les travaux à prévoir',
+      'Estimer les loyers potentiels',
+      'Identifier les points forts et faibles du bien',
+      'Analyser le quartier et ses commodités'
     ]
   },
   {
     category: '🏦 Financement & Marché',
     prompts: [
-      'Vérifier les taux d\'intérêts sur 15, 20, 25, 30 ans'
+      'Vérifier les taux d\'intérêts sur 15, 20, 25, 30 ans',
     ]
   },
   {
@@ -18,6 +21,7 @@ export const prePromptConfig = [
       'Conditions TVA 6% rénovation',
       'Calcul droits d\'enregistrement (Wallonie vs. Bruxelles)',
       'Obligations du bailleur (bail 9 ans)',
+      'Aides et subventions disponibles'
     ]
   }
 ];
