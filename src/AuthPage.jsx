@@ -28,6 +28,8 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
     const accessToken = hashParams.get('access_token');
     const type = hashParams.get('type');
     const restoreToken = hashParams.get('token'); // Pour la restauration de compte
+    const error = hashParams.get('error');
+    const errorDescription = hashParams.get('error_description');
 
     if (type === 'recovery' && accessToken) {
       // L'utilisateur vient de cliquer sur le lien de réinitialisation de mot de passe.
@@ -35,6 +37,14 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
       setMode('reset');
       setShowUpdatePasswordForm(true);
       setMessage("Veuillez définir votre nouveau mot de passe.");
+    } else if (error && errorDescription && errorDescription.includes('expired')) {
+      // --- NOUVELLE GESTION D'ERREUR ---
+      // L'utilisateur a cliqué sur un lien expiré ou invalide.
+      setMode('reset'); // On affiche le formulaire "Mot de passe oublié"
+      setShowUpdatePasswordForm(false); // On s'assure que le formulaire de nouveau mdp n'est pas montré
+      setError("Le lien de réinitialisation est invalide ou a expiré. Veuillez en demander un nouveau.");
+      // Nettoie l'URL pour enlever les paramètres d'erreur et éviter que le message ne reste après un rafraîchissement.
+      window.history.replaceState({}, document.title, window.location.pathname);
     } else if (type === 'restore_account' && restoreToken) {
       // --- NOUVELLE LOGIQUE DE RESTAURATION ---
       const restoreAccount = async () => {

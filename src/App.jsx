@@ -977,7 +977,10 @@ const CookieBanner = ({ onAccept }) => (
             // Si c'est le cas, cela signifie qu'on arrive d'un lien magique (confirmation, recovery, etc.).
             // On ne redirige PAS et on laisse AuthPage.jsx gérer la situation.
             const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            if (hashParams.has('access_token')) return;
+            if (hashParams.has('access_token') && hashParams.get('type') === 'recovery') {
+                // C'est un flux de récupération de mot de passe, on ne fait rien ici.
+                return;
+            }
 
             // Redirige vers le dashboard
             if (redirectAfterLogin) {
