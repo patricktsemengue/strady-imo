@@ -1216,13 +1216,13 @@ const CookieBanner = ({ onAccept }) => (
 
         if (!data.ville || !data.ville.trim()) {
             setNotification({ msg: 'Le champ "Adresse/ Ville / Commune" est obligatoire.', type: 'error' });
-            setTimeout(() => setNotification({ msg: '', type: '' }), 5000);
+            setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
             return;
         }
 
         if (analyses.length >= maxAnalyses) {
             setNotification({ msg: `Limite de ${maxAnalyses} analyses atteinte.`, type: 'error' });
-            setTimeout(() => setNotification({ msg: '', type: '' }), 5000);
+            setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
             return;
         }
 
@@ -1290,7 +1290,7 @@ const CookieBanner = ({ onAccept }) => (
         setProjectNameForSave('');
         setSaveError('');
         setNotification({ msg: `'${projectNameForSave}' a été mis à jour !`, type: 'success' });
-        setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+        setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
     };
 
     const handleConfirmSave = async () => {
@@ -1347,7 +1347,7 @@ const CookieBanner = ({ onAccept }) => (
         setProjectNameForSave('');
         setSaveError('');
         setNotification({ msg: `'${projectNameForSave}' a été sauvegardé !`, type: 'success' });
-        setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+        setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
     };
 
     // Fonction pour charger une analyse (locale ou cloud)
@@ -1397,7 +1397,7 @@ const CookieBanner = ({ onAccept }) => (
         setIsAiAssistantOpen(false);
 
         setNotification({ msg: 'Formulaire réinitialisé pour un nouveau projet.', type: 'success' });
-        setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+        setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
 
         setPage('main'); // Redirige vers la page d'analyse
     };
@@ -1406,7 +1406,7 @@ const CookieBanner = ({ onAccept }) => (
         // Vérifier si le nom existe déjà (en excluant l'analyse actuelle)
         if (analyses.some(a => a.id !== id && (a.project_name || a.data.projectName) === newName)) {
             setNotification({ msg: 'Ce nom de projet existe déjà.', type: 'error' });
-            setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+            setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
             return;
         }
 
@@ -1541,7 +1541,7 @@ const CookieBanner = ({ onAccept }) => (
         setData(prev => ({ ...prev, descriptionBien: (prev.descriptionBien || '') + '\n\n--- Réponse IA ---\n' + geminiResponse }));
         setShowAiResponseActions(false); // Cache les boutons
         setNotification({ msg: 'Réponse IA ajoutée aux notes !', type: 'success' });
-        setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+        setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
     };
 
     const handleIgnoreAiResponse = () => {
