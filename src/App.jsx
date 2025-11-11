@@ -972,17 +972,17 @@ const CookieBanner = ({ onAccept }) => (
         // Si l'utilisateur est maintenant connecté (user n'est pas null)
         // ET que l'utilisateur est toujours sur la page d'authentification
         if (user && page === 'auth') {
-            // --- CORRECTION AMÉLIORÉE ---
-            // On vérifie si l'URL (dans le hash) contient les tokens de Supabase.
-            // Si c'est le cas, cela signifie qu'on arrive d'un lien magique (confirmation, recovery, etc.).
-            // On ne redirige PAS et on laisse AuthPage.jsx gérer la situation.
             const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            // Si un utilisateur connecté arrive sur la page 'auth', on le redirige vers le dashboard,
+            // SAUF s'il est dans un flux de récupération de mot de passe (ce qui sera géré par AuthPage).
             if (hashParams.has('access_token') && hashParams.get('type') === 'recovery') {
-                // C'est un flux de récupération de mot de passe, on ne fait rien ici.
                 return;
             }
+            setNotification({ msg: "Vous êtes déjà connecté.", type: 'success' });
+            setPage('dashboard');
+            return;
 
-            // Redirige vers le dashboard
+            // Redirige vers le dashboard ou la page en attente
             if (redirectAfterLogin) {
                 setPage(redirectAfterLogin);
                 setRedirectAfterLogin(null);

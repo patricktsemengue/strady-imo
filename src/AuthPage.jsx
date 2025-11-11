@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'; // Import useEffect
 import { useAuth } from './AuthContext';
 import { Logo } from './App'; // Importer le Logo depuis App.jsx
 
-const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
+// 1. Accepter 'setNotification' dans les props
+const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification }) => {
   const [mode, setMode] = useState(initialMode); // 'signIn', 'signUp', 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,20 +17,30 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const { signIn, signUp, resetPassword, requestRestore, user, updatePassword, setNotification } = useAuth();
+  
+  // 2. Mettre à jour l'appel useAuth() pour ajouter 'restoreUser'
+  const { signIn, signUp, resetPassword, requestRestore, user, updatePassword, restoreUser } = useAuth();
 
   // Nouvel état pour gérer la visibilité du formulaire de mise à jour du mot de passe
   const [showUpdatePasswordForm, setShowUpdatePasswordForm] = useState(false);
 
-  // Effet pour gérer la redirection depuis le lien de l'e-mail
+  // 3. Corriger le useEffect et ses dépendances
   useEffect(() => {
     // Les paramètres de session (access_token, type) sont dans le hash de l'URL après une redirection de Supabase
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
     const type = hashParams.get('type');
     const restoreToken = hashParams.get('token'); // Pour la restauration de compte
-    const error = hashParams.get('error');
+    const errorParam = hashParams.get('error');
     const errorDescription = hashParams.get('error_description');
+
+    // Cas 1: Un utilisateur DÉJÀ authentifié atterrit sur cette page avec un lien de récupération.
+    // C'est illogique, on le redirige vers son tableau de bord.
+    if (user && type === 'recovery' && accessToken) {
+      setNotification({ msg: "Vous êtes déjà connecté.", type: 'success' });
+      onNavigate('dashboard');
+      return;
+    }
 
     if (type === 'recovery' && accessToken) {
       // L'utilisateur vient de cliquer sur le lien de réinitialisation de mot de passe.
@@ -37,7 +48,7 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
       setMode('reset');
       setShowUpdatePasswordForm(true);
       setMessage("Veuillez définir votre nouveau mot de passe.");
-    } else if (error && errorDescription && errorDescription.includes('expired')) {
+    } else if (errorParam && errorDescription && errorDescription.includes('expired')) {
       // --- NOUVELLE GESTION D'ERREUR ---
       // L'utilisateur a cliqué sur un lien expiré ou invalide.
       setMode('reset'); // On affiche le formulaire "Mot de passe oublié"
@@ -50,9 +61,13 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
       const restoreAccount = async () => {
         setLoading(true);
         try {
-          const { error } = await supabase.functions.invoke('restore-user', { body: { token } });
+          // Utiliser la fonction du contexte
+          const { error } = await restoreUser(restoreToken);
           if (error) throw error;
-          setNotification({ msg: 'Votre compte a été restauré avec succès ! Vous pouvez maintenant vous connecter.', type: 'success' });
+          // S'assurer que setNotification est bien une fonction
+          if (typeof setNotification === 'function') {
+            setNotification({ msg: 'Votre compte a été restauré avec succès ! Vous pouvez maintenant vous connecter.', type: 'success' });
+          }
           setMode('signIn'); // Prépare le formulaire pour la connexion
         } catch (err) {
           setError("Le lien de restauration est invalide ou a expiré.");
@@ -63,7 +78,7 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
       restoreAccount();
       window.history.replaceState({}, document.title, window.location.pathname); // Nettoie l'URL
     }
-  }, [setNotification]);
+  }, [user, setNotification, restoreUser, onNavigate]); // Mettre à jour les dépendances
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,9 +126,13 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
           const { error } = await updatePassword(password); // Ceci appelle la fonction updatePassword de useAuth
           if (error) throw error;
           
-          setNotification({ msg: 'Mot de passe mis à jour avec succès !', type: 'success' });
-          // Redirige explicitement vers la page de connexion
-          switchMode('signIn');
+          // S'assurer que setNotification est bien une fonction
+          if (typeof setNotification === 'function') {
+            setNotification({ msg: 'Mot de passe mis à jour avec succès !', type: 'success' });
+          }
+          // Le mot de passe est mis à jour, la session est maintenant valide. On redirige
+          // l'utilisateur vers le tableau de bord, ce qui finalise son authentification.
+          onNavigate('dashboard');
         }
       }
     } catch (err) {
@@ -289,20 +308,20 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn' }) => {
       </form>
 
       <div className="mt-6 text-center text-sm">
-        {mode === 'signIn' && (
-          <p>
-            Pas de compte ?{' '}
-            <button onClick={() => switchMode('signUp')} className="text-blue-600 hover:underline font-medium">
-              Inscrivez-vous
-            </button>
-          </p>
-        )}
-        {mode === 'signIn' && (
-           <p className="mt-2">
-            <button onClick={() => switchMode('reset')} className="text-gray-500 hover:underline">
-              Mot de passe oublié ?
-            </button>
-          </p>
+        {mode === 'signIn' && !user && (
+          <>
+            <p>
+              Pas de compte ?{' '}
+              <button onClick={() => switchMode('signUp')} className="text-blue-600 hover:underline font-medium">
+                Inscrivez-vous
+              </button>
+            </p>
+            <p className="mt-2">
+              <button onClick={() => switchMode('reset')} className="text-gray-500 hover:underline">
+                Mot de passe oublié ?
+              </button>
+            </p>
+          </>
         )}
       </div>
     </div>

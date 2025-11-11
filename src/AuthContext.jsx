@@ -75,6 +75,8 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     updateUserData,
     requestRestore: (email) => supabase.functions.invoke('request-restore', { body: { email } }),
+    // --- AJOUT DE LA FONCTION DE RESTAURATION ---
+    restoreUser: (token) => supabase.functions.invoke('restore-user', { body: { token } }),
   };
 
   return (
