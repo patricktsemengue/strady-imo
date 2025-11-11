@@ -19,8 +19,8 @@ import DashboardPage from './DashboardPage';
 import {
     StarIcon, WalletIcon, HomeIcon, HelpIcon, UserIcon, LogOutIcon, SettingsIcon,
     DashboardIcon, CalculatorIcon, PlusCircleIcon, PlusIcon, TrashIcon, TrendingUpIcon,
-    PercentIcon, ClipboardListIcon, SaveIcon, FileCheckIcon, SparklesIcon,
-    AlertTriangleIcon, PencilIcon, ChevronDownIcon, InfoIcon, QuestionMarkIcon
+    PercentIcon, ClipboardListIcon, SaveIcon, FileCheckIcon, SparklesIcon, PencilIcon,
+    AlertTriangleIcon, ChevronDownIcon, InfoIcon, QuestionMarkIcon, EyeIcon
 } from './Icons';
 
 
