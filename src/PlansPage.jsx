@@ -102,7 +102,7 @@ const PlansPage = ({ userPlan, onBack, setNotification, onNavigate }) => {
 
             setCurrentUserPlanId(selectedPlan.id);
             setNotification({ msg: `Félicitations ! Vous êtes maintenant abonné au plan ${selectedPlan.plan_name}. Profitez pleinement de l'application !`, type: 'success' });
-            setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
+            setTimeout(() => setNotification({ msg: '', type: '' }), 6000);
 
         } catch (error) {
             setError(error.message);
