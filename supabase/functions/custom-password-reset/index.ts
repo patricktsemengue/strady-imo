@@ -47,10 +47,16 @@ Deno.serve(async (req) => {
   
       // Si l'utilisateur est trouvé dans deleted_users, il est considéré comme banni.
       if (deletedData) {
-        console.log(`Tentative de réinitialisation pour un compte banni: ${email}.`);
-        return new Response(JSON.stringify({ status: "ACCOUNT_DELETED" }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        // --- NOUVELLE LOGIQUE ---
+        // Si le compte est banni, on envoie directement un lien de restauration au lieu de juste retourner une erreur.
+        console.log(`Compte banni détecté pour ${email}. Envoi du lien de restauration.`);
+        const { error: restoreError } = await adminClient.auth.admin.generateLink({
+          type: 'recovery', // 'recovery' est utilisé pour envoyer un lien magique qui établit une session
+          email: email,
         });
+        if (restoreError) throw restoreError;
+        // On informe le front-end que le compte est désactivé pour qu'il affiche le bon message.
+        return new Response(JSON.stringify({ status: "ACCOUNT_DELETED" }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
   
       // Étape 3 : Si l'utilisateur existe et n'est pas banni, on envoie l'e-mail.

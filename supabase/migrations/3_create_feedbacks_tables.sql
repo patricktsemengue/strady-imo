@@ -6,8 +6,10 @@ CREATE TABLE public.feedbacks (
   rating SMALLINT CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
   -- Métadonnées optionnelles
-  user_email TEXT,
-  user_name TEXT
+  user_email TEXT,  
+  user_name TEXT,
+  feedback_type TEXT, -- NOUVEAU: 'bug', 'suggestion', 'question', etc.
+  feature_area TEXT -- NOUVEAU: 'Analyse', 'Dashboard', 'IA', etc.
 );
 
 -- 2. Activation de la Row Level Security (RLS) pour la sécurité

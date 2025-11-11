@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient';
 import AuthPage from './AuthPage';
 import AccountPage from './AccountPage';
 import { prePromptConfig, scoreConfig } from './config.js';
-import FeedbackPage from './FeedbackPage'; //
+import FeedbackPage from './FeedbackPage'; // Le nouveau formulaire unifié
 import PrivacyPolicyPage from './PrivacyPolicyPage'; //
 import TermsOfServicePage from './TermsOfServicePage'; //
 import HelpHubPage from './HelpHubPage';
@@ -548,9 +548,9 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user, userPlan, 
                         <WalletIcon />
                         <span>Abonnement</span>
                     </button>
-                    <button onClick={() => { onNavigate('feedback'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                    <button onClick={() => { onNavigate('feedback'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100" title="Signaler un bug, faire une suggestion...">
                         <StarIcon />
-                        <span>Donner mon avis</span>
+                        <span>Feedback & Support</span>
                     </button>
                     <button onClick={() => { onSignOut(); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out">
@@ -1708,7 +1708,7 @@ const CookieBanner = ({ onAccept }) => (
             case 'dashboard': return <DashboardPage analyses={analyses} onLoad={loadAnalysis} onDelete={deleteAnalysis} onUpdateName={handleUpdateAnalysisName} maxAnalyses={maxAnalyses} onView={viewAnalysis} />;
             case 'auth': return <AuthPage onBack={() => setPage('main')} onNavigate={setPage} initialMode={authPageInitialMode} setNotification={setNotification} />;
             case 'account': return <AccountPage onBack={() => setPage('main')} onNavigate={setPage} userPlan={userPlan} analysesCount={analyses.length} setNotification={setNotification} />;
-            case 'feedback': return <FeedbackPage onBack={() => setPage('main')} />;
+            case 'feedback': return <FeedbackPage onBack={() => setPage('main')} setNotification={setNotification} />;
             case 'privacy': return <PrivacyPolicyPage onBack={() => setPage('main')} />;
             case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;
             case 'plans': return <PlansPage userPlan={userPlan} onBack={() => setPage('main')} setNotification={setNotification} onNavigate={setPage} />;

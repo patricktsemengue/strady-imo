@@ -57,7 +57,7 @@ const AccountPage = ({ onBack, onNavigate, userPlan, analysesCount, setNotificat
         if (error) {
             setError(error.message);
         } else {
-            setNotification({ msg: 'Mot de passe mis à jour avec succès !', type: 'success' });
+            setPasswordMessage('Mot de passe mis à jour avec succès !');
             setPassword('');
             setConfirmPassword('');
         }
