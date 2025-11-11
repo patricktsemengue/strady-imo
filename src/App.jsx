@@ -19,7 +19,7 @@ import DashboardPage from './DashboardPage';
 import {
     StarIcon, WalletIcon, HomeIcon, HelpIcon, UserIcon, LogOutIcon, SettingsIcon,
     DashboardIcon, CalculatorIcon, PlusCircleIcon, PlusIcon, TrashIcon, TrendingUpIcon,
-    PercentIcon, ClipboardListIcon, SaveIcon, FileCheckIcon, SparklesIcon,
+    PercentIcon, ClipboardListIcon, SaveIcon, FileCheckIcon, SparklesIcon, EyeIcon,
     AlertTriangleIcon, PencilIcon, ChevronDownIcon, InfoIcon, QuestionMarkIcon
 } from './Icons';
 
@@ -1622,7 +1622,7 @@ const CookieBanner = ({ onAccept }) => (
             }
 
             setShowAiResponseActions(false);
-            setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
+            setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
             setIsApplyingAi(false);
         }, 100);
     };
@@ -1695,6 +1695,24 @@ const CookieBanner = ({ onAccept }) => (
         return "Lancer l'analyse par l'IA"; // Texte par défaut quand le bouton est actif
     };
 
+// --- NOUVEAU COMPOSANT : AccordionSection ---
+const AccordionSection = ({ id, title, icon, isOpen, onToggle, children }) => (
+    <div className="bg-white rounded-lg shadow-md transition-all duration-300">
+        <div 
+            className="flex justify-between items-center p-4 cursor-pointer"
+            onClick={() => onToggle(id)}
+        >
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+                {icon}
+                <span>{title}</span>
+            </h2>
+            <ChevronDownIcon className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+        {isOpen && (
+            <div className="p-4 border-t animate-fade-in">{children}</div>
+        )}
+    </div>
+);
 
     const renderPage = () => {
         console.log('Rendering page:', page);
@@ -1713,6 +1731,12 @@ const CookieBanner = ({ onAccept }) => (
             case 'terms': return <TermsOfServicePage onBack={() => setPage('main')} />;
             case 'plans': return <PlansPage userPlan={userPlan} onBack={() => setPage('main')} setNotification={setNotification} onNavigate={setPage} />;
             default:
+
+                // --- NOUVEL ÉTAT POUR L'ACCORDÉON ---
+                const [activeSection, setActiveSection] = React.useState('bien');
+                const handleToggleSection = (sectionId) => {
+                    setActiveSection(activeSection === sectionId ? null : sectionId);
+                };
 
                 // --- NOUVEAU CALCUL POUR QUOTITÉ MANUELLE ---
                 let quotiteEstimeeLabel = '(Mode Manuel)';
@@ -1734,10 +1758,14 @@ const CookieBanner = ({ onAccept }) => (
 
                 return (
                     <div className="space-y-8 animate-fade-in">
-                        {/* --- Section 1: Détails du Bien --- */}
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Bien immobilier</h2>
-                            
+                        <AccordionSection 
+                            id="bien"
+                            title="1. Bien Immobilier"
+                            icon={<HomeIcon />}
+                            isOpen={activeSection === 'bien'}
+                            onToggle={handleToggleSection}
+                        >
+
                             {/* --- Indicateur d'état (Nouveau / Édition) --- */}
                             {currentAnalysisId ? (
                                 <div className="mb-4 p-2 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2 text-sm text-purple-800">
@@ -1826,24 +1854,20 @@ const CookieBanner = ({ onAccept }) => (
 
                             {/* --- NOTES --- */}
                             <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
-                        </div>
+                        </AccordionSection>
 
                         {/* ---  Assistant IA Général (Déplacé et modifiable) --- */}
                         {user && (
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <div className="flex justify-between items-center cursor-pointer" onClick={handleAiAssistantToggle}>
-                                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <SparklesIcon /> Assistant Immobilier IA
-                                </h2>
-                                <div className="flex items-center gap-4">
-                                    {userPlan && (
-                                        <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${userPlan.current_ai_credits > 0 || userPlan.current_ai_credits === -1 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
-                                            Crédits restants: {userPlan.current_ai_credits === -1 ? 'Illimités' : userPlan.current_ai_credits}
-                                        </span>
-                                    )}
-                                <ChevronDownIcon className={`transition-transform ${isAiAssistantOpen ? 'rotate-180' : ''}`} />
-                                </div>
-                            </div>
+                        <AccordionSection
+                            id="ia"
+                            title="2. Assistant Immobilier IA (Optionnel)"
+                            icon={<SparklesIcon />}
+                            isOpen={activeSection === 'ia'}
+                            onToggle={handleToggleSection}
+                        >
+                            {userPlan && userPlan.current_ai_credits === 0 && (
+                                <p className="text-sm text-red-600 mb-3">Vous n'avez plus de crédits IA. <span className="underline cursor-pointer" onClick={() => setPage('plans')}>Rechargez</span> pour utiliser cette fonctionnalité.</p>
+                            )}
                             
                             {isAiAssistantOpen && (
                                 <div className="mt-4 pt-4 border-t animate-fade-in">
@@ -1933,12 +1957,16 @@ const CookieBanner = ({ onAccept }) => (
                                     )}
                                 </div>
                             )}
-                        </div>
+                        </AccordionSection>
                         )}
 
-                        {/* --- Section 2: Coûts & Financement --- */}
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Financement</h2>
+                        <AccordionSection
+                            id="financement"
+                            title="3. Financement"
+                            icon={<WalletIcon />}
+                            isOpen={activeSection === 'financement'}
+                            onToggle={handleToggleSection}
+                        >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium text-gray-700">Prix d'achat (€)</label><input type="number" name="prixAchat" value={data.prixAchat} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                                 <div><label className="block text-sm font-medium text-gray-700">Coût travaux (€)</label><div className="flex items-center gap-2"><input type="number" name="coutTravaux" value={data.coutTravaux} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
@@ -2028,12 +2056,16 @@ const CookieBanner = ({ onAccept }) => (
                                 <div><p className="text-sm text-gray-600">Coût total du projet</p><p className="text-lg font-bold">{finances.coutTotalProjet.toLocaleString('fr-BE')} €</p></div>
                                 <div><p className="text-sm text-gray-600">Montant à financer</p><p className="text-lg font-bold text-blue-700">{(finances.montantAFinancer || 0).toLocaleString('fr-BE')} €</p></div>
                                 <div><p className="text-sm text-gray-600">Mensualité estimée</p><p className="text-lg font-bold text-red-600">{(finances.mensualiteEstimee || 0).toFixed(2)} €</p></div>
-                            </div></div>
-                        </div>
+                            </div>
+                        </AccordionSection>
 
-                        {/* --- Section 3: Analyse du Marché et du Loyer --- */}
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Loyer et charge</h2>
+                        <AccordionSection
+                            id="loyer"
+                            title="4. Loyer et Charges"
+                            icon={<TrendingUpIcon />}
+                            isOpen={activeSection === 'loyer'}
+                            onToggle={handleToggleSection}
+                        >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div><label className="block text-sm font-medium">Loyer hors charges (€/mois)</label><input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" placeholder="900 € HC"/></div>
                                 <div><label className="block text-sm font-medium">Charges d'exploitation (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
@@ -2052,8 +2084,8 @@ const CookieBanner = ({ onAccept }) => (
                                     <button onClick={() => setIsVacancyEstimatorOpen(true)} title="Aide à l'évaluation" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><PercentIcon /></button>
                                 </div></div>
 
-                            </div>
-                        </div>
+                            </div>                        
+                        </AccordionSection>
 
                         <button onClick={calculateScore} className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg">
                             Evaluer le Projet
@@ -2284,6 +2316,17 @@ const CookieBanner = ({ onAccept }) => (
             <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
             <p className="mt-2 text-sm text-gray-600">Toute analyse non sauvegardée sera perdue.</p>
         </ConfirmationModal>
+
+                                {/* --- NOUVEAU : Floating Action Button (FAB) pour l'évaluation --- */}
+                                {!result && (
+                                    <button
+                                        onClick={calculateScore}
+                                        className="fixed bottom-24 right-6 w-16 h-16 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 active:bg-amber-500 transition-all duration-300 z-30 transform hover:scale-110 hover:shadow-xl"
+                                        title="Évaluer le Projet"
+                                    >
+                                        <CalculatorIcon />
+                                    </button>
+                                )}
 
                                 {renderPage()}
                             </main>
