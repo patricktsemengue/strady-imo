@@ -5,6 +5,14 @@ const PrintIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-printer h-5 w-5"><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 14h12v8H6z" /></svg>
 );
 
+const AlertTriangleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle h-5 w-5 flex-shrink-0">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+    </svg>
+);
+
 const Section = ({ title, icon, children }) => (
     <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 flex items-center gap-3">
@@ -103,12 +111,12 @@ const RevenueExpenseChart = ({ revenue, expenses }) => {
             {/* Barre des Dépenses */}
             <div>
                 <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-red-700">Dépenses Mensuelles Totales</span>
-                    <span className="font-bold text-red-700">{expenses.toLocaleString('fr-BE')} €</span>
+                    <span className="font-medium text-amber-700">Dépenses Mensuelles Totales</span>
+                    <span className="font-bold text-amber-700">{expenses.toLocaleString('fr-BE')} €</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-5">
                     <div
-                        className="bg-red-500 h-5 rounded-full"
+                        className="bg-amber-500 h-5 rounded-full"
                         style={{ width: `${expensePercentage}%` }}
                     ></div>
                 </div>
@@ -170,10 +178,10 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
         mensualiteCredit: result?.mensualiteCredit ? parseFloat(result.mensualiteCredit) : 0,
     };
     const costBreakdownData = [
-        { label: "Prix d'achat", value: data.prixAchat || 0, color: '#3b82f6' }, // blue-500
-        { label: "Coût des travaux", value: data.coutTravaux || 0, color: '#f59e0b' }, // amber-500
-        { label: "Frais d'acquisition", value: data.fraisAcquisition || 0, color: '#84cc16' }, // lime-500
-        { label: "Frais annexes", value: data.fraisAnnexe || 0, color: '#a855f7' }, // purple-500
+        { label: "Prix d'achat", value: data.prixAchat || 0, color: '#2c5282' }, // Hiver: Bleu Profond
+        { label: "Coût des travaux", value: data.coutTravaux || 0, color: '#dd6b20' }, // Automne: Orange Terreux
+        { label: "Frais d'acquisition", value: data.fraisAcquisition || 0, color: '#38a169' }, // Printemps: Vert Forêt
+        { label: "Frais annexes", value: data.fraisAnnexe || 0, color: '#d69e2e' }, // Été: Jaune Doré
     ];
 
 
@@ -197,6 +205,14 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
                 <h1 className="text-3xl font-bold text-gray-800 mt-6">{data.projectName}</h1>
                 <p className="text-xl text-blue-600 font-semibold mt-1">Rapport d'Analyse - {data.ville}</p>
                 <p className="text-sm text-gray-500 mt-2">Rapport généré le {new Date().toLocaleDateString('fr-BE')}</p>
+            </div>
+
+            {/* --- Avertissement --- */}
+            <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 mb-6 print-hidden">
+                <AlertTriangleIcon />
+                <p className="text-sm text-yellow-800">
+                    <strong>Avertissement :</strong> Les chiffres et indicateurs présentés dans ce rapport sont des estimations basées sur les données que vous avez fournies. Ils sont destinés à des fins d'information et ne constituent pas un conseil financier.
+                </p>
             </div>
 
             {/* --- Section Résultats --- */}
