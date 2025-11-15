@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from './supabaseClient'; 
+import React, { createContext, useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient'; 
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authPageInitialMode, setAuthPageInitialMode] = useState('signIn'); // Default mode
 
   useEffect(() => {
     const getSession = async () => {
@@ -77,6 +78,8 @@ export const AuthProvider = ({ children }) => {
     requestRestore: (email) => supabase.functions.invoke('request-restore', { body: { email } }),
     // --- AJOUT DE LA FONCTION DE RESTAURATION ---
     restoreUser: (token) => supabase.functions.invoke('restore-user', { body: { token } }),
+    authPageInitialMode,
+    setAuthPageInitialMode,
   };
 
   return (
@@ -84,12 +87,4 @@ export const AuthProvider = ({ children }) => {
       {!loading && children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

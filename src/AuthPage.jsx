@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'; // Import useEffect
-import { useAuth } from './AuthContext';
-import { Logo } from './App'; // Importer le Logo depuis App.jsx
+import { useAuth } from './hooks/useAuth';
+import { Logo } from './Logo';
+import { useNotification } from './contexts/useNotification';
 
 // 1. Accepter 'setNotification' dans les props
-const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification }) => {
-  const [mode, setMode] = useState(initialMode); // 'signIn', 'signUp', 'reset'
+const AuthPage = ({ onBack, onNavigate }) => {
+  const { signIn, signUp, resetPassword, requestRestore, user, updatePassword, restoreUser, authPageInitialMode } = useAuth();
+  const [mode, setMode] = useState(authPageInitialMode); // 'signIn', 'signUp', 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
@@ -19,7 +21,7 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
   const [error, setError] = useState('');
   
   // 2. Mettre à jour l'appel useAuth() pour ajouter 'restoreUser'
-  const { signIn, signUp, resetPassword, requestRestore, user, updatePassword, restoreUser } = useAuth();
+  const { showNotification } = useNotification();
 
   // Nouvel état pour gérer la visibilité du formulaire de mise à jour du mot de passe
   const [showUpdatePasswordForm, setShowUpdatePasswordForm] = useState(false);
@@ -37,7 +39,7 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
     // Cas 1: Un utilisateur DÉJÀ authentifié atterrit sur cette page avec un lien de récupération.
     // C'est illogique, on le redirige vers son tableau de bord.
     if (user && type === 'recovery' && accessToken) {
-      setNotification({ msg: "Vous êtes déjà connecté.", type: 'success' });
+      showNotification("Vous êtes déjà connecté.", 'success');
       onNavigate('dashboard');
       return;
     }
@@ -65,11 +67,9 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
           const { error } = await restoreUser(restoreToken);
           if (error) throw error;
           // S'assurer que setNotification est bien une fonction
-          if (typeof setNotification === 'function') {
-            setNotification({ msg: 'Votre compte a été restauré avec succès ! Vous pouvez maintenant vous connecter.', type: 'success' });
-          }
+          showNotification('Votre compte a été restauré avec succès ! Vous pouvez maintenant vous connecter.', 'success');
           setMode('signIn'); // Prépare le formulaire pour la connexion
-        } catch (err) {
+        } catch {
           setError("Le lien de restauration est invalide ou a expiré.");
         } finally {
           setLoading(false);
@@ -78,7 +78,7 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
       restoreAccount();
       window.history.replaceState({}, document.title, window.location.pathname); // Nettoie l'URL
     }
-  }, [user, setNotification, restoreUser, onNavigate]); // Mettre à jour les dépendances
+  }, [user, showNotification, restoreUser, onNavigate]); // Mettre à jour les dépendances
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -127,16 +127,14 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
           if (error) throw error;
           
           // S'assurer que setNotification est bien une fonction
-          if (typeof setNotification === 'function') {
-            setNotification({ msg: 'Mot de passe mis à jour avec succès !', type: 'success' });
-          }
+          showNotification('Mot de passe mis à jour avec succès !', 'success');
           // Le mot de passe est mis à jour, la session est maintenant valide. On redirige
           // l'utilisateur vers le tableau de bord, ce qui finalise son authentification.
           onNavigate('dashboard');
         }
       }
-    } catch (err) {
-      setError(err.message || "Une erreur est survenue.");
+    } catch (error) {
+      setError(error.message || "Une erreur est survenue.");
     } finally {
       setLoading(false);
     }
@@ -150,15 +148,15 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
       const { error } = await requestRestore(email);
       if (error) throw error;
       setMessage("Si un compte supprimé correspond à cet e-mail, un lien de restauration a été envoyé.");
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally { setLoading(false); }
   };
   const getTitle = () => {
     if (mode === 'signIn') return "Connexion";
-    if (mode === 'signUp') return "Créer un compte"; // Si en mode reset et le formulaire de mise à jour est affiché
-    if (mode === 'reset' && showUpdatePasswordForm) return "Définir un nouveau mot de passe"; // Si en mode reset et le formulaire de mise à jour est affiché
-    if (mode === 'reset') return "Mot de passe oublié"; // Si en mode reset mais pas encore de formulaire de mise à jour
+    if (mode === 'signUp') return "Créer un compte";
+    if (mode === 'reset' && showUpdatePasswordForm) return "Définir un nouveau mot de passe";
+    if (mode === 'reset') return "Mot de passe oublié";
   };
   
   // Réinitialise les champs lors du changement de mode
@@ -168,6 +166,7 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
       setMessage('');
       setPassword('');
       setConfirmPassword('');
+      setAcceptedTerms(false);
       setPrenom('');
       setShowUpdatePasswordForm(false); // Réinitialise cet état lors du changement de mode
   }
@@ -262,9 +261,9 @@ const AuthPage = ({ onBack, onNavigate, initialMode = 'signIn', setNotification 
                 />
                 <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                     J'ai lu et j'accepte les{" "}
-                    <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => onNavigate('terms')}>
+                    <button type="button" onClick={() => onNavigate('/terms')} className="text-blue-600 hover:underline cursor-pointer">
                         Conditions Générales d'Utilisation
-                    </span>
+                    </button>
                     .
                 </label>
             </div>

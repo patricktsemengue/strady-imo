@@ -1,6 +1,6 @@
 import React from 'react';
 
-const UserManualPage = ({ onBack }) => (
+const UserManualPage = () => (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Manuel Utilisateur</h1>
         <div className="prose max-w-none text-gray-700 space-y-6">

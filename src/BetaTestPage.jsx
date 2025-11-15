@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient';
-import { useAuth } from './AuthContext';
+import { useAuth } from './hooks/useAuth';
 
 const BetaTestPage = ({ onBack, setNotification }) => {
     const { user } = useAuth();

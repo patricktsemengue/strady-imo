@@ -1,9 +1,11 @@
 import React from 'react';
 import { legalConfig } from './legalConfig';
+import Copyright from './Copyright';
 
 const TermsOfServicePage = ({ onBack }) => (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Conditions Générales d'Utilisation</h1>
+        {onBack && <button onClick={onBack} className="mb-6 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">&larr; Retour</button>}
         <div className="prose max-w-none text-gray-700 space-y-4">
             <p>Dernière mise à jour : {legalConfig.lastUpdate}</p>
 
@@ -19,7 +21,7 @@ const TermsOfServicePage = ({ onBack }) => (
 
             <h2 className="text-xl font-semibold">4. Propriété intellectuelle</h2>
             <p>Le contenu de l'application (structure, design, code, textes) est la propriété exclusive de l'éditeur. Toute reproduction, même partielle, est interdite sans autorisation.</p>
-            <p>Copyright © 2025 Strady.imo - Tous droits réservés.</p>
+            <Copyright />
 
             <h2 className="text-xl font-semibold">5. Responsabilité de l'Utilisateur</h2>
             <p>L'Utilisateur est seul responsable des données qu'il saisit dans l'application et des décisions qu'il prend sur la base des simulations fournies.</p>

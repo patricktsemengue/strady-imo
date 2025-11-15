@@ -1,3 +1,5 @@
+import { netlify } from "@netlify/functions";
+
 export const handler = async (event) => {
   // --- AJOUT POUR GÉRER LE PREFLIGHT CORS ---
   if (event.httpMethod === 'OPTIONS') {
@@ -20,7 +22,7 @@ export const handler = async (event) => {
   }
 
   const { systemPrompt, userPrompt } = JSON.parse(event.body);
-  const apiKey = process.env.STRADY_GEMINI_API_KEY;
+  const apiKey = netlify.env.get("STRADY_GEMINI_API_KEY");
 
   if (!apiKey) {
     return { 

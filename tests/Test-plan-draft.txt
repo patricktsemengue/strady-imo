@@ -1,0 +1,95 @@
+Test plan
+
+
+Title : access to welcome screen.
+Given that I am an authentified user.
+When I open the application after 1 hours, 
+Then the welcome page is displyaed.
+The welcome page welcomes the user.
+For authenticated users, the welcome pages shows the buttons "Commener una analyse" and "Accéder à mes analyses".
+
+At The welcome page, the user can click on the links for terms and conditions, and access them.
+
+AS a non-auth user, the welcome page shows does not show the button "Accéder à mes analyses".
+
+
+Title : new analysis
+The user edit the buiding type
+Mortgage : price, work...
+Loyer et charges d'exploitation
+Click on "Evaluer le projet"
+The strady score is displayed.
+
+
+when the user click on "Cout travaux" contextual button,
+the system displays the workestimator modal with prefilled items and price
+TOtal price, and apply button, ignore button.
+THe apply button updates the content of "Cout travaux" field.
+THe work estimator is prefilled with items:
+- Mise en conformité électrique 2500 €
+- Peinture 1500 €
+- Salle de bain  2500 €
+when a user clicks the "Cout travaux" button, the modal will appear with this new list of pre-filled items, providing a helpful and intuitive starting point for their cost estimation.
+
+
+
+When the user open the Acquisition fees modal, the modal displays fields helping the user to make notary fees calculation more acurate.
+THe modal should displays a disclamer inviting the user to rely on a notary estimation.
+
+
+
+TC-FEATURE-001 (Rent Splitter): I've updated the existing test to be more robust. It now first asserts the initial calculated total before adding a new unit and then verifies that the final sum applied to the main form is correct.
+TC-FEATURE-004 (Charge Estimator): This is a new scenario that specifically tests the ChargesEstimatorModal.
+It first fills in the necessary data (prixAchat, revenuCadastral, loyerEstime) that the modal uses for its smart estimations.
+It opens the modal and asserts that the default, pre-filled charges (like "Assurance PNO" and "Précompte immobilier") are present.
+It then interacts with the modal by adding a new custom charge.
+Finally, it applies the changes and asserts that the chargesMensuelles field on the main form has been updated.
+Existing Scenarios: The test cases for the Work Estimator (TC-FEATURE-002) and Acquisition Fees Estimator (TC-FEATURE-003) were already well-defined and cover your requirements, so I have kept them as they are.
+============= 13/11/2025 =======
+Title : info bubble on metrics.
+
+The user can click on metrics info bubble.
+The bubble must display the detail of metrics, and the formulas
+ rendementNet: {
+            title: "Rendement Net",
+            explanation: "Mesure la rentabilité intrinsèque du bien avant financement. Il prend en compte les loyers et les charges d'exploitation, mais exclut le coût du crédit.",
+            formula: "((Loyer Annuel - Charges) / Coût Total) x 100"
+        },
+        cashflow: {
+            title: "Cash-Flow Mensuel",
+            explanation: "Représente le bénéfice ou la perte mensuelle après déduction de toutes les charges (y compris le crédit) des revenus locatifs.",
+            formula: "Loyer Mensuel - Charges - Mensualité Crédit"
+        },
+        cashOnCash: { // Corrected from coc to cashOnCash
+            title: "CoC Return (Cash-on-Cash)",
+            explanation: "Mesure le rendement de vos fonds propres investis (votre apport). C'est le ratio entre le cash-flow annuel et votre apport personnel.",
+            formula: "(Cash-Flow Annuel / Apport) x 100"
+        },
+        score: {
+            title: "Score Strady",
+            description: "Évalue la rapidité à laquelle le cash-flow net généré permet de reconstituer l'apport personnel. Un score 'A' indique un retour sur apport en moins de 5 ans.",
+            formula: "Basé sur le CoC Return"
+        },
+        mensualiteCredit: {
+            title: "Mensualité du Crédit",
+            explanation: "C'est le montant que vous remboursez chaque mois à la banque pour votre prêt hypothécaire. Il comprend le capital et les intérêts.",
+            formula: null
+        },
+        coutTotal: {
+            title: "Coût Total du Projet",
+            explanation: "C'est la somme de tous les coûts liés à l'acquisition du bien : le prix d'achat, les frais d'acquisition (droits d'enregistrement, notaire), le coût des travaux et les autres frais annexes.",
+            formula: "Prix d'Achat + Coût Travaux + Frais d'Acquisition + Frais Annexes"
+        }
+    };
+
+
+
+
+Title : analysis delete in Dashboard
+The user clicks the "Supprimer" (Delete) button on an analysis card.
+This action doesn't delete the item immediately. Instead, it calls a handler function that starts the confirmation process.
+THe analysis is deleted upon confirmation
+
+============= 15/11/2025 =======
+
+

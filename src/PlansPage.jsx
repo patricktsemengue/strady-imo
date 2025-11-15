@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { useAuth } from './AuthContext';
+import { useAuth } from './hooks/useAuth';
 import ConfirmationModal from './ConfirmationModal';
 import PlanCard from './PlanCard';
+import { useNotification } from './contexts/useNotification';
 
-const PlansPage = ({ userPlan, onBack, setNotification, onNavigate }) => {
+const PlansPage = ({ userPlan, onNavigate }) => {
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,6 +15,7 @@ const PlansPage = ({ userPlan, onBack, setNotification, onNavigate }) => {
     const [hasAgreed, setHasAgreed] = useState(false);
     const [isSubscribing, setIsSubscribing] = useState(false);
     const { user } = useAuth();
+    const { showNotification } = useNotification();
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -101,8 +103,7 @@ const PlansPage = ({ userPlan, onBack, setNotification, onNavigate }) => {
             }
 
             setCurrentUserPlanId(selectedPlan.id);
-            setNotification({ msg: `Félicitations ! Vous êtes maintenant abonné au plan ${selectedPlan.plan_name}. Profitez pleinement de l'application !`, type: 'success' });
-            setTimeout(() => setNotification({ msg: '', type: '' }), 2000);
+            showNotification(`Félicitations ! Vous êtes maintenant abonné au plan ${selectedPlan.plan_name}. Profitez pleinement de l'application !`, 'success');
 
         } catch (error) {
             setError(error.message);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { FileTextIcon, ShieldCheckIcon } from './Icons';
 
 const HelpHubPage = ({ onNavigate }) => (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
@@ -25,6 +26,22 @@ const HelpHubPage = ({ onNavigate }) => (
                 <h2 className="text-xl font-semibold text-purple-700 mb-2">Glossaire des Termes</h2>
                 <p className="text-gray-600">
                     Revenu cadastral, quotité, PEB... Retrouvez la définition des termes clés de l'immobilier pour ne plus jamais être perdu.
+                </p>
+            </div>
+
+            {/* Carte pour les Conditions d'utilisation */}
+            <div onClick={() => onNavigate('terms')} className="p-6 border rounded-lg hover:shadow-lg hover:border-indigo-400 transition cursor-pointer">
+                <h2 className="text-xl font-semibold text-indigo-700 mb-2 flex items-center gap-2"><FileTextIcon /> Conditions d'Utilisation</h2>
+                <p className="text-gray-600">
+                    Consultez les règles et les conditions d'utilisation de nos services.
+                </p>
+            </div>
+
+            {/* Carte pour la Politique de confidentialité */}
+            <div onClick={() => onNavigate('privacy')} className="p-6 border rounded-lg hover:shadow-lg hover:border-rose-400 transition cursor-pointer">
+                <h2 className="text-xl font-semibold text-rose-700 mb-2 flex items-center gap-2"><ShieldCheckIcon /> Politique de Confidentialité</h2>
+                <p className="text-gray-600">
+                    Découvrez comment nous collectons, utilisons et protégeons vos données personnelles.
                 </p>
             </div>
         </div>

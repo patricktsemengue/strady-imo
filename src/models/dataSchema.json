@@ -1,0 +1,153 @@
+{
+  "_comment": "Ce fichier définit le schéma de données de l'application Strady. Il sert de modèle de référence pour la structuration des données, notamment pour les réponses attendues de l'API Gemini.",
+
+  "userProfile": {
+    "_comment": "Définit le profil financier et l'abonnement de l'utilisateur. Permet de personnaliser les calculs de faisabilité.",
+    "userId": "auth_user_uuid_abc123",
+    "email": "user@example.com",
+    "profileType": "INDIVIDUAL",
+    "updatedAt": "2025-11-11T10:00:00Z",
+    "individualFinances": {
+      "_comment": "Finances pour un utilisateur personne physique.",
+      "monthlyNetIncome": 4500,
+      "monthlyExpenses": 1500,
+      "currentLoansMonthlyPayment": 800,
+      "availableSavings": 50000
+    },
+    "companyFinances": {
+      "_comment": "Finances pour un utilisateur en société.",
+      "annualRevenue": 500000,
+      "annualNetProfit": 80000,
+      "availableCash": 150000
+    },
+    "subscription": {
+      "_comment": "Détails de l'abonnement de l'utilisateur.",
+      "planId": "premium",
+      "status": "active",
+      "currentPeriodStart": "2025-11-01T00:00:00Z",
+      "currentPeriodEnd": "2025-12-01T00:00:00Z",
+      "analysisCreditsUsed": 5,
+      "analysisCreditsLimit": 20
+    }
+  },
+
+  "analysis": {
+    "_comment": "Représente les données d'entrée pour une analyse immobilière, extraites d'un texte, d'une URL ou saisies manuellement.",
+    "analysisId": "analysis_uuid_xyz789",
+    "userId": "auth_user_uuid_abc123",
+    "name": "Analyse Appartement Rue du Progrès 50",
+    "sourceUrl": "https://www.immoweb.be/fr/annonce/...",
+    "sourceText": "Bel appartement 2 chambres de 85m² à Bruxelles...",
+    "createdAt": "2025-11-11T10:30:00Z",
+    "propertyDetails": {
+      "address": "Rue du Progrès 50, 1000 Bruxelles",
+      "propertyType": "APARTMENT",
+      "livingAreaSqm": 85,
+      "bedrooms": 2,
+      "constructionYear": 1998,
+      "energyRating": "C"
+    },
+    "financialInputs": {
+      "purchasePrice": 250000,
+      "acquisitionFees": 31500,
+      "renovationWorkItems": [
+        { "item": "Nouvelle cuisine", "cost": 8000 },
+        { "item": "Peinture complète", "cost": 3000 }
+      ],
+      "yearlyOperatingCharges": [
+        { "charge": "Précompte immobilier", "amount": 1200 },
+        { "charge": "Assurance PNO", "amount": 350 },
+        { "charge": "Charges de copropriété", "amount": 1800 },
+        { "charge": "Entretien (provision)", "amount": 500 }
+      ],
+      "income": {
+        "expectedMonthlyRent": 1300,
+        "vacancyRatePercent": 5
+      }
+    },
+    "qualitativeInputs": {
+      "_comment": "Éléments qualitatifs fournis par l'utilisateur pour enrichir le rapport.",
+      "strengths": ["Proximité des transports en commun", "Balcon bien orienté"],
+      "weaknesses": ["Simple vitrage", "Pas de parking"],
+      "targetTenant": "Jeune couple de professionnels",
+      "potentialOptimizations": [
+        "Installer une borne de recharge pour voiture électrique.",
+        "Remplacer la baignoire par une douche à l'italienne."
+      ]
+    }
+  },
+
+  "report": {
+    "_comment": "Représente le rapport d'analyse généré, avec tous les scénarios financiers.",
+    "reportId": "report_uuid_112233",
+    "analysisId": "analysis_uuid_xyz789",
+    "generatedAt": "2025-11-11T10:35:00Z",
+    "scenarios": [
+      {
+        "scenarioName": "Prix souhaité / Quotité 90%",
+        "purchasePrice": 250000,
+        "loanQuotePercent": 90,
+        "loanAmount": 225000,
+        "downPayment": 25000,
+        "totalCashNeeded": 66500,
+        "monthlyMortgage": 1128,
+        "monthlyNetCashflow": -141,
+        "grossYieldPercent": 6.24,
+        "netYieldPercent": 4.58,
+        "cashOnCashReturnPercent": -2.54
+      },
+      {
+        "scenarioName": "Prix -10% / Quotité 90%",
+        "purchasePrice": 225000,
+        "loanQuotePercent": 90,
+        "loanAmount": 202500,
+        "downPayment": 22500,
+        "totalCashNeeded": 58850,
+        "monthlyMortgage": 1015,
+        "monthlyNetCashflow": -28,
+        "grossYieldPercent": 6.93,
+        "netYieldPercent": 5.09,
+        "cashOnCashReturnPercent": -0.57
+      },
+      {
+        "scenarioName": "Prix souhaité / Quotité 80%",
+        "purchasePrice": 250000,
+        "loanQuotePercent": 80,
+        "loanAmount": 200000,
+        "downPayment": 50000,
+        "totalCashNeeded": 91500,
+        "monthlyMortgage": 1002,
+        "monthlyNetCashflow": -15,
+        "grossYieldPercent": 6.24,
+        "netYieldPercent": 4.58,
+        "cashOnCashReturnPercent": -0.20
+      }
+    ],
+    "recommendations": {
+      "fiscal": "Pour cet investissement, l'acquisition via une SRL pourrait être fiscalement avantageuse si vous prévoyez de réinvestir les bénéfices. En nom propre, les revenus locatifs seront taxés à votre taux marginal d'imposition.",
+      "optimization": "Le remplacement du simple vitrage par du double vitrage (coût estimé: 5000€) pourrait améliorer le PEB à 'B', justifiant une hausse de loyer de 50-75€/mois et réduisant la vacance locative.",
+      "negotiation": "Le scénario 'Prix -10%' montre un cash-flow quasi neutre. Utilisez les faiblesses (simple vitrage, pas de parking) comme arguments pour négocier le prix à la baisse vers 225.000€."
+    }
+  },
+
+  "feedback": {
+    "_comment": "Représente un retour soumis par un utilisateur sur l'application.",
+    "feedbackId": "feedback_uuid_998877",
+    "userId": "auth_user_uuid_abc123",
+    "createdAt": "2025-11-11T11:00:00Z",
+    "type": "SUGGESTION",
+    "pageContext": "/reports/report_uuid_112233",
+    "content": "Ce serait génial si le rapport pouvait aussi simuler l'impact de l'inflation sur les loyers et les charges à long terme.",
+    "status": "new"
+  },
+
+  "supportTicket": {
+    "_comment": "Représente un ticket de support créé par un utilisateur.",
+    "ticketId": "support_uuid_445566",
+    "userId": "auth_user_uuid_abc123",
+    "createdAt": "2025-11-11T12:00:00Z",
+    "subject": "Problème de connexion",
+    "message": "Je n'arrive pas à me reconnecter depuis la mise à jour.",
+    "status": "open"
+  }
+}

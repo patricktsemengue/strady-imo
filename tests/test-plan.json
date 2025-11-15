@@ -1,0 +1,242 @@
+
+{
+  "test_suite_name": "Strady.imo - Tests Fonctionnels et de Non-Régression",
+  "version": "1.0.0",
+  "description": "Ce fichier décrit les scénarios de test pour les fonctionnalités clés de l'application Strady.imo, servant de base pour l'automatisation des tests.",
+  "scenarios": [
+    {
+      "id": "TC-WELCOME-001",
+      "name": "Welcome Page - Affichage pour utilisateur authentifié",
+      "description": "Vérifie que la page d'accueil affiche les options correctes pour un utilisateur connecté.",
+      "user_story_ids": ["US-CORE-NAV"],
+      "prerequisites": [
+        "L'utilisateur est authentifié."
+      ],
+      "steps": [
+        { "action": "navigate_to", "target": "/" },
+        { "action": "wait_for_element", "target": "h1:contains('Bienvenue')" }
+      ],
+      "assertions": [
+        { "type": "element_exists", "target": "button:contains('Commencer une analyse')", "description": "Le bouton 'Commencer une analyse' doit être visible." },
+        { "type": "element_exists", "target": "button:contains('Accéder à mes analyses')", "description": "Le bouton 'Accéder à mes analyses' doit être visible." }
+      ]
+    },
+    {
+      "id": "TC-WELCOME-002",
+      "name": "Welcome Page - Affichage pour utilisateur non authentifié",
+      "description": "Vérifie que la page d'accueil affiche les options restreintes pour un visiteur non connecté.",
+      "user_story_ids": ["US-CORE-NAV"],
+      "prerequisites": [
+        "L'utilisateur n'est pas authentifié."
+      ],
+      "steps": [
+        { "action": "navigate_to", "target": "/" },
+        { "action": "wait_for_element", "target": "h1:contains('Bienvenue')" }
+      ],
+      "assertions": [
+        { "type": "element_exists", "target": "button:contains('Commencer une analyse')", "description": "Le bouton 'Commencer une analyse' doit être visible." },
+        { "type": "element_not_exists", "target": "button:contains('Accéder à mes analyses')", "description": "Le bouton 'Accéder à mes analyses' ne doit pas être visible." }
+      ]
+    },
+    {
+      "id": "TC-CORE-001",
+      "name": "Analyse de base - Calcul d'un projet rentable",
+      "description": "Vérifie que le moteur de calcul principal évalue correctement un projet rentable, en affichant un score positif et un cash-flow positif.",
+      "user_story_ids": ["US-2.3"],
+      "prerequisites": [
+        "L'utilisateur est sur la page d'analyse principale."
+      ],
+      "steps": [
+        { "action": "fill_field", "target": "input[name='prixAchat']", "value": "180000" },
+        { "action": "fill_field", "target": "input[name='coutTravaux']", "value": "20000" },
+        { "action": "fill_field", "target": "input[name='apport']", "value": "40000" },
+        { "action": "fill_field", "target": "input[name='loyerEstime']", "value": "1100" },
+        { "action": "fill_field", "target": "input[name='chargesMensuelles']", "value": "150" },
+        { "action": "click", "target": "button:contains('Evaluer le Projet')" }
+      ],
+      "assertions": [
+        { "type": "element_exists", "target": "div:contains('Résultat')", "description": "La section des résultats doit être visible." },
+        { "type": "element_contains_text", "target": "[data-testid='score-grade']", "expected": "B", "description": "Le score de rentabilité doit être 'B'." },
+        { "type": "element_contains_text", "target": "[data-testid='cashflow-value']", "expected_pattern": "^[1-9][0-9]*.*€$", "description": "Le cash-flow mensuel doit être positif." }
+      ]
+    },
+    {
+      "id": "TC-AI-001",
+      "name": "Assistant IA - Extraction et application des données",
+      "description": "Vérifie que l'IA peut extraire les données d'une annonce, les afficher, et que l'utilisateur peut les appliquer au formulaire.",
+      "user_story_ids": ["US-1.1", "US-1.2", "US-1.3", "US-2.1"],
+      "prerequisites": [
+        "L'utilisateur est authentifié.",
+        "L'utilisateur dispose de crédits IA."
+      ],
+      "steps": [
+        { "action": "click", "target": "button[title='Assistant IA']" },
+        { "action": "wait_for_element", "target": "div:contains('Assistant Immobilier IA')" },
+        { "action": "fill_field", "target": "textarea[name='aiInput']", "value": "A vendre, superbe appartement 2 chambres de 85m² à Namur. Prix : 210000 euros. PEB C." },
+        { "action": "click", "target": "button:contains('Extraire les données')" },
+        { "action": "click", "target": "button:contains('Interroger l\\'IA')" },
+        { "action": "wait_for_element", "target": "div:contains('Réponse de l\\'assistant')" },
+        { "action": "click", "target": "button:contains('Appliquer au formulaire')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value", "target": "input[name='prixAchat']", "expected": "210000", "description": "Le prix d'achat doit être mis à jour." },
+        { "type": "field_has_value", "target": "input[name='surface']", "expected": "85", "description": "La surface doit être mise à jour." },
+        { "type": "element_has_class", "target": "button:contains('C')", "expected": "bg-blue-600", "description": "Le bouton PEB 'C' doit être sélectionné." }
+      ]
+    },
+    {
+      "id": "TC-AI-002",
+      "name": "Assistant IA - Suggestions d'optimisation",
+      "description": "Vérifie que l'IA peut générer des boutons de suggestion et que cliquer dessus met à jour le formulaire.",
+      "user_story_ids": ["US-4.2", "US-4.3"],
+      "prerequisites": [
+        "L'utilisateur est authentifié."
+      ],
+      "steps": [
+        { "action": "click", "target": "button[title='Assistant IA']" },
+        { "action": "fill_field", "target": "textarea[name='aiInput']", "value": "Loyer actuel 800€ pour un 2 chambres à Bruxelles. Le marché est à 950€." },
+        { "action": "click", "target": "button:contains('Suggérer des optimisations')" },
+        { "action": "click", "target": "button:contains('Interroger l\\'IA')" },
+        { "action": "wait_for_element", "target": "div:contains('Suggestions de l\\'IA')" },
+        { "action": "click", "target": "button:contains('Appliquer loyer de 950€')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value", "target": "input[name='loyerEstime']", "expected": "950", "description": "Le loyer estimé doit être mis à jour à 950€." }
+      ]
+    },
+    {
+      "id": "TC-FEATURE-002",
+      "name": "Fonctionnalité - Estimateur de coût des travaux",
+      "description": "Vérifie que l'estimateur de travaux s'ouvre avec des valeurs pré-remplies, calcule le total et met à jour le formulaire principal.",
+      "user_story_ids": ["US-ESTIMATOR-WORK"],
+      "prerequisites": [
+        "L'utilisateur est sur la page d'analyse principale."
+      ],
+      "steps": [
+        { "action": "click", "target": "button[title='Estimer le coût des travaux']" },
+        { "action": "wait_for_element", "target": "h2:contains('Estimation du Coût des Travaux')" },
+        { "action": "assert_text", "target": "span:contains('6500')", "description": "Vérifie que le total initial est correct (2500+1500+2500)." },
+        { "action": "click", "target": "button:contains('Ajouter une ligne')" },
+        { "action": "fill_field", "target": "input[placeholder='Type de travaux (ex: Cuisine)']", "value": "Cuisine", "index": 3 },
+        { "action": "fill_field", "target": "input[placeholder='Coût (€)']", "value": "5000", "index": 3 },
+        { "action": "click", "target": "button:contains('Appliquer ce montant')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value", "target": "input[name='coutTravaux']", "expected": "11500", "description": "Le champ 'Coût travaux' doit être mis à jour avec le nouveau total (6500 + 5000)." }
+      ]
+    },
+    {
+      "id": "TC-FEATURE-003",
+      "name": "Fonctionnalité - Estimateur des frais d'acquisition",
+      "description": "Vérifie que l'estimateur des frais d'acquisition s'ouvre, contient un avertissement, et met à jour le formulaire.",
+      "user_story_ids": ["US-ESTIMATOR-FEES"],
+      "prerequisites": [
+        "L'utilisateur est sur la page d'analyse principale."
+      ],
+      "steps": [
+        { "action": "fill_field", "target": "input[name='prixAchat']", "value": "200000" },
+        { "action": "click", "target": "button[title='Calculateur détaillé']" },
+        { "action": "wait_for_element", "target": "h2:contains('Estimateur des Frais d\\'Acquisition')" },
+        { "action": "assert_element_exists", "target": "div:contains('Seul le décompte officiel de votre notaire fait foi.')", "description": "L'avertissement légal doit être visible." },
+        { "action": "select_option", "target": "select", "value": "Bruxelles" },
+        { "action": "assert_text_not", "target": "span:contains('25000')", "description": "Vérifie que le montant a changé après la sélection de la région." },
+        { "action": "click", "target": "button:contains('Appliquer ce montant')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value_not", "target": "input[name='fraisAcquisition']", "expected": "25000", "description": "Le champ 'Frais d'acquisition' doit être mis à jour avec la nouvelle valeur calculée." }
+      ]
+    },
+    {
+      "id": "TC-FEATURE-001",
+      "name": "Fonctionnalité - Répartition des loyers multi-unités",
+      "description": "Vérifie que la modale de répartition des loyers calcule correctement le total et l'applique au formulaire principal.",
+      "user_story_ids": ["US-ESTIMATOR-RENT"],
+      "prerequisites": [
+        "L'utilisateur est sur la page d'analyse principale."
+      ],
+      "steps": [
+        { "action": "click", "target": "button[title='Répartir le loyer par unité']" },
+        { "action": "wait_for_element", "target": "h2:contains('Répartition des Loyers par Unité')" },
+        { "action": "assert_text", "target": "span:contains('425')", "description": "Vérifie que le total initial est correct (100+325)." },
+        { "action": "click", "target": "button:contains('Ajouter une unité')" },
+        { "action": "fill_field", "target": "input[value='Unité 3']", "value": "Appartement 1er" },
+        { "action": "fill_field", "target": "input[type='number']", "value": "750", "index": 2 },
+        { "action": "click", "target": "button:contains('Appliquer')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value", "target": "input[name='loyerEstime']", "expected": "1175", "description": "Le loyer total (100 + 325 + 750) doit être appliqué." }
+      ]
+    },
+    {
+      "id": "TC-FEATURE-004",
+      "name": "Fonctionnalité - Estimateur de charges d'exploitation",
+      "description": "Vérifie que l'estimateur de charges s'ouvre avec des valeurs estimées, calcule le total mensuel et met à jour le formulaire.",
+      "user_story_ids": ["US-ESTIMATOR-CHARGES"],
+      "prerequisites": [
+        "L'utilisateur est sur la page d'analyse principale."
+      ],
+      "steps": [
+        { "action": "fill_field", "target": "input[name='prixAchat']", "value": "200000" },
+        { "action": "fill_field", "target": "input[name='revenuCadastral']", "value": "800" },
+        { "action": "fill_field", "target": "input[name='loyerEstime']", "value": "900" },
+        { "action": "click", "target": "button[title='Estimer les charges']" },
+        { "action": "wait_for_element", "target": "h2:contains('Estimateur de Charges')" },
+        { "action": "assert_field_has_value", "target": "input[value='Assurance PNO (Propriétaire Non-Occupant)']", "expected": "Assurance PNO (Propriétaire Non-Occupant)", "description": "L'assurance PNO doit être pré-remplie." },
+        { "action": "assert_field_has_value", "target": "input[value='Précompte immobilier']", "expected": "Précompte immobilier", "description": "Le précompte doit être pré-rempli." },
+        { "action": "click", "target": "button:contains('Ajouter une charge')" },
+        { "action": "fill_field", "target": "input[placeholder='Ex: Assurance PNO']", "value": "Entretien chaudière", "index": 3 },
+        { "action": "fill_field", "target": "input[placeholder='150']", "value": "180", "index": 3 },
+        { "action": "select_option", "target": "select", "value": "An", "index": 3 },
+        { "action": "click", "target": "button:contains('Appliquer')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value_not", "target": "input[name='chargesMensuelles']", "expected": "0", "description": "Le champ 'Charges mensuelles' doit être mis à jour avec une valeur calculée non nulle." }
+      ]
+    },
+    {
+      "id": "TC-DATA-001",
+      "name": "Gestion des données - Sauvegarde et chargement d'une analyse",
+      "description": "Vérifie qu'un utilisateur connecté peut sauvegarder une analyse et la recharger depuis son tableau de bord.",
+      "user_story_ids": ["US-2.3"],
+      "prerequisites": [
+        "L'utilisateur est authentifié."
+      ],
+      "steps": [
+        { "action": "fill_field", "target": "input[name='ville']", "value": "Liège" },
+        { "action": "fill_field", "target": "input[name='prixAchat']", "value": "250000" },
+        { "action": "click", "target": "button:contains('Evaluer le Projet')" },
+        { "action": "wait_for_element", "target": "button:contains('Sauvegarder')" },
+        { "action": "click", "target": "button:contains('Sauvegarder')" },
+        { "action": "fill_field", "target": "input[id='saveProjectName']", "value": "Projet Test Liège" },
+        { "action": "click", "target": "button:contains('Confirmer')" },
+        { "action": "wait_for_notification", "text": "sauvegardé" },
+        { "action": "click", "target": "button:contains('Mes analyses')" },
+        { "action": "wait_for_element", "target": "h2:contains('Projet Test Liège')" },
+        { "action": "click", "target": "h2:contains('Projet Test Liège')" }
+      ],
+      "assertions": [
+        { "type": "field_has_value", "target": "input[name='prixAchat']", "expected": "250000", "description": "L'analyse rechargée doit avoir le bon prix d'achat." },
+        { "type": "field_has_value", "target": "input[name='ville']", "expected": "Liège", "description": "L'analyse rechargée doit avoir la bonne ville." }
+      ]
+    },
+    {
+      "id": "TC-PROFILE-001",
+      "name": "Profil - Création d'un profil financier",
+      "description": "Vérifie que l'utilisateur peut renseigner et sauvegarder ses informations financières.",
+      "user_story_ids": ["US-3.1"],
+      "prerequisites": [
+        "L'utilisateur est authentifié et sur la page 'Mon Espace'."
+      ],
+      "steps": [
+        { "action": "click", "target": "button:contains('Particulier')" },
+        { "action": "fill_field", "target": "input[name='monthlyNetIncome']", "value": "3500" },
+        { "action": "fill_field", "target": "input[name='availableSavings']", "value": "50000" },
+        { "action": "click", "target": "button:contains('Sauvegarder le profil financier')" },
+        { "action": "wait_for_notification", "text": "Profil financier mis à jour" }
+      ],
+      "assertions": [
+        { "type": "field_has_value", "target": "input[name='monthlyNetIncome']", "expected": "3500", "description": "La donnée doit être persistante après rechargement de la page." }
+      ]
+    }
+  ]
+}

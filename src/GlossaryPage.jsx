@@ -1,44 +1,44 @@
 import React, { useState, useMemo } from 'react';
 
 const GlossaryPage = ({ onBack }) => {
-    const terms = [
-        {
-            term: 'Revenu Cadastral (RC)',
-            definition: "Le revenu cadastral est le revenu fictif que l'administration fiscale attribue à chaque bien immobilier. Il sert de base au calcul du précompte immobilier et à la taxation des revenus immobiliers en personne physique."
-        },
-        {
-            term: 'Précompte Immobilier',
-            definition: "C'est un impôt régional sur les biens immobiliers. Il est calculé sur base du revenu cadastral indexé et varie selon la commune."
-        },
-        {
-            term: 'Droits d\'enregistrement',
-            definition: "C'est la taxe que vous payez lors de l'achat d'un bien immobilier existant. En Wallonie et à Bruxelles, le taux est de 12,5%. En Flandre, il est de 12% (avec des taux réduits sous conditions)."
-        },
-        {
-            term: 'Quotité',
-            definition: "La quotité d'emprunt est le pourcentage du prix d'achat (et parfois des travaux) que la banque accepte de financer. Une quotité de 90% signifie que vous devez apporter 10% du montant en fonds propres, en plus des frais."
-        },
-        {
-            term: 'PEB (Performance Énergétique des Bâtiments)',
-            definition: "Le certificat PEB est un document qui évalue la performance énergétique d'un bâtiment sur une échelle allant de A+ (très économe) à G (très énergivore). Il est obligatoire pour la vente et la location."
-        },
-        {
-            term: 'Cash-Flow',
-            definition: "Le cash-flow est la différence entre les entrées (loyers) et les sorties d'argent (mensualité de crédit, charges, taxes) sur une période donnée. Un cash-flow positif signifie que l'investissement génère plus d'argent qu'il n'en coûte."
-        },
-        {
-            term: 'Cash-on-Cash Return (CoC)',
-            definition: "Le retour sur fonds propres. C'est un ratio qui mesure le cash-flow annuel par rapport au montant total des fonds propres investis (votre apport). C'est un excellent indicateur de la performance de votre argent."
-        },
-        {
-            term: 'Acte authentique',
-            definition: "C'est l'acte officiel de vente rédigé et signé par le notaire. Il rend la vente opposable à tous et assure la sécurité juridique de la transaction."
-        },
-    ];
-
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredTerms = useMemo(() => {
+        const terms = [
+            {
+                term: 'Revenu Cadastral (RC)',
+                definition: "Le revenu cadastral est le revenu fictif que l'administration fiscale attribue à chaque bien immobilier. Il sert de base au calcul du précompte immobilier et à la taxation des revenus immobiliers en personne physique."
+            },
+            {
+                term: 'Précompte Immobilier',
+                definition: "C'est un impôt régional sur les biens immobiliers. Il est calculé sur base du revenu cadastral indexé et varie selon la commune."
+            },
+            {
+                term: 'Droits d\'enregistrement',
+                definition: "C'est la taxe que vous payez lors de l'achat d'un bien immobilier existant. En Wallonie et à Bruxelles, le taux est de 12,5%. En Flandre, il est de 12% (avec des taux réduits sous conditions)."
+            },
+            {
+                term: 'Quotité',
+                definition: "La quotité d'emprunt est le pourcentage du prix d'achat (et parfois des travaux) que la banque accepte de financer. Une quotité de 90% signifie que vous devez apporter 10% du montant en fonds propres, en plus des frais."
+            },
+            {
+                term: 'PEB (Performance Énergétique des Bâtiments)',
+                definition: "Le certificat PEB est un document qui évalue la performance énergétique d'un bâtiment sur une échelle allant de A+ (très économe) à G (très énergivore). Il est obligatoire pour la vente et la location."
+            },
+            {
+                term: 'Cash-Flow',
+                definition: "Le cash-flow est la différence entre les entrées (loyers) et les sorties d'argent (mensualité de crédit, charges, taxes) sur une période donnée. Un cash-flow positif signifie que l'investissement génère plus d'argent qu'il n'en coûte."
+            },
+            {
+                term: 'Cash-on-Cash Return (CoC)',
+                definition: "Le retour sur fonds propres. C'est un ratio qui mesure le cash-flow annuel par rapport au montant total des fonds propres investis (votre apport). C'est un excellent indicateur de la performance de votre argent."
+            },
+            {
+                term: 'Acte authentique',
+                definition: "C'est l'acte officiel de vente rédigé et signé par le notaire. Il rend la vente opposable à tous et assure la sécurité juridique de la transaction."
+            },
+        ];
+
         if (!searchTerm) {
             return terms.sort((a, b) => a.term.localeCompare(b.term));
         }
@@ -49,7 +49,7 @@ const GlossaryPage = ({ onBack }) => {
                 item.definition.toLowerCase().includes(lowercasedFilter)
             )
             .sort((a, b) => a.term.localeCompare(b.term));
-    }, [searchTerm, terms]);
+    }, [searchTerm]);
 
     return (
         <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">

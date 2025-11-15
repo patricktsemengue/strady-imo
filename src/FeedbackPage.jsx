@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { supabase } from './supabaseClient';
-import { useAuth } from './AuthContext';
+import { useAuth } from './hooks/useAuth';
 import { feedbackQuestionsConfig } from './feedbackConfig.js'; // Importer la configuration
+import { useNotification } from './contexts/useNotification';
 
 const InfoIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info text-gray-400 group-hover:text-blue-500">
@@ -9,7 +10,7 @@ const InfoIcon = () => (
     </svg>
 );
 
-const StarIcon = ({ filled, onClick, onMouseEnter, onMouseLeave, size = 12 }) => (
+const StarIcon = ({ filled, onClick, onMouseEnter, onMouseLeave, size = 6 }) => (
     <svg
         onClick={onClick}
         onMouseEnter={onMouseEnter}
@@ -38,8 +39,9 @@ const Tooltip = ({ text, children }) => (
     </div>
 );
 
-const FeedbackPage = ({ onBack, setNotification }) => {
+const FeedbackPage = ({ onBack }) => {
     const { user } = useAuth();
+    const { showNotification } = useNotification();
     const [feedbackType, setFeedbackType] = useState('suggestion');
     const [featureArea, setFeatureArea] = useState('analyse_bien');
     const [comment, setComment] = useState('');
@@ -79,7 +81,7 @@ const FeedbackPage = ({ onBack, setNotification }) => {
             setIsSubmitting(false);
         } else {
             setSuccess(true);
-            setNotification({ msg: 'Votre retour a bien été envoyé. Merci !', type: 'success' });
+            showNotification('Votre retour a bien été envoyé. Merci !', 'success');
             setTimeout(() => onBack(), 2000); // Retour automatique après 2s
         }
     };
@@ -107,12 +109,6 @@ const FeedbackPage = ({ onBack, setNotification }) => {
     const handleDynamicAnswerChange = (id, value) => {
         setDynamicAnswers(prev => ({ ...prev, [id]: value }));
     };
-
-    // Concatène les réponses dynamiques au commentaire principal
-    const fullComment = useMemo(() => {
-        const dynamicPart = questionsToShow.map(q => `${q.question}\n${dynamicAnswers[q.id] || 'Non répondu'}`).join('\n\n');
-        return `${comment}\n\n--- Réponses au sondage ---\n${dynamicPart}`;
-    }, [comment, dynamicAnswers, questionsToShow]);
 
     if (success) {
         return (

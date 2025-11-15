@@ -1,0 +1,71 @@
+/* Styling for the Logo component */
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease-in-out;
+  
+}
+
+.logo:hover {
+  transform: scale(1.03);
+}
+
+.logo i {
+  font-style: normal;
+}
+
+.logo-s {
+  font-family: 'Caveat', cursive;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.logo-trady {
+  font-family: 'The Girl Next Door', cursive;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.logo-dot {
+  font-size: 2.2rem;
+  color: #f59e0b; /* orange-500 */
+  line-height: 1;
+}
+
+.logo-imo {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.1rem 0.5rem;
+  border-radius: 6px;
+  border-top: 2.5px solid #3b82f6;
+  border-right: 2.5px solid #3b82f6;
+  border-bottom: 2.5px solid #3b82f6;
+  color: #3b82f6;
+  line-height: 1;
+}
+
+/* Responsive styles for mobile devices */
+@media (max-width: 640px) {
+  .logo {
+    gap: 2px;
+  }
+  .logo-s {
+    font-size: 2rem;
+  }
+  .logo-trady {
+    font-size: 1.5rem;
+  }
+  .logo-dot {
+    font-size: 1.8rem;
+  }
+  .logo-imo {
+    font-size: 1rem;
+    padding: 0.05rem 0.4rem;
+    border-width: 2px;
+  }
+}

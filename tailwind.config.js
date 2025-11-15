@@ -1,5 +1,6 @@
+/* eslint-env node */
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,7 +8,4 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [
-    require('@tailwindcss/typography'), // Add this line
-  ],
 }

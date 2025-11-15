@@ -1,17 +1,8 @@
 import React from 'react';
-import { Logo } from './App';
-
-const PrintIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-printer h-5 w-5"><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 14h12v8H6z" /></svg>
-);
-
-const AlertTriangleIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle h-5 w-5 flex-shrink-0">
-        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-        <path d="M12 9v4" />
-        <path d="M12 17h.01" />
-    </svg>
-);
+import { Logo } from './Logo';
+import { useModal } from './contexts/useModal'; // Import useModal
+import FiscalComparison from './FiscalComparison'; // US 4.1: Import the new component
+import { PrintIcon, AlertTriangleIcon, EuroIcon, BriefcaseIcon, BuildingIcon, FileTextIcon, TrendingUpIcon, ThumbsUpIcon, ThumbsDownIcon, TargetIcon, HelpIcon } from './Icons';
 
 const Section = ({ title, icon, children }) => (
     <div className="mb-8">
@@ -23,17 +14,10 @@ const Section = ({ title, icon, children }) => (
     </div>
 );
 
-const EuroIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-euro h-6 w-6 text-gray-500"><path d="M4 10h12" /><path d="M4 14h9" /><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2" /></svg>;
-const BriefcaseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-briefcase h-6 w-6 text-gray-500"><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>;
-const BuildingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-building-2 h-6 w-6 text-gray-500"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18" /><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /><path d="M10 6h4" /><path d="M10 10h4" /><path d="M10 14h4" /><path d="M10 18h4" /></svg>;
-const FileTextIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text h-6 w-6 text-gray-500"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>;
-
 const DataRow = ({ label, value, unit = '', isHighlighted = false }) => (
-    <div className="flex justify-between items-center py-2 border-b">
+    <div className={`flex justify-between items-center py-1.5 ${isHighlighted ? 'font-bold' : ''}`}>
         <span className="text-gray-600">{label}</span>
-        <span className={`font-semibold ${isHighlighted ? 'text-blue-600' : 'text-gray-800'}`}>
-            {typeof value === 'number' ? value.toLocaleString('fr-BE') : value} {unit}
-        </span>
+        <span>{typeof value === 'number' ? value.toLocaleString('fr-BE') : value} {unit}</span>
     </div>
 );
 
@@ -125,8 +109,48 @@ const RevenueExpenseChart = ({ revenue, expenses }) => {
     );
 };
 
+const InfoBubble = ({ metricId }) => {
+    const { setIsMetricModalOpen, setSelectedMetric } = useModal();
 
-const ResultCard = ({ label, value, unit = '', grade = 'C' }) => {
+    const handleClick = () => {
+        setSelectedMetric(metricId);
+        setIsMetricModalOpen(true);
+    };
+
+    return (
+        <div onClick={handleClick} className="cursor-pointer">
+            <InfoIcon className="w-4 h-4 text-gray-500" />
+        </div>
+    );
+};
+
+
+
+
+const metricInfos = {
+    score: {
+        title: "Score Strady",
+        description: "Évalue la rapidité à laquelle le cash-flow net généré permet de reconstituer l'apport personnel. Un score 'A' indique un retour sur apport en moins de 5 ans.",
+        formula: "Basé sur le CoC Return"
+    },
+    rendementNet: {
+        title: "Rendement Net",
+        description: "Mesure la rentabilité intrinsèque du bien avant financement. Il prend en compte les loyers et les charges d'exploitation, mais exclut le coût du crédit.",
+        formula: "((Loyer Annuel - Charges) / Coût Total) x 100"
+    },
+    cashflow: {
+        title: "Cash-Flow Mensuel",
+        description: "Représente le bénéfice ou la perte mensuelle après déduction de toutes les charges (y compris le crédit) des revenus locatifs.",
+        formula: "Loyer Mensuel - Charges - Mensualité Crédit"
+    },
+    coc: {
+        title: "CoC Return (Cash-on-Cash)",
+        description: "Mesure le rendement de vos fonds propres investis (votre apport). C'est le ratio entre le cash-flow annuel et votre apport personnel.",
+        formula: "(Cash-Flow Annuel / Apport) x 100"
+    }
+};
+
+const ResultCard = ({ label, value, unit = '', grade = 'C', info }) => {
     const gradeColor =
         grade.startsWith('A') ? 'bg-green-100 text-green-800' :
             grade.startsWith('B') ? 'bg-yellow-100 text-yellow-800' :
@@ -137,14 +161,69 @@ const ResultCard = ({ label, value, unit = '', grade = 'C' }) => {
 
     return (
         <div className={`p-4 rounded-lg text-center ${gradeColor}`}>
-            <div className="text-sm font-medium">{label}</div>
+            <div className="text-sm font-medium flex justify-center items-center gap-1">
+                <span>{label}</span>
+                {info && <InfoBubble metricId={info} />}
+            </div>
             <div className="text-2xl font-bold">{value}{unit}</div>
         </div>
     );
 };
 
+// A basic Info icon component.
+const InfoIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+);
+const FeasibilityAnalysis = ({ user, newMonthlyPayment }) => {
+    const profile = user?.user_metadata?.financial_profile;
 
-const AnalysisViewPage = ({ analysis, onBack }) => {
+    if (!profile || profile.profileType !== 'INDIVIDUAL') {
+        return null; // Only for individual profiles for now
+    }
+
+    const { monthlyNetIncome, currentLoansMonthlyPayment } = profile.individualFinances;
+
+    if (!monthlyNetIncome || monthlyNetIncome <= 0) {
+        return null;
+    }
+
+    const totalLoansBefore = currentLoansMonthlyPayment || 0;
+    const totalLoansAfter = totalLoansBefore + newMonthlyPayment;
+
+    const debtRatioBefore = (totalLoansBefore / monthlyNetIncome) * 100;
+    const debtRatioAfter = (totalLoansAfter / monthlyNetIncome) * 100;
+
+    const getRatioColor = (ratio) => {
+        if (ratio <= 35) return 'text-green-600';
+        if (ratio <= 40) return 'text-orange-500';
+        return 'text-red-600';
+    };
+
+    return (
+        <Section title="Faisabilité du Projet (selon votre profil)" icon={<TargetIcon />}>
+            <p className="text-sm text-gray-500 mb-4">Cette estimation se base sur les données de votre profil financier pour évaluer l'impact de ce projet sur votre taux d'endettement.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DataRow label="Taux d'endettement actuel" value={`${debtRatioBefore.toFixed(1)} %`} />
+                <DataRow label="Taux d'endettement après projet" value={<span className={`font-bold ${getRatioColor(debtRatioAfter)}`}>{debtRatioAfter.toFixed(1)} %</span>} />
+            </div>
+        </Section>
+    );
+};
+
+const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {    
+    React.useEffect(() => {
+        if (analysis) {
+            const originalTitle = document.title;
+            return () => {
+                document.title = originalTitle;
+            };
+        }
+    }, [analysis]);
+
     if (!analysis) {
         return (
             <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg text-center">
@@ -156,21 +235,8 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
         );
     }
 
-    const { data, result } = analysis;
+    const { data, result, user } = analysis;
 
-    // Mettre à jour le titre du document
-    React.useEffect(() => {
-        const originalTitle = document.title;
-        document.title = `Rapport: ${data.projectName}`;
-
-        // Revenir au titre original quand le composant est démonté
-        return () => {
-            document.title = originalTitle;
-        };
-    }, [data.projectName]);
-    const handlePrint = () => {
-        window.print();
-    };
     const coutTotal = (data.prixAchat || 0) + (data.coutTravaux || 0) + (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
     const finances = {
         coutTotal: coutTotal,
@@ -193,12 +259,7 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
                     <h1 className="text-2xl font-bold text-gray-800">{data.projectName}</h1>
                     <p className="text-gray-500">{data.ville}</p>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={onBack} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">&larr; Retour</button>
-                    <button onClick={handlePrint} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center gap-2">
-                        <PrintIcon /> Imprimer
-                    </button>
-                </div>
+                <button onClick={onBack} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 print-hidden">&larr; Retour</button>
             </div>
             <div className="hidden print-block mb-6 border-b pb-4">
                 <Logo />
@@ -219,13 +280,64 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
             {result && (
                 <Section title="Synthèse Financière" icon={<BriefcaseIcon />}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <ResultCard label="Score Strady" value={result.grade} grade={result.grade} />
-                        <ResultCard label="Rendement Net" value={result.rendementNet} unit=" %" grade={result.grade} />
-                        <ResultCard label="Cash-Flow /mois" value={result.cashflowMensuel} unit=" €" grade={result.grade} />
-                        <ResultCard label="CoC Return" value={isFinite(result.cashOnCash) ? result.cashOnCash.toFixed(1) : 'N/A'} unit=" %" grade={result.grade} />
+                        <ResultCard label="Score Strady" value={result.grade} grade={result.grade} info="score" />
+                        <ResultCard label="Rendement Net" value={result.rendementNet} unit=" %" grade={result.grade} info="rendementNet" />
+                        <ResultCard label="Cash-Flow /mois" value={result.cashflowMensuel} unit=" €" grade={result.grade} info="cashflow" />
+                        <ResultCard 
+                            label="CoC Return" 
+                            value={result.cashOnCash === Infinity ? '∞' : (isFinite(result.cashOnCash) ? result.cashOnCash.toFixed(1) : 'N/A')} 
+                            unit={result.cashOnCash !== null && isFinite(result.cashOnCash) ? " %" : ""} 
+                            grade={result.grade}
+                            info="cashOnCash"
+                        />
                     </div>
                 </Section>
             )}
+
+            {/* US 3.2: Feasibility Analysis */}
+            {user && result && (
+                <FeasibilityAnalysis user={user} newMonthlyPayment={parseFloat(result.mensualiteCredit)} />
+            )}
+
+
+            {/* US 2.4: Negotiation Scenarios Table */}
+            {scenarios && scenarios.length > 0 && (
+                <Section title="Potentiel de Négociation" icon={<TrendingUpIcon />}>
+                    <div className="overflow-x-auto border rounded-lg">
+                        <table className="w-full text-sm text-left text-gray-600">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">Scénario</th>
+                                    <th scope="col" className="px-6 py-3 text-right">Prix d'Achat</th>
+                                    <th scope="col" className="px-6 py-3 text-right">Cash-Flow /mois</th>
+                                    <th scope="col" className="px-6 py-3 text-right">Rendement Net</th>
+                                    <th scope="col" className="px-6 py-3 text-right">CoC Return</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {scenarios.map((scenario, index) => (
+                                    <tr key={scenario.label} className={`border-b ${index === 0 ? 'bg-blue-50 font-semibold' : 'bg-white'}`}>
+                                        <td className="px-6 py-4 whitespace-nowrap">{scenario.label}</td>
+                                        <td className="px-6 py-4 text-right">{scenario.prixAchat.toLocaleString('fr-BE')} €</td>
+                                        <td className={`px-6 py-4 text-right font-bold ${scenario.cashflowMensuel >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {scenario.cashflowMensuel.toFixed(2)} €
+                                        </td>
+                                        <td className="px-6 py-4 text-right">{scenario.rendementNet.toFixed(2)} %</td>
+                                        <td className="px-6 py-4 text-right">
+                                            {scenario.cashOnCash === Infinity ? '∞' : (isFinite(scenario.cashOnCash) ? `${scenario.cashOnCash.toFixed(1)} %` : 'N/A')}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Section>
+            )}
+
+            {/* US 4.1: Fiscal Comparison */}
+            <Section title="Analyse Fiscale Comparative" icon={<BriefcaseIcon />}>
+                <FiscalComparison data={data} result={result} />
+            </Section>
 
             {result && (
                 <Section title="Visualisation du Cash-Flow Mensuel" icon={<BriefcaseIcon />}>
@@ -244,21 +356,18 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
                         <h3 className="font-semibold text-lg mb-3">Structure des Coûts</h3>
                         <DataRow label="Prix d'achat" value={data.prixAchat} unit="€" />
                         <DataRow label="Coût des travaux" value={data.coutTravaux} unit="€" />
-                        <DataRow label="Frais d'acquisition" value={data.fraisAcquisition} unit="€" />
-                        <DataRow label="Frais annexes" value={data.fraisAnnexe} unit="€" />
                         {data.travauxDetail && data.travauxDetail.length > 0 && (
-                            <div className="pl-4 mt-2 text-sm text-gray-600 space-y-1 border-t pt-2">
-                                {data.travauxDetail.map(travau => (
-                                    <div key={travau.id} className="flex justify-between items-center py-1 border-b border-gray-200 last:border-b-0">
-                                        <span>
-                                            - {travau.object}
-                                            {travau.type && <span className="text-gray-500 italic"> ({travau.type})</span>}
-                                        </span>
-                                        <span className="font-mono">{travau.cost?.toLocaleString('fr-BE')} €</span>
+                            <div className="pl-4 ml-2 my-2 text-sm text-gray-600 space-y-1 border-l-2 border-gray-200">
+                                {data.travauxDetail.map((item, index) => (
+                                    <div key={index} className="flex justify-between items-center py-1 pl-2">
+                                        <span>- {item.name}</span>
+                                        <span className="font-mono">{parseFloat(item.cost).toLocaleString('fr-BE')} €</span>
                                     </div>
                                 ))}
                             </div>
                         )}
+                        <DataRow label="Frais d'acquisition" value={data.fraisAcquisition} unit="€" />
+                        <DataRow label="Frais annexes" value={data.fraisAnnexe} unit="€" />
                         <div className="flex justify-between items-center py-2 border-t-2 mt-2 font-bold">
                             <span>Coût Total du Projet</span>
                             <span>{finances.coutTotal.toLocaleString('fr-BE')} €</span>
@@ -307,6 +416,30 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
                 <DataRow label="En ordre urbanistique" value={data.enOrdreUrbanistique ? 'Oui' : 'Non'} />
             </Section>
 
+            {/* US 4.4: Strengths and Weaknesses */}
+            {(data.strengths?.some(s => s.trim() !== '') || data.weaknesses?.some(w => w.trim() !== '')) && (
+                <Section title="Analyse Qualitative" icon={<FileTextIcon />}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {data.strengths?.some(s => s.trim() !== '') && (
+                            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><ThumbsUpIcon /> Points Forts</h3>
+                                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                                    {data.strengths.filter(s => s.trim() !== '').map((strength, index) => <li key={index}>{strength}</li>)}
+                                </ul>
+                            </div>
+                        )}
+                        {data.weaknesses?.some(w => w.trim() !== '') && (
+                            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><ThumbsDownIcon /> Points Faibles</h3>
+                                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                                    {data.weaknesses.filter(w => w.trim() !== '').map((weakness, index) => <li key={index}>{weakness}</li>)}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </Section>
+            )}
+
             {/* --- Section Notes --- */}
             {data.descriptionBien && (
                 <Section title="Notes et Commentaires" icon={<FileTextIcon />}>
@@ -316,21 +449,6 @@ const AnalysisViewPage = ({ analysis, onBack }) => {
                 </Section>
             )}
 
-            {/* --- Notes de bas de page --- */}
-            <div className="mt-12 pt-6 border-t-2 border-dashed text-xs text-gray-600 space-y-3">
-                <h4 className="font-semibold text-sm text-gray-700">Définitions des indicateurs clés :</h4>
-                <p><strong>Score Strady :</strong> Évalue la rapidité à laquelle le cash-flow net généré permet de reconstituer l'apport personnel. Un score 'A' indique un retour sur apport en moins de 5 ans, tandis qu'un score 'E' indique un retour supérieur à 20 ans.</p>
-                <p>
-                    <strong>CoC Return (Cash-on-Cash) :</strong> Mesure le rendement de vos fonds propres investis (votre apport). C'est le ratio entre le cash-flow annuel et votre apport personnel.
-                    <br />
-                    <em className="font-mono text-gray-500">Formule : (Cash-Flow Annuel / Apport Personnel) x 100</em>
-                </p>
-                <p>
-                    <strong>Rendement Net :</strong> Mesure la rentabilité intrinsèque du bien avant financement. Il prend en compte les loyers et les charges d'exploitation, mais exclut le coût du crédit.
-                    <br />
-                    <em className="font-mono text-gray-500">Formule : ((Loyer Annuel - Charges Annuelles) / Coût Total) x 100</em>
-                </p>
-            </div>
         </div>
     );
 };
