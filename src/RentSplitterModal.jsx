@@ -3,6 +3,7 @@ import { TrashIcon, PlusCircleIcon } from './Icons';
 import { generateUniqueId } from './utils/generateUniqueId';
 import BottomDrawerModal from './BottomDrawerModal';
 
+import FormattedInput from './components/FormattedInput';
 const RentSplitterModal = ({ isOpen, onClose, onApply, initialUnits = [] }) => {
     const [units, setUnits] = useState(initialUnits.length > 0 ? initialUnits : [{ id: generateUniqueId(), name: 'Garage', rent: 100 }, { id: generateUniqueId(), name: 'Studio', rent: 325 }]);
     
@@ -62,12 +63,12 @@ const RentSplitterModal = ({ isOpen, onClose, onApply, initialUnits = [] }) => {
                         </div>
                         <div className="md:col-span-2">
                             <label className="text-sm font-medium">Loyer HC (€)</label>
-                            <input
-                                type="number"
-                                placeholder="500"
+                            <FormattedInput
+                                name="rent"
+                                placeholder="Loyer"
                                 value={unit.rent}
                                 onChange={(e) => updateUnit(unit.id, 'rent', e.target.value)}
-                                className="mt-1 w-full p-2 border rounded-md"
+                                unit="€"
                             />
                         </div>
                         <div className="text-right md:pt-6">

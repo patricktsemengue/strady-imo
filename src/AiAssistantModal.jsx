@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SparklesIcon, AlertTriangleIcon, MicIcon } from './Icons';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
+import AIResponse from './components/AIResponse'; // Import the dedicated component
 
 const AiAssistantModal = ({
     isOpen,
@@ -19,8 +18,11 @@ const AiAssistantModal = ({
     handleSaveAiResponse,
     handleIgnoreAiResponse,
     isApplyingAi,
+    hasSavedNote,
+    hasApplied,
     aiActions,
     handleAiActionClick,
+    handleNewPrompt, // Added prop
     userPlan,
     checkAiCredits,
     getAiButtonTooltip,
@@ -153,53 +155,32 @@ const AiAssistantModal = ({
                     {isGeminiLoading && <div className="text-center p-4 text-sm text-gray-600">L'IA recherche la meilleure réponse...</div>}
 
                     {geminiResponse && (
-                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-                            <h3 className="font-semibold mb-2 text-gray-800">Réponse de l'assistant :</h3>
-                            <div className="prose prose-sm max-w-none text-gray-700 mb-4">
-                                <ReactMarkdown
-                                    rehypePlugins={[rehypeHighlight]}
-                                    components={{
-                                        a: ({ node, ...props }) => {
-                                            // Check if the link is external
-                                            const isExternal = props.href && (props.href.startsWith('http') || props.href.startsWith('//'));
-                                            if (isExternal) {
-                                                return <a {...props} target="_blank" rel="noopener noreferrer" />;
-                                            }
-                                            return <a {...props} />;
-                                        }
-                                    }}
-                                >
-                                    {geminiResponse}
-                                </ReactMarkdown>
-                            </div>
+                        <div className="mt-4">
+                            <AIResponse 
+                                response={{ text: geminiResponse, actions: aiActions }}
+                                onUpdateField={(payload) => handleAiActionClick({ type: 'UPDATE_FIELD', payload })}
+                                onNewPrompt={handleNewPrompt}
+                            />
                             <div className="mt-4 flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                                 <div className="flex-shrink-0 text-yellow-500 pt-0.5"><AlertTriangleIcon /></div>
                                 <p className="text-xs text-yellow-800"><strong>Avertissement :</strong> L'assistant IA peut commettre des erreurs. Pensez à toujours vérifier les informations importantes par vous-même.</p>
                             </div>
-                            {aiActions && aiActions.length > 0 && (
-                                <div className="mt-4 border-t pt-3">
-                                    <h4 className="text-sm font-semibold text-gray-600 mb-2">Suggestions de l'IA :</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {aiActions.map((action, index) => (
-                                            <button key={index} onClick={() => handleAiActionClick(action)} className="text-sm py-1 px-3 rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition">
-                                                {action.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                             {showAiResponseActions && (
                                 <div className="flex justify-end gap-3 border-t pt-3">
                                     <button onClick={handleIgnoreAiResponse} className="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Ignorer</button>
                                     <button
-                                        onClick={handleApplyAiResponse}
-                                        disabled={isApplyingAi || !(geminiResponse.match(/\*\*Prix:\*\*.*?((\d{1,3}(?:[.\s]?\d{3})*))/i) || geminiResponse.match(/\*\*Surface:\*\*\s*(\d+)/i) || geminiResponse.match(/Taux(?:.*?)sur\s*\d{1,2}\s*ans\s*:\s*([\d,.]+)%/i))}
-                                        className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed"
-                                        title={!(geminiResponse.match(/\*\*Prix:\*\*.*?((\d{1,3}(?:[.\s]?\d{3})*))/i) || geminiResponse.match(/\*\*Surface:\*\*\s*(\d+)/i) || geminiResponse.match(/Taux(?:.*?)sur\s*\d{1,2}\s*ans\s*:\s*([\d,.]+)%/i)) ? "Aucune donnée pertinente (prix, surface, taux) n'a été trouvée." : "Appliquer les données au formulaire"}
+                                        onClick={handleApplyAiResponse} // The regexes below are simplified checks to enable the button. The real extraction is in useAI.js
+                                        disabled={isApplyingAi || hasApplied || !geminiResponse.match(/\*\*Prix d'achat\s?:\*\*|\*\*Surface\s?:\*\*|\*\*Loyer mensuel estimé\s?:\*\*/i)}
+                                        className={`font-bold py-2 px-4 rounded-lg transition-all duration-300 ${isApplyingAi ? 'bg-purple-400' : hasApplied ? 'bg-green-600' : 'bg-green-600 hover:bg-green-700'} text-white disabled:bg-green-300 disabled:cursor-not-allowed`}
+                                        title={!geminiResponse.match(/\*\*Prix d'achat\s?:\*\*|\*\*Surface\s?:\*\*|\*\*Loyer mensuel estimé\s?:\*\*/i) ? "Aucune donnée pertinente (prix, surface, loyer) n'a été trouvée." : "Appliquer les données au formulaire"}
                                     >
-                                        {isApplyingAi ? 'Application...' : 'Appliquer au formulaire'}
+                                        {isApplyingAi ? 'Application...' : hasApplied ? 'Appliqué ✓' : 'Appliquer au formulaire'}
                                     </button>
-                                    <button onClick={handleSaveAiResponse} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Sauvegarder dans les notes</button>
+                                    {/* <button onClick={handleSaveAiResponse}
+                                        disabled={hasSavedNote}
+                                        className={`font-bold py-2 px-4 rounded-lg transition-colors ${hasSavedNote ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed'}`}>
+                                        {hasSavedNote ? 'Sauvegardé ✓' : 'Sauvegarder dans les notes'}
+                                    </button> */}
                                 </div>
                             )}
                         </div>

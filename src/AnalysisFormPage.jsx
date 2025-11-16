@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
-import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon } from './Icons';
+import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon } from './Icons';
+import FormattedInput from './components/FormattedInput';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 // This component will hold the main analysis form
 const AnalysisFormPage = ({ 
@@ -20,6 +23,12 @@ const AnalysisFormPage = ({
     pebOptions,
 }) => {
     const { user } = useAuth();
+    const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [lastNoteContent, setLastNoteContent] = useState(null);
+    const [showUndo, setShowUndo] = useState(false);
+    const undoTimeoutRef = useRef(null);
+    const [isTextSelected, setIsTextSelected] = useState(false);
+    const notesTextareaRef = useRef(null);
     const { 
         setIsEstimatorOpen,
         setIsAcquisitionFeesEstimatorOpen,
@@ -33,6 +42,98 @@ const AnalysisFormPage = ({
     const handleOpenMetricModal = (metric) => {
         setSelectedMetric(metric);
         setIsMetricModalOpen(true);
+    };
+
+    const handleDeleteNote = () => {
+        if (undoTimeoutRef.current) {
+            clearTimeout(undoTimeoutRef.current);
+        }
+        setLastNoteContent(data.descriptionBien);
+        handleDataChange('descriptionBien', '');
+        setShowUndo(true);
+        undoTimeoutRef.current = setTimeout(() => {
+            setShowUndo(false);
+            setLastNoteContent(null);
+        }, 5000); // 5 seconds to undo
+    };
+
+    const handleUndoDeleteNote = () => {
+        if (lastNoteContent !== null) {
+            handleDataChange('descriptionBien', lastNoteContent);
+        }
+        setShowUndo(false);
+        setLastNoteContent(null);
+        if (undoTimeoutRef.current) {
+            clearTimeout(undoTimeoutRef.current);
+        }
+    };
+
+    const applyMarkdown = (syntax) => {
+        const textarea = notesTextareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = data.descriptionBien.substring(start, end);
+        const beforeText = data.descriptionBien.substring(0, start);
+        const afterText = data.descriptionBien.substring(end);
+
+        const { startTag, endTag } = syntax;
+        const newText = `${beforeText}${startTag}${selectedText}${endTag}${afterText}`;
+
+        handleDataChange('descriptionBien', newText);
+
+        // Refocus and set cursor position after update
+        textarea.focus();
+        setTimeout(() => textarea.setSelectionRange(start + startTag.length, end + startTag.length), 0);
+    };
+
+    const handleNoteSelectionChange = () => {
+        const textarea = notesTextareaRef.current;
+        if (textarea) {
+            setIsTextSelected(textarea.selectionStart !== textarea.selectionEnd);
+        }
+    };
+
+    const applyListMarkdown = () => {
+        const textarea = notesTextareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = data.descriptionBien || '';
+
+        const selectedText = value.substring(start, end);
+        const beforeText = value.substring(0, start);
+        const afterText = value.substring(end);
+
+        const newText = beforeText + selectedText.split('\n').map(line => `* ${line}`).join('\n') + afterText;
+
+        handleDataChange('descriptionBien', newText);
+
+        textarea.focus();
+        setTimeout(() => textarea.setSelectionRange(start, end + (selectedText.split('\n').length * 2)), 0);
+    };
+
+    const applyOrderedListMarkdown = () => {
+        const textarea = notesTextareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = data.descriptionBien || '';
+
+        const selectedText = value.substring(start, end);
+        const beforeText = value.substring(0, start);
+        const afterText = value.substring(end);
+
+        const newSelectedText = selectedText.split('\n').map((line, index) => `${index + 1}. ${line}`).join('\n');
+        const newText = beforeText + newSelectedText + afterText;
+
+        handleDataChange('descriptionBien', newText);
+
+        textarea.focus();
+        setTimeout(() => textarea.setSelectionRange(start, start + newSelectedText.length), 0);
     };
 
     return (
@@ -73,8 +174,28 @@ const AnalysisFormPage = ({
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="hidden"><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
-                    <div><label className="block text-sm font-medium">Surface (m²)</label><input type="number" name="surface" value={data.surface} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
-                    <div><label className="block text-sm font-medium">Revenu Cadastral (€)</label><input type="number" name="revenuCadastral" value={data.revenuCadastral} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
+                    <div>
+                        <label className="block text-sm font-medium">Surface</label>
+                        <FormattedInput
+                            name="surface"
+                            value={data.surface}
+                            onChange={handleInputChange}
+                            onFocus={handleNumericFocus}
+                            onBlur={handleNumericBlur}
+                            unit="m²"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium">Revenu Cadastral</label>
+                        <FormattedInput
+                            name="revenuCadastral"
+                            value={data.revenuCadastral}
+                            onChange={handleInputChange}
+                            onFocus={handleNumericFocus}
+                            onBlur={handleNumericBlur}
+                            unit="€"
+                        />
+                    </div>
                     <div><label className="block text-sm font-medium">Adresse/ Ville / Commune <span className='text-red-400'>*</span></label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} required placeholder='Rue de Strady 1, 5000 Namur' className="mt-1 w-full p-2 border rounded-md" /></div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -93,24 +214,109 @@ const AnalysisFormPage = ({
                         </div>
                     </div>
                 </div>
-                <div className="mt-4"><label className="block text-sm font-medium">Notes</label><textarea name="descriptionBien" value={data.descriptionBien} onChange={handleInputChange} rows="4" className="mt-1 w-full p-2 border rounded-md" placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'></textarea></div>
+                {user && (
+                    <div className="mt-4">
+                        <label className="block text-sm font-medium">Notes</label>
+                        {isEditingNotes || !data.descriptionBien ? (
+                            <div className="mt-1 border rounded-md">
+                                <div className="flex items-center gap-1 p-1 bg-gray-100 border-b">
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyMarkdown({ startTag: '*', endTag: '*' })} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Gras" disabled={!isTextSelected}><BoldIcon className="h-4 w-4" /></button>
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyMarkdown({ startTag: '_', endTag: '_' })} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Italique" disabled={!isTextSelected}><ItalicIcon className="h-4 w-4" /></button>
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyMarkdown({ startTag: '<u>', endTag: '</u>' })} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Souligné" disabled={!isTextSelected}><UnderlineIcon className="h-4 w-4" /></button>
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyMarkdown({ startTag: '~~', endTag: '~~' })} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Barré" disabled={!isTextSelected}><StrikethroughIcon className="h-4 w-4" /></button>
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={applyListMarkdown} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Liste à puces" disabled={!isTextSelected}><ListIcon className="h-4 w-4" /></button>
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={applyOrderedListMarkdown} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Liste numérotée" disabled={!isTextSelected}><ListOrderedIcon className="h-4 w-4" /></button>
+                                </div>
+                                <textarea
+                                    ref={notesTextareaRef}
+                                    name="descriptionBien"
+                                    value={data.descriptionBien}
+                                    onChange={handleInputChange}
+                                    onSelect={handleNoteSelectionChange}
+                                    onBlur={() => {
+                                        // The content is already saved in the state via onChange.
+                                        setIsEditingNotes(false);
+                                        setIsTextSelected(false);
+                                    }}
+                                    rows="4"
+                                    className="w-full p-2 border-none rounded-b-md focus:ring-0"
+                                    placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'
+                                    autoFocus
+                                />
+                            </div>
+                        ) : (
+                            <div className="relative group mt-1">
+                                <div
+                                    onClick={() => setIsEditingNotes(true)}
+                                    className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border max-h-48 overflow-y-auto custom-scrollbar cursor-pointer hover:border-blue-300 transition-colors"
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(data.descriptionBien)) }}
+                                />
+                                <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <button onClick={handleDeleteNote} title="Effacer les notes" className="p-2 bg-white/70 backdrop-blur-sm rounded-full shadow-md hover:bg-red-100">
+                                        <TrashIcon className="h-4 w-4 text-red-600" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+                {showUndo && (
+                    <div className="mt-2 flex justify-center items-center gap-2 text-sm">
+                        <p className="text-gray-600">Note effacée.</p>
+                        <button onClick={handleUndoDeleteNote} className="flex items-center gap-1 font-semibold text-blue-600 hover:underline">
+                            <Undo2Icon className="h-4 w-4" /> Annuler
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* --- Section 2: Coûts & Financement --- */}
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Financement</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div><label className="block text-sm font-medium text-gray-700">Prix d'achat (€)</label><input type="number" name="prixAchat" value={data.prixAchat} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
-                    <div><label className="block text-sm font-medium text-gray-700">Coût travaux (€)</label><div className="flex items-center gap-2"><input type="number" name="coutTravaux" value={data.coutTravaux} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /><button onClick={() => setIsEstimatorOpen(true)} title="Estimer le coût des travaux" className="p-2 mt-1 bg-gray-200 hover:bg-gray-300 rounded-md"><CalculatorIcon /></button></div></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Prix d'achat</label>
+                        <FormattedInput 
+                        name="prixAchat" 
+                        value={data.prixAchat} 
+                        onChange={handleInputChange} 
+                        onFocus={handleNumericFocus} 
+                        onBlur={handleNumericBlur} 
+                        unit="€" />
+                    </div>
+
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Frais d'acquisition (€)</label>
+                        <label className="block text-sm font-medium text-gray-700">Coût travaux</label>
                         <div className="flex items-center gap-2">
-                            <input type="number" name="fraisAcquisition" value={data.fraisAcquisition} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
+                            <FormattedInput
+                                name="coutTravaux"
+                                value={data.coutTravaux}
+                                onChange={handleInputChange}
+                                onFocus={handleNumericFocus}
+                                onBlur={handleNumericBlur}
+                                unit="€"
+                            />
+                            <button onClick={() => setIsEstimatorOpen(true)} title="Estimer le coût des travaux" className="p-2 mt-1 bg-gray-200 hover:bg-gray-300 rounded-md"><CalculatorIcon /></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Frais d'acquisition</label>
+                        <div className="flex items-center gap-2">
+                            <FormattedInput
+                                name="fraisAcquisition"
+                                value={data.fraisAcquisition}
+                                onChange={handleInputChange}
+                                onFocus={handleNumericFocus}
+                                onBlur={handleNumericBlur}
+                                unit="€"
+                            />
                             <button onClick={() => setIsAcquisitionFeesEstimatorOpen(true)} className="mt-1 p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300" title="Calculateur détaillé"><CalculatorIcon /></button>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">Estimation auto. Pour un calcul précis, demandez à votre notaire une prévision des coûts (notaire.be)</p>
                     </div>
-                    <div><label className="block text-sm font-medium text-gray-700">Frais annexes (€)</label><input type="number" name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} placeholder="Agence, hypothèque..." className="mt-1 w-full p-2 border rounded-md" /></div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Frais annexes</label>
+                        <FormattedInput name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} placeholder="Agence, hypothèque..." unit="€" />
+                    </div>
                     <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700">Quotité d'emprunt</label>
                         <p className="text-xs text-gray-500 mt-1 mb-2">Part du prix d'achat et des travaux financée par la banque. L'apport est calculé automatiquement.</p>
@@ -121,17 +327,24 @@ const AnalysisFormPage = ({
                         </div>
                     </div>
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700">Apport personnel (€)</label>
+                        <label className="block text-sm font-medium text-gray-700">Apport personnel</label>
                         <div className="flex items-center gap-2">
-                            <input type="number" name="apport" value={data.apport} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
+                            <FormattedInput
+                                name="apport"
+                                value={data.apport}
+                                onChange={handleInputChange}
+                                onFocus={handleNumericFocus}
+                                onBlur={handleNumericBlur}
+                                unit="€"
+                            />
                         </div>
                         <p className="text-xs text-gray-500 mt-1">{data.quotite === 'custom' ? "L'apport est en mode manuel. Sélectionnez une quotité pour réactiver le calcul auto." : "Calculé (Frais + Part non-financée) basé sur la quotité."}</p>
                     </div>
-                    <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" name="tauxCredit" value={data.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" min="0" name="tauxCredit" value={data.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Durée du crédit (années)</label>
                         <div className="flex items-center gap-2 mt-1">
-                            <input type="number" name="dureeCredit" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
+                            <input type="number" name="dureeCredit" min="0" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
                             <div className="flex-shrink-0 flex gap-1">
                                 {[15, 20, 25, 30].map(duree => (
                                     <button key={duree} onClick={() => handleDataChange('dureeCredit', duree)} className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.dureeCredit === duree ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`} title={`${duree} ans`}>{duree}</button>
@@ -152,13 +365,27 @@ const AnalysisFormPage = ({
                 <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Loyer et charge</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div>
-                        <label className="block text-sm font-medium">Loyer hors charges (€/mois)</label>
+                        <label className="block text-sm font-medium">Loyer hors charges</label>
                         <div className="flex items-center gap-2 mt-1">
-                            <input type="number" name="loyerEstime" value={data.loyerEstime} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="w-full p-2 border rounded-md" placeholder="900 € HC" />
+                            <FormattedInput
+                                name="loyerEstime"
+                                value={data.loyerEstime}
+                                onChange={handleInputChange}
+                                onFocus={handleNumericFocus}
+                                onBlur={handleNumericBlur}
+                                unit="€/mois"
+                                placeholder="900"
+                            />
                             <button onClick={() => setIsRentSplitterOpen(true)} title="Répartir le loyer par unité" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><LayersIcon /></button>
                         </div>
                     </div>
-                    <div><label className="block text-sm font-medium">Charges d'exploitation (€/mois)</label><div className="flex items-center gap-2 mt-1"><input type="number" name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="w-full p-2 border rounded-md" /><button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button></div></div>
+                    <div>
+                        <label className="block text-sm font-medium">Charges d'exploitation</label>
+                        <div className="flex items-center gap-2 mt-1">
+                            <FormattedInput name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} unit="€/mois" />
+                            <button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

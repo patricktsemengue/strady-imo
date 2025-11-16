@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { generateUniqueId } from './utils/generateUniqueId';
 import { TrashIcon, PlusCircleIcon } from './Icons';
 import BottomDrawerModal from './BottomDrawerModal';
+import FormattedInput from './components/FormattedInput';
 
 const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
     const [charges, setCharges] = useState([]);
@@ -86,12 +87,12 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
                         </div>
                         <div className="md:col-span-2">
                             <label className="text-sm font-medium">Montant (€)</label>
-                            <input
-                                type="number"
-                                placeholder="150"
+                            <FormattedInput
+                                name="price"
+                                placeholder="Montant"
                                 value={charge.price}
                                 onChange={(e) => updateCharge(charge.id, 'price', e.target.value)}
-                                className="mt-1 w-full p-2 border rounded-md"
+                                unit="€"
                             />
                         </div>
                         <div className="md:col-span-1">

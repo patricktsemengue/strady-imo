@@ -42,3 +42,33 @@
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9; /* thumb track */
 }
+
+/* Custom Prose styles for Markdown rendering */
+.prose strong {
+  color: #1e40af; /* dark blue */
+}
+
+.prose em {
+  color: #4f46e5; /* indigo */
+  font-style: italic;
+}
+
+.prose ul > li::marker {
+  color: #1e40af; /* same dark blue */
+}
+
+.prose ul > li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.prose a {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.prose a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}

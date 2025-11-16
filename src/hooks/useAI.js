@@ -1,5 +1,6 @@
 import React from 'react';
 import { supabase } from '../supabaseClient';
+import { getFromCache, setInCache } from '../services/aiCacheService';
 
 export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotification, typeBienOptions, setTypeBienOptions, setIsCreditModalOpen }) => {
     const [aiInput, setAiInput] = React.useState('');
@@ -7,6 +8,8 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
     const [showAiResponseActions, setShowAiResponseActions] = React.useState(false);
     const [aiActions, setAiActions] = React.useState([]);
     const [isApplyingAi, setIsApplyingAi] = React.useState(false);
+    const [hasSavedNote, setHasSavedNote] = React.useState(false);
+    const [hasApplied, setHasApplied] = React.useState(false);
     const [isAiAssistantModalOpen, setIsAiAssistantModalOpen] = React.useState(false);
     const [geminiResponse, setGeminiResponse] = React.useState('');
     const [isGeminiLoading, setIsGeminiLoading] = React.useState(false);
@@ -33,7 +36,7 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         return "Interroger l'IA";
     };
 
-    const callGeminiAPI = async (systemPrompt, userPrompt, setLoading, setError, setResponse) => {
+    const callGeminiAPI = async (systemPrompt, userPrompt, taskType, setLoading, setError, setResponse) => {
         setLoading(true);
         setError('');
         setResponse('');
@@ -42,7 +45,7 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
             const response = await fetch('/.netlify/functions/gemini', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ systemPrompt, userPrompt })
+                body: JSON.stringify({ systemPrompt, userPrompt, taskType })
             });
 
             const resultData = await response.json();
@@ -65,56 +68,92 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         }
     };
 
-    const handleGeneralQuery = () => {
-        const systemPrompt = `Tu es un assistant expert polyvalent dans le domaine de l'immobilier en Belgique. Ton rôle est d'analyser des annonces, des textes ou des questions et de fournir des réponses structurées.
-        Tu DOIS répondre au format JSON. Le JSON doit contenir deux clés : "text" (une chaîne de caractères avec ta réponse en markdown) et "actions" (un tableau d'objets).
-        Chaque objet action doit avoir: "label" (le texte du bouton), "type" ('UPDATE_FIELD' ou 'NEW_PROMPT'), et "payload" (un objet avec les détails de l'action).
-        Pour "UPDATE_FIELD", le payload est {"field": "nomDuChamp", "value": "nouvelleValeur"}.
-        Exemple d'action : {"label": "Appliquer loyer de 1100€", "type": "UPDATE_FIELD", "payload": {"field": "loyerEstime", "value": 1100}}.
-        
-        Instructions pour tes réponses :
-        1.  **Extraction de données** : Extrais les champs clés (Prix, Surface, PEB, etc.).
-        2.  **Suggestions d'optimisation** : Si tu identifies une opportunité (ex: loyer sous-évalué, travaux rentables), propose une action 'UPDATE_FIELD' correspondante. Par exemple, si le loyer semble bas, propose un bouton pour l'augmenter.
-        3.  **Réponse textuelle** : Dans la clé "text", explique ton raisonnement de manière claire.
-        4.  **Hors Sujet** : Si la question est hors sujet, le JSON doit être ` + '`{"text": "Je suis désolé, cela sort de mon cadre d\'expertise.", "actions": []}`' + `;`;
+    const handleGeneralQuery = async () => {
+        const systemPrompt = 
+`Tu es "Strady", un assistant expert de l'immobilier en Belgique. Analyse les annonces et aide les investisseurs.
+**Format OBLIGATOIRE :** Réponds en Markdown, JAMAIS en JSON. Utilise les titres et listes à puces ci-dessous.
+
+## 1. Détails du Bien
+* **Adresse :** [Déduis si possible]
+* **Type de bien :** [Appartement, Maison...]
+* **Surface :** [X m²]
+* **Chambres :** [X]
+* **PEB :** [Classe]
+* **Conformité urbanistique :** [Oui/Non/N/A]
+* **Conformité électrique :** [Oui/Non/N/A]
+
+## 2. Données Financières
+* **Prix d'achat :** [X €]
+* **Travaux à prévoir :** [Liste au format "- Nom : XXXX €". Si aucun, écris "Aucun".]
+* **Taux moyen de financement :** [Estime si possible, ex: 3.5% sur 20 ans]
+
+## 3. Loyers et charges
+* **Loyer mensuel estimé :** [Si plusieurs unités, liste au format "- Unité : XXXX €". Sinon, donne le total.]
+* **Charges annuelles :** [Liste au format "- Charge : XXXX €".]
+* **Précompte immobilier annuel:** [Estime au format "- Précompte : XXXX €"]
+* **Assurance PNO annuelle:** [Estime au format "- Assurance PNO : XXXX €"]
+
+## 4. Analyse & Recommandations
+* **Points forts :** [Atouts]
+* **Points faibles :** [Défauts]
+* **Risques potentiels :** [Risques]
+* **Optimisations & Suggestions :** [Recommandations claires. Ex: "Suggère loyer de **1050€**." ou "Prévoir budget isolation (8000€) pour PEB 'F'."]
+* **Profil de locataire cible :** [Profil adapté]
+
+Si hors-sujet, réponds : "Je suis désolé, cela sort de mon cadre d'expertise immobilier."`
 
         const finalPrompt = `${aiPrompt}\n\nVoici le contexte à analyser (texte ou URL) :\n\n${aiInput}`;
 
-        callGeminiAPI(systemPrompt, finalPrompt, setIsGeminiLoading, setGeminiError, (response) => {
-            setGeminiResponse(response);
-            if (response) {
-                let parsedResponse = { text: response, actions: [] };
-                try {
-                    parsedResponse = JSON.parse(response);
-                } catch {
-                    console.warn("AI response was not valid JSON. Treating as plain text.");
-                    parsedResponse = { text: response, actions: [] };
+        const processResponse = (responsePayload) => {
+            setGeminiResponse(responsePayload);
+            setAiActions([]); // Les actions sont maintenant dans le texte, plus besoin de ce state.
+            const isOutOfScopeResponse = /désolé|sort de mon cadre/i.test(responsePayload);
+            setShowAiResponseActions(!isOutOfScopeResponse);
+        };
+
+        const requestPayload = {
+            systemPrompt: String(systemPrompt),
+            userPrompt: String(finalPrompt),
+            taskType: 'QA'
+        };
+
+        // Set loading state and clear previous results
+        setIsGeminiLoading(true);
+        setGeminiError('');
+        setGeminiResponse('');
+        setHasApplied(false); // Reset applied state for new query
+        setHasSavedNote(false);
+
+        // Step 1 & 2: Try to get the answer from localStorage, then the ai_cache table.
+        const cachedResponse = await getFromCache(requestPayload);
+
+        if (cachedResponse) {
+            // If a response is found in the cache, process and display it immediately.
+            processResponse(cachedResponse);
+            setIsGeminiLoading(false);
+            return;
+        }
+
+        // Step 3: If no response is found in the cache, call the Gemini API.
+        callGeminiAPI(requestPayload.systemPrompt, requestPayload.userPrompt, requestPayload.taskType, setIsGeminiLoading, setGeminiError, (apiResponseText) => {
+            if (apiResponseText) {
+                // Process and display the new response from the API.
+                processResponse(apiResponseText);
+
+                // Step 4: Store the new prompt and response in the cache.
+                if (user?.id) {
+                    setInCache(requestPayload, apiResponseText, user.id);
                 }
 
-                setGeminiResponse(parsedResponse.text);
-                setAiActions(parsedResponse.actions || []);
-
-                const isOutOfScopeResponse = /désolé|sort de mon cadre/i.test(parsedResponse.text);
-                setShowAiResponseActions(!isOutOfScopeResponse);
-
-                if (!isOutOfScopeResponse && user && userPlan && userPlan.current_ai_credits !== -1) {
+                // Decrement user credits only on a successful, non-cached, in-scope API call.
+                const isOutOfScope = /désolé|sort de mon cadre/i.test(apiResponseText);
+                if (!isOutOfScope && user && userPlan && userPlan.current_ai_credits !== -1) {
                     const newCreditCount = Math.max(0, userPlan.current_ai_credits - 1);
-
-                    setUserPlan(prevPlan => ({
-                        ...prevPlan,
-                        current_ai_credits: newCreditCount
-                    }));
-
-                    const decrementCredits = async () => {
-                        const { error } = await supabase
-                            .from('user_profile_plans')
-                            .update({ current_ai_credits: newCreditCount })
-                            .eq('user_id', user.id);
-                        if (error) {
-                            console.error("Erreur lors de la mise à jour des crédits :", error);
-                        }
-                    };
-                    decrementCredits();
+                    setUserPlan(prev => ({ ...prev, current_ai_credits: newCreditCount }));
+                    // Update credits in the database.
+                    supabase.from('user_profile_plans').update({ current_ai_credits: newCreditCount }).eq('user_id', user.id).then(({ error }) => {
+                        if (error) console.error("Erreur lors de la mise à jour des crédits :", error);
+                    });
                 }
             }
         });
@@ -127,10 +166,28 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         }
     };
 
+    const handleNewPrompt = (payload) => {
+        // This function can be expanded to automatically re-trigger the AI
+        // For now, it can set the input and prompt for the user to trigger manually
+        setAiInput(prev => `${prev}\n\n${payload.prompt}`);
+        setAiPrompt(payload.prompt);
+        showNotification('Nouveau prompt ajouté à la zone de texte.', 'info');
+    };
+
+
+
     const handleSaveAiResponse = () => {
-        setData(prev => ({ ...prev, descriptionBien: (prev.descriptionBien || '') + '\n\n--- Réponse IA ---\n' + geminiResponse }));
-        setShowAiResponseActions(false);
-        setTimeout(() => setNotification('', ''), 2000);
+        // Extrait uniquement les sections pertinentes de la réponse de l'IA
+        const startIndex = geminiResponse.indexOf('## 1.');
+        let relevantText = geminiResponse;
+        if (startIndex !== -1) {
+            relevantText = geminiResponse.substring(startIndex);
+        }
+
+        setData(prev => ({ ...prev, descriptionBien: (prev.descriptionBien || '') + '\n\n--- Réponse IA ---\n' + relevantText.trim() }));
+        setNotification('La réponse a été ajoutée à vos notes.', 'success');
+        setHasSavedNote(true);
+        setTimeout(() => setHasSavedNote(false), 3000);
     };
 
     const handleIgnoreAiResponse = () => {
@@ -139,81 +196,143 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
 
     const handleApplyAiResponse = () => {
         setIsApplyingAi(true);
+        setHasApplied(false);
 
         setTimeout(() => {
             const responseText = geminiResponse;
             let updatedData = {};
 
             const extract = (regex) => {
-                const match = responseText.match(regex);
+                const match = responseText.match(new RegExp(regex, 'im'));
                 return match ? match[1].trim() : null;
             };
 
-            const typeBien = extract(/\*\*Type de bien:\*\*\s*(.*)/i);
-            if (typeBien && !typeBienOptions.includes(typeBien)) {
-                setTypeBienOptions(prev => [...prev, typeBien]);
-            }
-            if (typeBien) updatedData.typeBien = typeBien;
-
-            const peb = extract(/\*\*Score PEB:\*\*\s*([A-G]\+?)/i);
-            if (peb) updatedData.peb = peb;
-
-            const surface = extract(/\*\*Surface:\*\*\s*(\d+)/i);
-            if (surface) updatedData.surface = parseInt(surface, 10);
-
-            const revenuCadastral = extract(/\*\*Revenu Cadastral:\*\*\s*([\d\s.,]+)/i);
-            if (revenuCadastral) updatedData.revenuCadastral = parseInt(revenuCadastral.replace(/[.\s€]/g, ''), 10);
-
-            const prixAchatMatch = extract(/\*\*Prix:\*\*.*?((\d{1,3}(?:[.\s]?\d{3})*))[,€]?/i);
-            if (prixAchatMatch) updatedData.prixAchat = parseInt(prixAchatMatch.replace(/[.\s]/g, ''), 10);
-
-            const adresse = extract(/\*\*Adresse:\*\*\s*(.*)/i);
-            if (adresse) updatedData.ville = adresse;
-
-            const electricite = extract(/\*\*Conformité électrique:\*\*\s*(.*)/i);
-            if (electricite) updatedData.electriciteConforme = !/non\s*conforme/i.test(electricite);
-
-            const urbanisme = extract(/\*\*Conformité urbanistique:\*\*\s*(.*)/i);
-            if (urbanisme) updatedData.enOrdreUrbanistique = !/non\s*conforme|demande\s*en\s*cours/i.test(urbanisme);
-
-            const loyer = extract(/Revenu locatif actuel\s*:\s*([\d.,]+)€/i);
-            if (loyer) updatedData.loyerEstime = parseInt(loyer.replace(/[.,\s]/g, ''), 10);
-
-            let tauxMatch = responseText.match(/Taux(?:.*?)sur\s*25\s*ans\s*:\s*([\d,.]+)%/i);
-            
-            if (tauxMatch) {
-                const tauxExtrait = parseFloat(tauxMatch[1].replace(',', '.'));
-                if (!isNaN(tauxExtrait)) {
-                    updatedData.tauxCredit = tauxExtrait;
-                    updatedData.dureeCredit = 25;
-                }
-            } else {
-                const currentDuree = data.dureeCredit;
-                tauxMatch = responseText.match(new RegExp(`Taux(?:.*?)sur\\s*${currentDuree}\\s*ans\\s*:\\s*([\\d,.]+)%`, "i"));
-                if (tauxMatch) {
-                    const tauxExtrait = parseFloat(tauxMatch[1].replace(',', '.'));
-                    if (!isNaN(tauxExtrait)) {
-                        updatedData.tauxCredit = tauxExtrait;
+            const extractListItems = (sectionRegex, itemRegex, isWorkItem = false) => {
+                const sectionMatch = responseText.match(sectionRegex);
+                if (!sectionMatch || !sectionMatch[1]) return [];
+    
+                const items = [];
+                const lines = sectionMatch[1].split('\n');
+                for (const line of lines) {
+                    const itemMatch = line.match(itemRegex);
+                    if (itemMatch && itemMatch[1] && itemMatch[2]) {
+                        const name = itemMatch[1].trim();
+                        let cost = 0;
+                        // Si une deuxième valeur (fourchette haute) est trouvée, on la prend. Sinon, on prend la première.
+                        if (isWorkItem && itemMatch[3]) {
+                            const cost1 = parseInt(itemMatch[2].replace(/[.€\s]/g, ''), 10);
+                            const cost2 = parseInt(itemMatch[3].replace(/[.€\s]/g, ''), 10);
+                            cost = !isNaN(cost2) ? cost2 : (!isNaN(cost1) ? cost1 : 0); // Prioritize the higher value
+                        } else {
+                            cost = parseInt(itemMatch[2].replace(/[.€\s]/g, ''), 10);
+                        }
+    
+                        if (name && !isNaN(cost) && cost > 0) {
+                            items.push({ name, cost });
+                        }
                     }
                 }
+                return items;
+            };
+
+            const validateAndSet = (field, value, validationFn, transformFn) => {
+                if (value !== null && validationFn(value)) {
+                    updatedData[field] = transformFn ? transformFn(value) : value;
+                }
+            };
+
+            const typeBien = extract("^\\*\\s*\\*\\*Type de bien\\s*:\\*\\*\\s*([^\n\r]*)");
+            validateAndSet('typeBien', typeBien, val => val.length > 0, val => {
+                if (!typeBienOptions.includes(val)) {
+                    setTypeBienOptions(prev => [...prev, val]);
+                }
+                return val;
+            });
+
+            const peb = extract("^\\*\\s*\\*\\*PEB\\s*:\\*\\*\\s*([A-G][\\+]{0,2})");
+            validateAndSet('peb', peb, val => val.length > 0);
+
+            const surface = extract("^\\*\\s*\\*\\*Surface\\s*:\\*\\*\\s*(\\d+)");
+            validateAndSet('surface', surface, val => !isNaN(parseInt(val, 10)) && parseInt(val, 10) > 0, val => parseInt(val, 10));
+            
+            const chambres = extract("^\\*\\s*\\*\\*Chambres\\s*:\\*\\*\\s*(\\d+)");
+            validateAndSet('nombreChambres', chambres, val => !isNaN(parseInt(val, 10)) && parseInt(val, 10) >= 0, val => parseInt(val, 10));
+
+            const anneeConstruction = extract("^\\*\\s*\\*\\*Année de construction\\s*:\\*\\*\\s*(\\d{4})");
+            validateAndSet('anneeConstruction', anneeConstruction, val => {
+                const year = parseInt(val, 10);
+                return !isNaN(year) && year > 1000 && year <= new Date().getFullYear() + 1;
+            }, val => parseInt(val, 10));
+
+            const prixAchatMatch = extract("^\\*\\s*\\*\\*Prix d'achat\\s*:\\*\\*\\s*(?:.*?)?([\\d.,\\s]+?)(?=\\s*€|$)");
+            validateAndSet('prixAchat', prixAchatMatch, val => !isNaN(parseInt(val.replace(/[.€\s]/g, ''), 10)), val => parseInt(val.replace(/[.€\s]/g, ''), 10));
+
+            const adresse = extract("^\\*\\s*\\*\\*Adresse\\s*:\\*\\*\\s*([^\n\r]*)");
+            validateAndSet('ville', adresse, val => val.length > 0 && val.toLowerCase() !== '[ce que tu as trouvé ou déduit]');
+
+            // --- Travaux ---
+            const workItems = extractListItems(
+                /##\s*2\..*?Travaux à prévoir\s*\n([\s\S]*?)(?=\n##|$)/im,
+                /^\s*(?:-|\*)\s*(.*?)\s*:\s*([\d.,\s]+€)(?:\s*-\s*([\d.,\s]+€))?/i,
+                true // Flag to indicate this is for work items with potential ranges
+            );
+            if (workItems.length > 0) {
+                updatedData.travauxDetail = workItems.map(item => ({ ...item, id: Date.now() + Math.random() }));
+                updatedData.coutTravaux = workItems.reduce((sum, item) => sum + item.cost, 0);
             }
 
-            const renovationCostMatch = extract(/Coût des travaux estimés\s*:\s*([\d.,]+)€/i);
-            if (renovationCostMatch) updatedData.coutTravaux = parseInt(renovationCostMatch.replace(/[.,\s]/g, ''), 10);
+            // --- Loyers ---
+            const rentItems = extractListItems(/##\s*3\..*?Loyer mensuel estimé\s*\n([\s\S]*?)(?=\n##|$)/im, /-\s*(.*?)\s*:\s*([\d.,\s]+€)/i);
+            if (rentItems.length > 0) {
+                updatedData.rentUnits = rentItems.map(item => ({ name: item.name, rent: item.cost, id: Date.now() + Math.random() }));
+                updatedData.loyerEstime = rentItems.reduce((sum, item) => sum + item.cost, 0);
+            } else {
+                const totalLoyer = extract("^\\*\\s*\\*\\*Loyer mensuel estimé\\s*:\\*\\*\\s*([\\d.,\\s]+?)(?=\\s*€|$)");
+                validateAndSet('loyerEstime', totalLoyer, val => !isNaN(parseInt(val.replace(/[.€,\s]/g, ''), 10)), val => parseInt(val.replace(/[.€,\s]/g, ''), 10));
+            }
 
-            const operatingChargesMatch = extract(/Charges d'exploitation estimées\s*:\s*([\d.,]+)€\s*\/mois/i);
-            if (operatingChargesMatch) updatedData.chargesMensuelles = parseInt(operatingChargesMatch.replace(/[.,\s]/g, ''), 10);
+            // --- Charges ---
+            const chargeItems = extractListItems(/##\s*3\..*?Charges annuelles\s*\n([\s\S]*?)(?=\n##|$)/im, /-\s*(.*?)\s*:\s*([\d.,\s]+€)/i);
+            if (chargeItems.length > 0) {
+                updatedData.chargesDetail = chargeItems.map(item => ({ object: item.name, price: item.cost, periodicity: 'An', id: Date.now() + Math.random() }));
+                const totalAnnualCharges = chargeItems.reduce((sum, item) => sum + item.cost, 0);
+                updatedData.chargesMensuelles = Math.round(totalAnnualCharges / 12);
+            }
 
+            const conformiteElec = extract("^\\*\\s*\\*\\*Conformité électrique\\s*:\\*\\*\\s*([^\n\r]*)");
+            validateAndSet('electriciteConforme', conformiteElec, val => /oui|non/i.test(val), val => /oui/i.test(val));
+
+            const conformiteUrba = extract("^\\*\\s*\\*\\*Conformité urbanistique\\s*:\\*\\*\\s*([^\n\r]*)");
+            validateAndSet('enOrdreUrbanistique', conformiteUrba, val => /oui|non/i.test(val), val => /oui/i.test(val));
+
+            const analyseMatch = responseText.match(/##\s*4\.\s*Analyse\s*&\s*Recommandations([\s\S]*)/im);
+            if (analyseMatch && analyseMatch[1]) {
+                updatedData.descriptionBien = ((data && data.descriptionBien) ? data.descriptionBien + '\n\n' : '') + '--- Analyse IA ---\n' + analyseMatch[1].trim();
+            }
 
             if (Object.keys(updatedData).length > 0) {
-                setData(prev => ({ ...prev, ...updatedData }));
+                // Reset relevant fields before applying new data
+                const fieldsToReset = {
+                    typeBien: '',
+                    peb: '',
+                    surface: '',
+                    nombreChambres: '',
+                    anneeConstruction: '',
+                    prixAchat: '',
+                    ville: '',
+                    loyerEstime: '',
+                    chargesMensuelles: '',
+                    coutTravaux: '',
+                };
+                setData(prev => ({ ...prev, ...fieldsToReset, ...updatedData }));
                 setNotification('Les informations ont été appliquées au formulaire !', 'success');
+                setHasApplied(true);
+                setTimeout(() => setHasApplied(false), 3000); // Réactive le bouton après 3 secondes
             } else {
                 setNotification("Aucune information n'a pu être extraite de la réponse.", 'error');
             }
 
-            setShowAiResponseActions(false);
-            setTimeout(() => setNotification('', ''), 2000);
+            setTimeout(() => setNotification('', ''), 3000); // Masque la notification après 3 secondes
             setIsApplyingAi(false);
         }, 100);
     };
@@ -234,6 +353,8 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         showAiResponseActions,
         aiActions,
         isApplyingAi,
+        hasSavedNote,
+        hasApplied,
         isAiAssistantModalOpen,
         setIsAiAssistantModalOpen,
         geminiResponse,
@@ -241,6 +362,7 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         geminiError,
         handleGeneralQuery,
         handleAiActionClick,
+        handleNewPrompt, // Exporting the new handler
         handleSaveAiResponse,
         handleIgnoreAiResponse,
         handleApplyAiResponse,

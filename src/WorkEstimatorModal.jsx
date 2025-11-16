@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, TrashIcon } from './Icons';
 import BottomDrawerModal from './BottomDrawerModal';
+import FormattedInput from './components/FormattedInput';
  
 const WorkEstimatorModal = ({ isOpen, onClose, onSave, initialValue }) => {
     const defaultWorkItem = { name: '', cost: '' };
@@ -96,12 +97,13 @@ const WorkEstimatorModal = ({ isOpen, onClose, onSave, initialValue }) => {
                             {errors[index]?.name && <p className="text-red-500 text-xs mt-1">{errors[index].name}</p>}
                         </div>
                         <div className="w-48">
-                            <input
-                                type="number"
-                                placeholder="Coût (€)"
+                            <FormattedInput
+                                name="cost"
+                                placeholder="Coût"
                                 value={item.cost}
                                 onChange={(e) => handleItemChange(index, 'cost', e.target.value)}
-                                className={`w-full p-2 border rounded-md ${errors[index]?.cost ? 'border-red-500' : 'border-gray-300'}`}
+                                unit="€"
+                                className={errors[index]?.cost ? 'border-red-500' : ''}
                             />
                             {errors[index]?.cost && <p className="text-red-500 text-xs mt-1">{errors[index].cost}</p>}
                         </div>

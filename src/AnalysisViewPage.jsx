@@ -1,8 +1,10 @@
 import React from 'react';
 import { Logo } from './Logo';
 import { useModal } from './contexts/useModal'; // Import useModal
-import FiscalComparison from './FiscalComparison'; // US 4.1: Import the new component
-import { PrintIcon, AlertTriangleIcon, EuroIcon, BriefcaseIcon, BuildingIcon, FileTextIcon, TrendingUpIcon, ThumbsUpIcon, ThumbsDownIcon, TargetIcon, HelpIcon } from './Icons';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import FiscalComparison from './FiscalComparison';
+import { PrintIcon, AlertTriangleIcon, EuroIcon, BriefcaseIcon, BuildingIcon, FileTextIcon, TrendingUpIcon, ThumbsUpIcon, ThumbsDownIcon, TargetIcon, HelpIcon, PencilIcon } from './Icons';
 
 const Section = ({ title, icon, children }) => (
     <div className="mb-8">
@@ -443,8 +445,18 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
             {/* --- Section Notes --- */}
             {data.descriptionBien && (
                 <Section title="Notes et Commentaires" icon={<FileTextIcon />}>
-                    <div className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
-                        <p className="whitespace-pre-wrap">{data.descriptionBien}</p>
+                    <div className="relative group">
+                        <div
+                            className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border max-h-72 overflow-y-auto custom-scrollbar"
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(data.descriptionBien)) }}
+                        />
+                        <button
+                            onClick={onBack}
+                            title="Modifier les notes"
+                            className="absolute top-3 right-3 flex items-center gap-1 bg-white/60 backdrop-blur-sm text-gray-600 hover:bg-gray-200 hover:text-gray-800 px-2 py-1 rounded-lg text-xs font-semibold border border-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        >
+                            <PencilIcon className="h-3 w-3" /> Modifier
+                        </button>
                     </div>
                 </Section>
             )}
