@@ -2,7 +2,7 @@ import React from 'react';
 import { supabase } from '../supabaseClient';
 import { getFromCache, setInCache } from '../services/aiCacheService';
 
-export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotification, typeBienOptions, setTypeBienOptions, setIsCreditModalOpen }) => {
+export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotification, typeBienOptions, setTypeBienOptions, setIsCreditModalOpen, setIsSaveModalOpen }) => {
     const [aiInput, setAiInput] = React.useState('');
     const [aiPrompt, setAiPrompt] = React.useState('');
     const [showAiResponseActions, setShowAiResponseActions] = React.useState(false);
@@ -327,7 +327,7 @@ Si hors-sujet, réponds : "Je suis désolé, cela sort de mon cadre d'expertise 
                 setData(prev => ({ ...prev, ...fieldsToReset, ...updatedData }));
                 setNotification('Les informations ont été appliquées au formulaire !', 'success');
                 setHasApplied(true);
-                setTimeout(() => setHasApplied(false), 3000); // Réactive le bouton après 3 secondes
+                if (setIsSaveModalOpen) setIsSaveModalOpen(true); // Ouvre la modale de sauvegarde
             } else {
                 setNotification("Aucune information n'a pu être extraite de la réponse.", 'error');
             }

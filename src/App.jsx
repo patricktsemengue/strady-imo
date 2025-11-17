@@ -27,6 +27,7 @@ import SettingsPage from './SettingsPage';
 import AnalysisFormPage from './AnalysisFormPage';
 import CookieBanner from './CookieBanner';
 import WelcomeHandler from './WelcomeHandler';
+import AIAssistantPage from './AIAssistantPage';
 import 'highlight.js/styles/github-dark.css';
 import './logo.css';
 
@@ -45,6 +46,7 @@ export default function App() {
         setIsRentSplitterOpen,
         setIsAcquisitionFeesEstimatorOpen,
         selectedMetric,
+        setIsSaveModalOpen,
         setIsCreditModalOpen,
     } = useModal();
 
@@ -64,6 +66,7 @@ export default function App() {
         user, userPlan, setUserPlan, setData, setNotification: showNotification,
         typeBienOptions: [], setTypeBienOptions: () => {},
         setIsCreditModalOpen: setIsCreditModalOpen,
+        setIsSaveModalOpen: setIsSaveModalOpen,
     });
 
     const analysesManager = useAnalysesManager({
@@ -88,7 +91,7 @@ export default function App() {
                 return;
             }
             showNotification("Vous êtes déjà connecté.", 'success');
-            navigate('/dashboard');
+            navigate('/ai-assistant');
         }
     }, [user, location.pathname, navigate, showNotification]);
 
@@ -137,7 +140,8 @@ export default function App() {
                     <Route path="/knowledge" element={<KnowledgePage onBack={() => navigate('/aide')} />} />
                     <Route path="/glossary" element={<GlossaryPage onBack={() => navigate('/aide')} />} />
                     <Route path="/view-analysis" element={<AnalysisViewPage analysis={analysesManager.viewingAnalysis} scenarios={generatePriceScenarios(analysesManager.viewingAnalysis)} onBack={() => navigate('/dashboard')} />} />
-                    <Route path="/settings" element={<SettingsPage onBack={() => navigate('/')} maxAnalyses={maxAnalyses} />} />
+                    <Route path="/settings" element={<SettingsPage onBack={() => navigate('/')} maxAnalyses={maxAnalyses} />} />                    
+                    <Route path="/ai-assistant" element={<AIAssistantPage {...aiHook} userPlan={userPlan} handleNewProject={analysesManager.handleNewProject} />} />
                 </Routes>
             </Layout>
             <Modals

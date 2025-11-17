@@ -119,19 +119,7 @@ const AIResponse = ({ response, onUpdateField, onNewPrompt }) => {
   const sanitizedHtml = DOMPurify.sanitize(rawHtml);
 
   return (
-    <div className="ai-response-container">
-      <div className="ai-response-header">
-        <div 
-          className="ai-response-title"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse("#### Résumé de l'IA")) }}
-        />
-        {isTyping && (
-          <button onClick={handleSkipTyping} className="ai-skip-button">Passer</button>
-        )}
-        <button onClick={handleCopy} className="ai-copy-button">
-          {copyButtonText}
-        </button>
-      </div>
+    <div className="ai-response-container space-y-4">
       <div
         className="ai-response-content"
         dangerouslySetInnerHTML={{ __html: sanitizedHtml }}

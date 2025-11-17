@@ -20,22 +20,7 @@ const Modals = ({
     userPlan,
     analyses,
     handleSignOut,
-    aiInput, setAiInput,
-    aiPrompt, setAiPrompt,
-    handleGeneralQuery,
-    isGeminiLoading,
-    geminiError,
-    geminiResponse,
-    showAiResponseActions,
-    handleApplyAiResponse,
-    handleSaveAiResponse,
-    handleIgnoreAiResponse,
     handleTravauxUpdate,
-    isApplyingAi,
-    aiActions, handleAiActionClick,
-    checkAiCredits,
-    getAiButtonTooltip,
-    prePromptConfig,
     data,
     handleTensionUpdate,
     handleVacancyUpdate,
@@ -67,7 +52,6 @@ const Modals = ({
         isScoreModalOpen, setIsScoreModalOpen,
         isMetricModalOpen, setIsMetricModalOpen,
         isCreditModalOpen, setIsCreditModalOpen,
-        isAiAssistantModalOpen, setIsAiAssistantModalOpen,
         selectedMetric,
     } = useModal();
     const { user, setAuthPageInitialMode } = useAuth();
@@ -97,28 +81,6 @@ const Modals = ({
                 <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
                 <p className="mt-2 text-sm text-gray-600">Toute analyse non sauvegardée sera perdue.</p>
             </ConfirmationModal>
-            {user && (
-                <AiAssistantModal
-                    isOpen={isAiAssistantModalOpen}
-                    onClose={() => setIsAiAssistantModalOpen(false)}
-                    aiInput={aiInput} setAiInput={setAiInput}
-                    aiPrompt={aiPrompt} setAiPrompt={setAiPrompt}
-                    handleGeneralQuery={handleGeneralQuery}
-                    isGeminiLoading={isGeminiLoading}
-                    geminiError={geminiError}
-                    geminiResponse={geminiResponse}
-                    showAiResponseActions={showAiResponseActions}
-                    handleApplyAiResponse={handleApplyAiResponse}
-                    handleSaveAiResponse={handleSaveAiResponse}
-                    handleIgnoreAiResponse={handleIgnoreAiResponse}
-                    isApplyingAi={isApplyingAi}
-                    aiActions={aiActions} handleAiActionClick={handleAiActionClick}
-                    userPlan={userPlan}
-                    checkAiCredits={checkAiCredits}
-                    getAiButtonTooltip={getAiButtonTooltip}
-                    prePromptConfig={prePromptConfig}
-                />
-            )}
 
             <WorkEstimatorModal 
                 isOpen={isEstimatorOpen} 

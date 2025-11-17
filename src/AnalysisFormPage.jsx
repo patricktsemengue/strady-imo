@@ -241,7 +241,7 @@ const AnalysisFormPage = ({
                                     rows="4"
                                     className="w-full p-2 border-none rounded-b-md focus:ring-0"
                                     placeholder='Quartier calme, Prévoir travaux SDB, Gros œuvre OK...'
-                                    autoFocus
+                                    //autoFocus
                                 />
                             </div>
                         ) : (

@@ -130,7 +130,7 @@ const AuthPage = ({ onBack, onNavigate }) => {
           showNotification('Mot de passe mis à jour avec succès !', 'success');
           // Le mot de passe est mis à jour, la session est maintenant valide. On redirige
           // l'utilisateur vers le tableau de bord, ce qui finalise son authentification.
-          onNavigate('dashboard');
+          onNavigate('/ai-assistant');
         }
       }
     } catch (error) {

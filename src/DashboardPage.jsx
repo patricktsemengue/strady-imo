@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon } from './Icons';
+import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon } from './Icons';
 
 const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
@@ -78,10 +78,10 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
     };
 
     return (
-        <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in">
+        <div className="animate-fade-in">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">Mes analyses</h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end sm:self-center">
                     <span className="text-sm font-medium text-gray-600">Trier par:</span>
                     <div className="flex justify-center gap-2" role="group">
                         <button onClick={() => setSortOrder('createdAt')} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${sortOrder === 'createdAt' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Date</button>
@@ -105,7 +105,7 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
                     </div>
                 )}
                 {sortedAnalyses.map(analysis => (
-                    <div key={analysis.id} className="relative p-4 border rounded-lg flex flex-col shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <div key={analysis.id} className="relative bg-white p-4 border rounded-lg flex flex-col shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300">
                         <div className="flex justify-between items-start mb-3">
                             <div className="flex-grow pr-2">
                                 {renamingId === analysis.id ? (
@@ -115,12 +115,13 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
                                         onChange={(e) => setRenameValue(e.target.value)}
                                         onBlur={handleConfirmRename}
                                         onKeyDown={handleRenameKeyDown}
-                                        className="font-bold text-lg p-1 border rounded-md w-full"
+                                        className="font-bold text-lg p-1 border border-blue-400 ring-2 ring-blue-200 rounded-md w-full"
                                         autoFocus
                                     />
                                 ) : (
                                     <>
-                                        <h2 className="font-bold text-lg break-words" title={analysis.project_name || analysis.data.projectName}>{analysis.project_name || analysis.data.projectName}</h2>
+                                        <h2 className="font-bold text-lg text-gray-800 break-words" title={analysis.project_name || analysis.data.projectName}>{analysis.project_name || analysis.data.projectName}</h2>
+                                        <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1"><HomeIcon className="h-4 w-4" /> {analysis.data.ville}</p>
                                     </>
                                 )}
                             </div>
@@ -139,13 +140,13 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
                             </div>
                         </div>
                         {analysis.result && (
-                            <div className="mt-auto pt-3 border-t grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                <div className={`p-2 rounded-md ${analysis.result.grade.startsWith('A') ? 'bg-green-100 text-green-800' : analysis.result.grade.startsWith('B') ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                            <div className="mt-auto pt-3 border-t grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                                <div className={`p-2 rounded-lg ${analysis.result.grade.startsWith('A') ? 'bg-green-100 text-green-800' : analysis.result.grade.startsWith('B') ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                                     <div className="text-xs font-medium">Score</div><div className="font-bold">{analysis.result.grade}</div>
                                 </div>
-                                <div className="p-2 bg-gray-50 rounded-md"><div className="text-xs font-medium">Rend. Net</div><div className="font-bold">{analysis.result.rendementNet}%</div></div>
-                                <div className="p-2 bg-gray-50 rounded-md"><div className="text-xs font-medium">Cash-Flow</div><div className="font-bold">{analysis.result.cashflowMensuel}€</div></div>
-                                <div className="p-2 bg-gray-50 rounded-md">
+                                <div className="p-2 bg-gray-50 rounded-lg"><div className="text-xs font-medium">Rend. Net</div><div className="font-bold">{analysis.result.rendementNet}%</div></div>
+                                <div className="p-2 bg-gray-50 rounded-lg"><div className="text-xs font-medium">Cash-Flow</div><div className="font-bold">{analysis.result.cashflowMensuel}€</div></div>
+                                <div className="p-2 bg-gray-50 rounded-lg">
                                     <div className="text-xs font-medium">CoC</div><div className="font-bold">{analysis.result.cashOnCash === Infinity ? '∞' : (analysis.result.cashOnCash !== null && isFinite(analysis.result.cashOnCash) ? `${analysis.result.cashOnCash.toFixed(1)}%` : 'N/A')}</div>
                                 </div>
                             </div>
@@ -153,8 +154,9 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
                     </div>
                 ))}
                 {emptySlots.map((_, index) => (
-                    <div key={`empty-${index}`} className="p-8 border-2 border-dashed rounded-lg flex justify-center items-center text-gray-400">
-                        <p>Emplacement d'analyse vide</p>
+                    <div key={`empty-${index}`} className="p-8 border-2 border-dashed border-gray-300 rounded-lg flex flex-col justify-center items-center text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer" onClick={() => onLoad(null)}>
+                        <PlusCircleIcon className="h-10 w-10 mb-2" />
+                        <p className="font-semibold">Nouvelle analyse</p>
                     </div>
                 ))}
                 {analyses.length >= maxAnalyses && maxAnalyses > 0 && maxAnalyses !== -1 && (
