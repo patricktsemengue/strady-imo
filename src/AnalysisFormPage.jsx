@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
 import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon } from './Icons';
@@ -28,6 +28,7 @@ const AnalysisFormPage = ({
     const [showUndo, setShowUndo] = useState(false);
     const undoTimeoutRef = useRef(null);
     const [isTextSelected, setIsTextSelected] = useState(false);
+    const resultsRef = useRef(null);
     const notesTextareaRef = useRef(null);
     const { 
         setIsEstimatorOpen,
@@ -38,6 +39,12 @@ const AnalysisFormPage = ({
         setSelectedMetric,
         setIsMetricModalOpen,
     } = useModal();
+
+    useEffect(() => {
+        if (result && resultsRef.current) {
+            resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [result]);
 
     const handleOpenMetricModal = (metric) => {
         setSelectedMetric(metric);
@@ -395,7 +402,7 @@ const AnalysisFormPage = ({
 
             {/* --- Section 4: Résultats --- */}
             {result && (
-                <div className="bg-white p-6 rounded-lg shadow-xl animate-fade-in-up">
+                <div ref={resultsRef} className="bg-white p-6 rounded-lg shadow-xl animate-fade-in-up">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold">Résultat</h2>
                         <div className="flex gap-2">

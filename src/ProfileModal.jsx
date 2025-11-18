@@ -1,5 +1,5 @@
 import React from 'react';
-import { SettingsIcon, WalletIcon, StarIcon, LogOutIcon } from './Icons';
+import { SettingsIcon, WalletIcon, StarIcon, LogOutIcon , HelpIcon} from './Icons';
 import AnimatedModal from './AnimatedModal';
 import Copyright from './Copyright';
 
@@ -37,6 +37,10 @@ const ProfileModal = ({ isOpen, onClose, onNavigate, onSignOut, user, userPlan, 
                         <StarIcon />
                         <span>Feedback & Support</span>
                     </button>
+                    <button onClick={() => { onNavigate('aide'); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                        <HelpIcon />
+                        <span>Centre d'aide</span>
+                    </button> 
                     <div className="my-2 border-t" />
                     <button onClick={() => { onSignOut(); onClose(); }} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50">
                         <LogOutIcon />

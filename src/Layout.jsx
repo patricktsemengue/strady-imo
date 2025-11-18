@@ -6,6 +6,7 @@ import { useAuth } from './hooks/useAuth';
 import { useModal } from './contexts/useModal';
 import FabMenu from './components/FabMenu';
 import AppFooter from './components/AppFooter';
+import Copyright from './Copyright';
 
 const Layout = ({ children, handleNewProject }) => {
     const { user } = useAuth();
@@ -31,6 +32,11 @@ const Layout = ({ children, handleNewProject }) => {
 
             <main className="max-w-4xl mx-auto p-4 md:p-6 pb-24">
                 {children}
+                <p>
+                <div className="text-center pb-2 pt-1 hidden sm:block">
+                    <Copyright />
+                </div>
+                </p>
             </main>
 
             {user && <FabMenu handleNewProject={handleNewProject} />}
