@@ -173,23 +173,27 @@ const AuthPage = ({ onBack, onNavigate }) => {
 
   return (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg animate-fade-in max-w-lg mx-auto">
+      
+      
       <div className="flex justify-center mb-4">
         <Logo />
       </div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">{getTitle()}</h1>
-      
+      {onBack && mode === 'signIn' && (
+         <button onClick={onBack} className="mb-4 text-sm text-blue-600 hover:underline">&larr; Vers le simulateur</button>
+      )}
       {mode !== 'signIn' && !showUpdatePasswordForm && ( // Affiche le bouton "Retour" seulement si pas en mode "définir nouveau mot de passe"
         <button 
           onClick={() => switchMode('signIn')}
           className="mb-4 text-sm text-blue-600 hover:underline"
         >
-          &larr; Retour à la connexion
+            J'ai déja un compte &rarr; 
         </button>
       )}
+      <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">{getTitle()}</h1>
       
-      {onBack && mode === 'signIn' && (
-         <button onClick={onBack} className="mb-4 text-sm text-blue-600 hover:underline">&larr; Retour à l'analyse</button>
-      )}
+      
+      
+      
 
       <form onSubmit={handleSubmit} className="space-y-4">
         

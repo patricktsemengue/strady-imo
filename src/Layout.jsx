@@ -14,9 +14,10 @@ const Layout = ({ children, handleNewProject }) => {
     const location = useLocation();
     const page = location.pathname.substring(1) || 'main';
     const isAIAssistantPage = location.pathname === '/ai-assistant';
+    const isAuthPage = location.pathname === '/auth';
 
-    if (isAIAssistantPage) {
-        return <>{children}</>;
+    if (isAIAssistantPage ) {
+       return <>{children}</>;
     }
 
     return (
@@ -39,7 +40,7 @@ const Layout = ({ children, handleNewProject }) => {
                 </p>
             </main>
 
-            {user && <FabMenu handleNewProject={handleNewProject} />}
+            {/*user && <FabMenu handleNewProject={handleNewProject} />*/}
             {user && page === 'view-analysis' && (
                 <button
                     onClick={() => window.print()}
@@ -49,7 +50,9 @@ const Layout = ({ children, handleNewProject }) => {
                     <PrintIcon />
                 </button>
             )}
+            {!isAIAssistantPage && !isAuthPage &&
             <AppFooter user={user} onProfileClick={() => setIsProfileModalOpen(true)} />
+            }
         </div>
     );
 };

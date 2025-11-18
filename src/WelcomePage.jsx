@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Logo } from './Logo'; // On importe le Logo depuis App.jsx
-import Copyright from './Copyright';
-import { InfoIcon } from './Icons';
+import { useAuth } from './hooks/useAuth';
 
 const WelcomePage = ({ onStart, onNavigate, user }) => {
     const [showLegal, setShowLegal] = useState(false);
-
+    // setAuthPageInitialMode est nécessaire pour définir le mode sur la page d'authentification
+    const { setAuthPageInitialMode } = useAuth();
+    
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-slate-100 animate-fade-in">
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
@@ -32,43 +33,28 @@ const WelcomePage = ({ onStart, onNavigate, user }) => {
                     Prêt à transformer vos intuitions en décisions chiffrées ? Bonne utilisation !
                 </p>
                 <div className="flex flex-col gap-4 mb-8">
-                    <button
-                        onClick={onStart}
-                        className="w-full bg-emerald-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-lg"
-                    >
-                        Commencer une analyse
-                    </button>
-                    {user && (
+                    {user ? (
+                        // Bouton pour l'utilisateur authentifié
                         <button
-                            onClick={() => onStart('dashboard')}
-                            className="w-full bg-amber-500 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-amber-600 transition duration-300"
+                            onClick={() => onNavigate('/ai-assistant')}
+                            className="w-full bg-emerald-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-lg"
                         >
-                            Accéder à mes analyses
+                            Commencer une analyse
                         </button>
+                    ) : (
+                        // Boutons pour l'utilisateur non-authentifié
+                        <>
+                            <button onClick={onStart} className="w-full bg-white text-blue-600 border-2 border-blue-600 font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-50 transition duration-300">
+                                Essayer le simulateur
+                            </button>
+                            <button onClick={() => { setAuthPageInitialMode('signUp'); onNavigate('/auth'); }} className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg">
+                                Créer un compte gratuit
+                            </button>
+                        </>
                     )}
                 </div>
 
-                {/* Desktop view 
-                <div className="hidden sm:block mt-8 text-center">
-                    <p className="text-xs text-gray-500">En continuant, vous confirmez avoir lu et accepté notre <button onClick={() => onNavigate('/terms')} className="underline">Conditions d'Utilisation</button> et notre <button onClick={() => onNavigate('/privacy')} className="underline">Politique de Confidentialité</button>.</p>
-                    <Copyright className="mt-4" />
-                </div>
-                */}
-
-                {/* Mobile view 
-                <div className="sm:hidden mt-8 text-center">
-                    <button onClick={() => setShowLegal(!showLegal)} className="text-gray-400 hover:text-gray-600 flex items-center justify-center w-full gap-2">
-                        <InfoIcon />
-                        <span className="text-xs">Infos légales et copyright</span>
-                    </button>
-                    {showLegal && (
-                        <div className="mt-4 text-xs text-gray-500 animate-fade-in">
-                            <p>En continuant, vous confirmez avoir lu et accepté nos <button onClick={() => onNavigate('/terms')} className="underline">Conditions d'Utilisation</button> et notre <button onClick={() => onNavigate('/privacy')} className="underline">Politique de Confidentialité</button>.</p>
-                            <Copyright className="mt-2" />
-                        </div>
-                    )}
-                </div>
-                */}
+                
             </div>
         </div>
     );

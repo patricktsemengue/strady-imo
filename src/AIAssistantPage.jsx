@@ -289,7 +289,7 @@ const AiAssistantPage = ({
             >
                 <p>Êtes-vous sûr de vouloir effacer tout l'historique de cette conversation ? Cette action est irréversible.</p>
             </ConfirmationModal>
-            {user && <FabMenu handleNewProject={handleNewProject} />}
+            {/*user && <FabMenu handleNewProject={handleNewProject} />*/}
         </div>
     );
 };
