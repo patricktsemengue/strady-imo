@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
 import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon } from './Icons';
@@ -28,6 +28,10 @@ const AnalysisFormPage = ({
     const [showUndo, setShowUndo] = useState(false);
     const undoTimeoutRef = useRef(null);
     const [isTextSelected, setIsTextSelected] = useState(false);
+    const [objective, setObjective] = useState(() => localStorage.getItem('analysisObjective') || 'all');
+    const [sliderStyle, setSliderStyle] = useState({});
+    const objectiveButtonsRef = useRef({});
+
     const resultsRef = useRef(null);
     const notesTextareaRef = useRef(null);
     const { 
@@ -37,6 +41,7 @@ const AnalysisFormPage = ({
         setIsChargesEstimatorOpen,
         setIsScoreModalOpen,
         setSelectedMetric,
+        setIsObjectivesInfoModalOpen,
         setIsMetricModalOpen,
     } = useModal();
 
@@ -45,6 +50,21 @@ const AnalysisFormPage = ({
             resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }, [result]);
+
+    useEffect(() => {
+        localStorage.setItem('analysisObjective', objective);
+        const activeButton = objectiveButtonsRef.current[objective];
+        if (activeButton) {
+            setSliderStyle({
+                width: `${activeButton.offsetWidth}px`,
+                transform: `translateX(${activeButton.offsetLeft}px)`
+            });
+        }
+    }, [objective]);
+
+    const handleObjectiveChange = (newObjective) => {
+        setObjective(newObjective);
+    };
 
     const handleOpenMetricModal = (metric) => {
         setSelectedMetric(metric);
@@ -142,6 +162,38 @@ const AnalysisFormPage = ({
         textarea.focus();
         setTimeout(() => textarea.setSelectionRange(start, start + newSelectedText.length), 0);
     };
+
+    const objectiveMetrics = useMemo(() => {
+        if (!result) return {};
+        return {
+            all: [
+                { label: 'Cash-Flow / mois', value: `${result.cashflowMensuel} €`, gradeSensitive: true, metricKey: 'cashflow' },
+                { label: 'Rendement Net', value: `${result.rendementNet} %`, gradeSensitive: true, metricKey: 'rendementNet', auth: true },
+                { label: 'Cash-on-Cash', value: result.cashOnCash === Infinity ? '∞' : (result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'), gradeSensitive: true, metricKey: 'cashOnCash', auth: true },
+                { label: 'Mensualité Crédit', value: `${result.mensualiteCredit} €`, gradeSensitive: false, metricKey: 'mensualiteCredit' },
+                { label: 'Apport Personnel', value: `${parseInt(data.apport).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'apport' },
+                { label: 'Coût Total', value: `${parseInt(result.coutTotal).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'coutTotal' },
+            ],
+            cashflow: [
+                { label: 'Cash-Flow / mois', value: `${result.cashflowMensuel} €`, gradeSensitive: true, metricKey: 'cashflow' },
+                { label: 'Cash-on-Cash', value: result.cashOnCash === Infinity ? '∞' : (result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'), gradeSensitive: true, metricKey: 'cashOnCash', auth: true },
+                { label: 'Apport Personnel', value: `${parseInt(data.apport).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'apport' },
+            ],
+            rentabilite: [
+                { label: 'Rendement Net', value: `${result.rendementNet} %`, gradeSensitive: true, metricKey: 'rendementNet', auth: true },
+                { label: 'Cash-on-Cash', value: result.cashOnCash === Infinity ? '∞' : (result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'), gradeSensitive: true, metricKey: 'cashOnCash', auth: true },
+                { label: 'Cash-Flow / mois', value: `${result.cashflowMensuel} €`, gradeSensitive: true, metricKey: 'cashflow' },
+            ],
+            cout: [
+                { label: 'Mensualité Crédit', value: `${result.mensualiteCredit} €`, gradeSensitive: false, metricKey: 'mensualiteCredit' },
+                { label: 'Apport Personnel', value: `${parseInt(data.apport).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'apport' },
+                { label: 'Coût Total', value: `${parseInt(result.coutTotal).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'coutTotal' },
+            ]
+        };
+    }, [result, data.apport]);
+
+    const gradeColorClass = result ? (result.grade === 'A' ? 'text-green-800' : result.grade === 'B' ? 'text-green-500' : result.grade === 'C' ? 'text-yellow-500' : result.grade === 'D' ? 'text-orange-500' : 'text-red-800') : '';
+
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -423,29 +475,67 @@ const AnalysisFormPage = ({
                         <p className="font-mono text-sm mt-2">{result.motivation}</p>
                         <p className="font-mono text-sm mt-1 flex items-center justify-center">Score Strady <button onClick={() => setIsScoreModalOpen(true)} className="ml-1"><QuestionMarkIcon /></button></p>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-                        {user && (
-                            <>
-                                <div className="p-3 bg-gray-50 rounded-lg">
-                                    <p className="text-sm flex items-center justify-center gap-1">Rendement Net <button onClick={() => handleOpenMetricModal('rendementNet')} className="text-gray-400 hover:text-blue-600"><QuestionMarkIcon /></button></p>
-                                    <p className={`text-xl font-bold ${result.grade === 'A' ? 'text-green-800' : result.grade === 'B' ? 'text-green-500' : result.grade === 'C' ? 'text-yellow-500' : result.grade === 'D' ? 'text-orange-500' : 'text-red-800'}`}>{result.rendementNet} %</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-lg">
-                                    <p className="text-sm flex items-center justify-center gap-1">Cash-on-Cash <button onClick={() => handleOpenMetricModal('cashOnCash')} className="text-gray-400 hover:text-blue-600"><QuestionMarkIcon /></button></p>
-                                    <p className={`text-xl font-bold ${result.grade === 'A' ? 'text-green-800' : result.grade === 'B' ? 'text-green-500' : result.grade === 'C' ? 'text-yellow-500' : result.grade === 'D' ? 'text-orange-500' : 'text-red-800'}`}>
-                                        {result.cashOnCash === Infinity ? '∞' : (result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A')}
+                    <div className="mb-4">
+                        <div className="flex justify-center items-center gap-2">
+                            <div className="relative flex justify-center bg-gray-100 rounded-full p-1 w-fit mx-auto">
+                                <div className="absolute top-1 left-0 h-[calc(100%-0.5rem)] bg-white rounded-full shadow transition-all duration-300 ease-in-out" style={sliderStyle}></div>
+                                <button 
+                                    ref={el => objectiveButtonsRef.current['all'] = el} 
+                                    onClick={() => handleObjectiveChange('all')} 
+                                    className={`relative z-10 px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${objective === 'all' ? 'text-blue-600' : 'text-gray-600'}`}
+                                    title="Affiche toutes les métriques clés pour une analyse complète du projet."
+                                >
+                                    Vue d'ensemble
+                                </button>
+                                <button 
+                                    ref={el => objectiveButtonsRef.current['cashflow'] = el} 
+                                    onClick={() => handleObjectiveChange('cashflow')} 
+                                    className={`relative z-10 px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${objective === 'cashflow' ? 'text-blue-600' : 'text-gray-600'}`}
+                                    title="Met en avant le flux de trésorerie (cash-flow) pour évaluer le revenu passif généré chaque mois."
+                                >
+                                    Machine à Cash
+                                </button>
+                                <button 
+                                    ref={el => objectiveButtonsRef.current['rentabilite'] = el} 
+                                    onClick={() => handleObjectiveChange('rentabilite')} 
+                                    className={`relative z-10 px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${objective === 'rentabilite' ? 'text-blue-600' : 'text-gray-600'}`}
+                                    title="Se concentre sur les rendements (Rendement Net, CoC) pour mesurer la performance de l'investissement."
+                                >
+                                    Rentabilité
+                                </button>
+                                <button 
+                                    ref={el => objectiveButtonsRef.current['cout'] = el} 
+                                    onClick={() => handleObjectiveChange('cout')} 
+                                    className={`relative z-10 px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${objective === 'cout' ? 'text-blue-600' : 'text-gray-600'}`}
+                                    title="Détaille les coûts principaux (mensualité, apport) pour comprendre l'effort financier de l'acquisition."
+                                >
+                                    Coût de l'Achat
+                                </button>
+                                
+                                <button onClick={() => setIsObjectivesInfoModalOpen(true)} className="text-gray-400 hover:text-blue-600" >
+                                    <QuestionMarkIcon />
+                                </button>
+                            </div>
+                                
+                            
+                        </div>
+                    </div>
+                    <div className={`grid grid-cols-1 ${objective === 'all' ? 'sm:grid-cols-3' : 'sm:grid-cols-3'} gap-4 text-center`}>
+                        {objectiveMetrics[objective]
+                            ?.filter(metric => !metric.auth || user)
+                            .map(metric => (
+                                <div key={metric.label} className="p-3 bg-gray-50 rounded-lg">
+                                    <p className="text-sm flex items-center justify-center gap-1">
+                                        {metric.label}
+                                        <button onClick={() => handleOpenMetricModal(metric.metricKey)} className="text-gray-400 hover:text-blue-600">
+                                            <QuestionMarkIcon />
+                                        </button>
+                                    </p>
+                                    <p className={`text-xl font-bold ${metric.gradeSensitive ? gradeColorClass : ''}`}>
+                                        {metric.value}
                                     </p>
                                 </div>
-                            </>
-                        )}
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm flex items-center justify-center gap-1">Cash-Flow / mois <button onClick={() => handleOpenMetricModal('cashflow')} className="text-gray-400 hover:text-blue-600"><QuestionMarkIcon /></button></p>
-                            <p className={`text-xl font-bold ${result.grade === 'A' ? 'text-green-800' : result.grade === 'B' ? 'text-green-500' : result.grade === 'C' ? 'text-yellow-500' : result.grade === 'D' ? 'text-orange-500' : 'text-red-800'}`}>{result.cashflowMensuel} €</p>
-                        </div>
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm flex items-center justify-center gap-1">Mensualité Crédit <button onClick={() => handleOpenMetricModal('mensualiteCredit')} className="text-gray-400 hover:text-blue-600"><QuestionMarkIcon /></button></p><p className="text-xl font-bold">{result.mensualiteCredit} €</p></div>
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm flex items-center justify-center gap-1">Coût Total <button onClick={() => handleOpenMetricModal('coutTotal')} className="text-gray-400 hover:text-blue-600"><QuestionMarkIcon /></button></p><p className="text-xl font-bold">{parseInt(result.coutTotal).toLocaleString('fr-BE')} €</p></div>
+                            ))}
                     </div>
                 </div>
             )}

@@ -33,11 +33,12 @@ const Layout = ({ children, handleNewProject }) => {
 
             <main className="max-w-4xl mx-auto p-4 md:p-6 pb-24">
                 {children}
-                <p>
-                <div className="text-center pb-2 pt-1 hidden sm:block">
+                <p>&nbsp;</p>
+                <div className="text-center pb-2 pt-1">
                     <Copyright />
                 </div>
-                </p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
             </main>
 
             {/*user && <FabMenu handleNewProject={handleNewProject} />*/}

@@ -17,6 +17,7 @@ export const ModalProvider = ({ children }) => {
     const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
     const [isMetricModalOpen, setIsMetricModalOpen] = useState(false);
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
+    const [isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen] = useState(false);
     const [selectedMetric, setSelectedMetric] = useState(null);
 
     const value = {
@@ -34,6 +35,7 @@ export const ModalProvider = ({ children }) => {
         isScoreModalOpen, setIsScoreModalOpen,
         isMetricModalOpen, setIsMetricModalOpen,
         isCreditModalOpen, setIsCreditModalOpen,
+        isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen,
         selectedMetric, setSelectedMetric,
     };
 

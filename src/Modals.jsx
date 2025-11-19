@@ -15,6 +15,7 @@ import AcquisitionFeesEstimatorModal from './AcquisitionFeesEstimatorModal';
 import MetricExplanationModal from './MetricExplanationModal';
 import ScoreExplanationModal from './ScoreExplanationModal';
 import SaveAnalysisModal from './SaveAnalysisModal';
+import ObjectivesInfoModal from './ObjectivesInfoModal';
 
 const Modals = ({
     userPlan,
@@ -52,6 +53,7 @@ const Modals = ({
         isScoreModalOpen, setIsScoreModalOpen,
         isMetricModalOpen, setIsMetricModalOpen,
         isCreditModalOpen, setIsCreditModalOpen,
+        isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen,
         selectedMetric,
     } = useModal();
     const { user, setAuthPageInitialMode } = useAuth();
@@ -89,18 +91,18 @@ const Modals = ({
                     handleTravauxUpdate(total, items);
                     setIsEstimatorOpen(false);
                 }} 
-                initialValue={data.coutTravaux} 
+                initialValue={data?.coutTravaux || 0} 
             />
             <TensionLocativeEstimatorModal isOpen={isTensionEstimatorOpen} onClose={() => setIsTensionEstimatorOpen(false)} onApply={handleTensionUpdate} />
-            <VacancyEstimatorModal isOpen={isVacancyEstimatorOpen} onClose={() => setIsVacancyEstimatorOpen(false)} onApply={handleVacancyUpdate} currentTension={data.tensionLocative} />
+            <VacancyEstimatorModal isOpen={isVacancyEstimatorOpen} onClose={() => setIsVacancyEstimatorOpen(false)} onApply={handleVacancyUpdate} currentTension={data?.tensionLocative} />
             <ChargesEstimatorModal isOpen={isChargesEstimatorOpen} onClose={() => setIsChargesEstimatorOpen(false)} onApply={handleChargesUpdate} data={data} />
-            <RentSplitterModal isOpen={isRentSplitterOpen} onClose={() => setIsRentSplitterOpen(false)} onApply={handleRentSplitUpdate} initialUnits={data.rentUnits} />
+            <RentSplitterModal isOpen={isRentSplitterOpen} onClose={() => setIsRentSplitterOpen(false)} onApply={handleRentSplitUpdate} initialUnits={data?.rentUnits} />
             <AcquisitionFeesEstimatorModal
                 isOpen={isAcquisitionFeesEstimatorOpen}
                 onClose={() => setIsAcquisitionFeesEstimatorOpen(false)}
-                onApply={handleAcquisitionFeesUpdate}
-                prixAchat={data.prixAchat}
-                revenuCadastral={data.revenuCadastral}
+                onApply={handleAcquisitionFeesUpdate} 
+                prixAchat={data?.prixAchat}
+                revenuCadastral={data?.revenuCadastral}
             />
             <MetricExplanationModal
                 isOpen={isMetricModalOpen}
@@ -156,6 +158,11 @@ const Modals = ({
                 <p>Vous n'avez plus de crédits pour utiliser l'assistant IA.</p>
                 <p className="mt-2 text-sm text-gray-600">Pour continuer à bénéficier de l'analyse intelligente, veuillez recharger vos crédits.</p>
             </ConfirmationModal>
+
+            <ObjectivesInfoModal
+                isOpen={isObjectivesInfoModalOpen}
+                onClose={() => setIsObjectivesInfoModalOpen(false)}
+            />
         </>
     );
 };
