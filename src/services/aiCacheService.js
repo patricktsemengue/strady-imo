@@ -92,12 +92,15 @@ export const setInCache = async (request, response, userId) => {
   await Promise.all([
     // Tâche 1: Écriture dans le cache distant (Supabase)
     (async () => {
-      const { error } = await supabase.from('ai_cache').insert({
-        user_id: userId,
-        request_hash: cacheKey,
-        request_payload: request,
-        response_payload: response,
-      });
+      const { error } = await supabase
+        .from('ai_cache')
+        .upsert({
+            user_id: userId,
+            request_hash: cacheKey,
+            request_payload: request,
+            response_payload: response,
+        }, { onConflict: 'request_hash' }); // Specify the column that causes the conflict
+
       if (error) {
         console.error('[CACHE] Erreur lors de la sauvegarde dans Supabase:', error);
       }

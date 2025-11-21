@@ -41,7 +41,6 @@ const Layout = ({ children, handleNewProject }) => {
                 <p>&nbsp;</p>
             </main>
 
-            {/*user && <FabMenu handleNewProject={handleNewProject} />*/}
             {user && page === 'view-analysis' && (
                 <button
                     onClick={() => window.print()}

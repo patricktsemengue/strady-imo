@@ -21,6 +21,7 @@ const Modals = ({
     userPlan,
     analyses,
     handleSignOut,
+    aiHook,
     handleTravauxUpdate,
     data,
     handleTensionUpdate,
@@ -54,6 +55,7 @@ const Modals = ({
         isMetricModalOpen, setIsMetricModalOpen,
         isCreditModalOpen, setIsCreditModalOpen,
         isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen,
+        isAiAssistantModalOpen, setIsAiAssistantModalOpen,
         selectedMetric,
     } = useModal();
     const { user, setAuthPageInitialMode } = useAuth();
@@ -102,7 +104,7 @@ const Modals = ({
                 onClose={() => setIsAcquisitionFeesEstimatorOpen(false)}
                 onApply={handleAcquisitionFeesUpdate} 
                 prixAchat={data?.prixAchat}
-                revenuCadastral={data?.revenuCadastral}
+                revenuCadastral={data?.property.revenuCadastral}
             />
             <MetricExplanationModal
                 isOpen={isMetricModalOpen}
@@ -162,6 +164,11 @@ const Modals = ({
             <ObjectivesInfoModal
                 isOpen={isObjectivesInfoModalOpen}
                 onClose={() => setIsObjectivesInfoModalOpen(false)}
+            />
+            <AiAssistantModal
+                isOpen={isAiAssistantModalOpen}
+                onClose={() => setIsAiAssistantModalOpen(false)}
+                {...aiHook}
             />
         </>
     );

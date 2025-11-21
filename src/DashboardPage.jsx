@@ -1,7 +1,7 @@
 import React from 'react';
-import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon } from './Icons';
+import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon, UserIcon } from './Icons';
 
-const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView }) => {
+const DashboardPage = ({ user, onProfileClick, analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
@@ -80,7 +80,12 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
     return (
         <div className="animate-fade-in">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
-                <h1 className="text-2xl font-bold text-gray-800">Mes analyses</h1>
+                <div className="flex items-center gap-4">
+                    <h1 className="text-2xl font-bold text-gray-800">Mes analyses</h1>
+                    <button onClick={onProfileClick} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors" title="Accéder à mon profil">
+                        <UserIcon className="h-5 w-5" /> <span className="hidden sm:inline">Mon Profil</span>
+                    </button>
+                </div>
                 <div className="flex items-center gap-2 self-end sm:self-center">
                     <span className="text-sm font-medium text-gray-600">Trier par:</span>
                     <div className="flex justify-center gap-2" role="group">

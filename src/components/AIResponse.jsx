@@ -11,7 +11,7 @@ import './AIResponse.css';
  * @param {function} props.onUpdateField - Callback pour les actions 'UPDATE_FIELD'.
  * @param {function} props.onNewPrompt - Callback pour les actions 'NEW_PROMPT'.
  */
-const AIResponse = ({ response, onUpdateField, onNewPrompt }) => {
+const AIResponse = ({ response, actions = [], onActionClick, onUpdateField, onNewPrompt }) => {
   const [copyButtonText, setCopyButtonText] = useState('Copier');
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -28,15 +28,15 @@ const AIResponse = ({ response, onUpdateField, onNewPrompt }) => {
   }, [response.text]); // Se déclenche quand le texte de la réponse change
 
   const handleActionClick = (action) => {
-    switch (action.type) {
-      case 'UPDATE_FIELD':
-        if (onUpdateField) onUpdateField(action.payload);
-        break;
-      case 'NEW_PROMPT':
-        if (onNewPrompt) onNewPrompt(action.payload);
-        break;
-      default:
-        console.warn('Type d\'action inconnu:', action.type);
+    if (onActionClick) {
+      onActionClick(action);
+    } else {
+      // Fallback to old method if onActionClick is not provided
+      switch (action.type) {
+        case 'UPDATE_FIELD': if (onUpdateField) onUpdateField(action.payload); break;
+        case 'NEW_PROMPT': if (onNewPrompt) onNewPrompt(action.payload); break;
+        default: console.warn('Type d\'action inconnu:', action.type);
+      }
     }
   };
 
@@ -63,12 +63,12 @@ const AIResponse = ({ response, onUpdateField, onNewPrompt }) => {
   };
 
   const updateActions = useMemo(() => 
-    response?.actions.filter(a => a.type === 'UPDATE_FIELD') || [], 
-    [response.actions]
+    (actions || response?.actions || []).filter(a => a.type === 'UPDATE_FIELD'), 
+    [actions, response?.actions]
   );
   const promptActions = useMemo(() => 
-    response?.actions.filter(a => a.type === 'NEW_PROMPT') || [], 
-    [response.actions]
+    (actions || response?.actions || []).filter(a => a.type === 'NEW_PROMPT' || typeof a === 'string'), 
+    [actions, response?.actions]
   );
 
   const formatLabel = (field) => {
@@ -144,7 +144,19 @@ const AIResponse = ({ response, onUpdateField, onNewPrompt }) => {
         </div>
       )}
 
-      {promptActions.length > 0 && (
+      {promptActions.length > 0 && onActionClick ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+            {promptActions.map((action, index) => (
+                <button
+                    key={index}
+                    onClick={() => onActionClick(action)}
+                    className="bg-purple-100 text-purple-800 text-sm font-semibold px-3 py-1 rounded-full hover:bg-purple-200 transition-colors"
+                >
+                    {action}
+                </button>
+            ))}
+        </div>
+      ) : promptActions.length > 0 && (
         <div className="ai-actions-container">
           <h5 className="ai-actions-header">Actions Suggérées :</h5>
           <div className="ai-actions-list">

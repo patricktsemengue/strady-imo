@@ -1,10 +1,16 @@
 export const calculateFinances = (data) => {
-    const coutTotal = (data.prixAchat || 0) + (data.coutTravaux || 0) + (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
-    const aFinancer = coutTotal - (data.apport || 0);
-    const tauxMensuel = (data.tauxCredit || 0) / 100 / 12;
-    const nbMensualites = (data.dureeCredit || 0) * 12;
-    const mensualite = aFinancer > 0 && nbMensualites > 0 ? (aFinancer * tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / (Math.pow(1 + tauxMensuel, nbMensualites) - 1) : 0;
+    // Corrected paths to match the nested data structure
+    const coutTotal = 
+        (data.acquisition?.prixAchat || 0) + 
+        (data.acquisition?.coutTravaux?.total || 0) + 
+        (data.acquisition?.droitsEnregistrement || 0) + 
+        (data.acquisition?.fraisNotaire || 0);
 
+    const aFinancer = coutTotal - (data.financing?.apport || 0);
+    const tauxMensuel = (data.financing?.tauxCredit || 0) / 100 / 12;
+    const nbMensualites = (data.financing?.dureeCredit || 0) * 12;
+    const mensualite = aFinancer > 0 && nbMensualites > 0 ? (aFinancer * tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / (Math.pow(1 + tauxMensuel, nbMensualites) - 1) : 0;
+    
     return {
         coutTotalProjet: coutTotal,
         montantAFinancer: aFinancer,
@@ -24,22 +30,24 @@ export const generatePriceScenarios = (analysis) => {
 
     return scenarios.map(scenarioInfo => {
         const discountFactor = 1 + (scenarioInfo.discount / 100);
-        const newPrixAchat = originalData.prixAchat * discountFactor;
+        const newPrixAchat = (originalData.acquisition?.prixAchat || 0) * discountFactor;
 
-        const scenarioData = { ...originalData, prixAchat: newPrixAchat };
-        scenarioData.fraisAcquisition = Math.round(newPrixAchat * 0.145);
+        // Create a deep copy to avoid modifying the original data object
+        const scenarioData = JSON.parse(JSON.stringify(originalData));
+        scenarioData.acquisition.prixAchat = newPrixAchat;
+        scenarioData.acquisition.droitsEnregistrement = Math.round(newPrixAchat * 0.125);
         
         const scenarioFinances = calculateFinances(scenarioData);
 
-        const loyerAnnuelBrut = (scenarioData.loyerEstime || 0) * 12;
-        const chargesAnnuelles = (scenarioData.chargesMensuelles || 0) * 12;
-        const coutVacance = loyerAnnuelBrut * ((scenarioData.vacanceLocative || 0) / 100);
+        const loyerAnnuelBrut = (scenarioData.rental?.loyerEstime?.total || 0) * 12;
+        const chargesAnnuelles = scenarioData.rental?.chargesAnnuelles?.total || 0;
+        const coutVacance = loyerAnnuelBrut * ((scenarioData.rental?.vacanceLocative || 0) / 100);
         const rendementNet = scenarioFinances.coutTotalProjet > 0 ? ((loyerAnnuelBrut - chargesAnnuelles - coutVacance) / scenarioFinances.coutTotalProjet) * 100 : 0;
-        const cashflowMensuel = (scenarioData.loyerEstime || 0) - (scenarioData.chargesMensuelles || 0) - scenarioFinances.mensualiteEstimee;
+        const cashflowMensuel = (scenarioData.rental?.loyerEstime?.total || 0) - (chargesAnnuelles / 12) - scenarioFinances.mensualiteEstimee;
         const cashflowAnnuel = cashflowMensuel * 12;
         let cashOnCash = null;
-        if ((scenarioData.apport || 0) > 0 && cashflowAnnuel > 0) {
-            cashOnCash = (cashflowAnnuel / scenarioData.apport) * 100;
+        if ((scenarioData.financing?.apport || 0) > 0 && cashflowAnnuel > 0) {
+            cashOnCash = (cashflowAnnuel / scenarioData.financing.apport) * 100;
         } else if ((scenarioData.apport || 0) <= 0 && cashflowAnnuel > 0) {
             cashOnCash = Infinity;
         }

@@ -55,18 +55,22 @@ export default function App() {
         handleTravauxUpdate, handleTensionUpdate,
         handleVacancyUpdate, handleChargesUpdate, handleRentSplitUpdate,
         handleAcquisitionFeesUpdate, generatePriceScenarios, initialDataState,
-        typeBienOptions, pebOptions, handleDataChange, handleInputChange,
-        handleNumericFocus, handleNumericBlur, calculateScore
-    } = useAnalysis();
+        validationErrors, typeBienOptions, pebOptions, handleDataChange, handleInputChange,
+        handleNumericFocus, handleNumericBlur, calculateScore, saveAnalysis, isAnalysisComplete,
+        calculateAndShowResult
+    } = useAnalysis({ user, setNotification: showNotification });
 
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
     const { userPlan, maxAnalyses, setUserPlan } = useUserPlan(user);
 
     const aiHook = useAI({
         user, userPlan, setUserPlan, setData, setNotification: showNotification,
-        typeBienOptions: [], setTypeBienOptions: () => {},
         setIsCreditModalOpen: setIsCreditModalOpen,
+        currentData: data, // Pass the current analysis data to the AI hook
         setIsSaveModalOpen: setIsSaveModalOpen,
+        calculateAndShowResult,
+        isAnalysisComplete,
+        saveAnalysis,
     });
 
     const analysesManager = useAnalysesManager({
@@ -82,6 +86,7 @@ export default function App() {
         setFinances,
         initialDataState,
         aiHook,
+        saveAnalysis, // Pass the saveAnalysis function here
     });
 
     React.useEffect(() => {
@@ -123,12 +128,23 @@ export default function App() {
                             handleNumericBlur={handleNumericBlur}
                             finances={finances}
                             result={result}
+                            validationErrors={validationErrors}
                             calculateScore={calculateScore}
                             typeBienOptions={typeBienOptions}
                             pebOptions={pebOptions}
                         />
                     } />
-                    <Route path="/dashboard" element={<DashboardPage analyses={analysesManager.analyses} onLoad={analysesManager.loadAnalysis} onDelete={analysesManager.deleteAnalysis} onUpdateName={analysesManager.handleUpdateAnalysisName} maxAnalyses={maxAnalyses} onView={analysesManager.selectAnalysisToView} />} />
+                    <Route path="/dashboard" element={
+                        <DashboardPage
+                            user={user}
+                            onProfileClick={() => setIsProfileModalOpen(true)}
+                            analyses={analysesManager.analyses}
+                            onLoad={analysesManager.loadAnalysis}
+                            onDelete={analysesManager.deleteAnalysis}
+                            onUpdateName={analysesManager.handleUpdateAnalysisName}
+                            maxAnalyses={maxAnalyses}
+                            onView={analysesManager.selectAnalysisToView}
+                        />} />
                     <Route path="/auth" element={<AuthPage onBack={() => navigate('/')} onNavigate={navigate} initialMode={authPageInitialMode} />} />
                     <Route path="/account" element={<AccountPage onBack={() => navigate('/')} onNavigate={navigate} userPlan={userPlan} analysesCount={analysesManager.analyses.length} />} />
                     <Route path="/feedback" element={<FeedbackPage onBack={() => navigate('/')} />} />
@@ -140,7 +156,7 @@ export default function App() {
                     <Route path="/knowledge" element={<KnowledgePage onBack={() => navigate('/aide')} />} />
                     <Route path="/glossary" element={<GlossaryPage onBack={() => navigate('/aide')} />} />
                     <Route path="/view-analysis" element={<AnalysisViewPage analysis={analysesManager.viewingAnalysis} scenarios={generatePriceScenarios(analysesManager.viewingAnalysis)} onBack={() => navigate('/dashboard')} />} />
-                    <Route path="/settings" element={<SettingsPage onBack={() => navigate('/')} maxAnalyses={maxAnalyses} />} />                    
+                    <Route path="/settings" element={<SettingsPage onBack={() => navigate('/')} maxAnalyses={maxAnalyses} />} />
                     <Route path="/ai-assistant" element={<AIAssistantPage {...aiHook} userPlan={userPlan} handleNewProject={analysesManager.handleNewProject} />} />
                 </Routes>
             </Layout>
@@ -148,18 +164,17 @@ export default function App() {
                 userPlan={userPlan}
                 analyses={analysesManager.analyses}
                 handleSignOut={handleSignOut}
-                {...aiHook}
+                aiHook={aiHook}
                 data={data}
                 handleTravauxUpdate={handleTravauxUpdate}
                 handleTensionUpdate={(newValue) => { handleTensionUpdate(newValue); setIsTensionEstimatorOpen(false); }}
                 handleVacancyUpdate={(newValue) => { handleVacancyUpdate(newValue); setIsVacancyEstimatorOpen(false); }}
                 handleChargesUpdate={(total, items) => { handleChargesUpdate(total, items); setIsChargesEstimatorOpen(false); }}
                 handleRentSplitUpdate={(total, units) => { handleRentSplitUpdate(total, units); setIsRentSplitterOpen(false); }}
-                handleAcquisitionFeesUpdate={(newValue) => { handleAcquisitionFeesUpdate(newValue); setIsAcquisitionFeesEstimatorOpen(false); }}
-                handleConfirmSave={analysesManager.handleConfirmSave}
-                handleUpdateAnalysis={analysesManager.handleUpdateAnalysis}
-                currentAnalysisId={currentAnalysisId}
+                handleUpdate={analysesManager.handleUpdate}
                 projectNameForSave={analysesManager.projectNameForSave}
+                handleSaveAsCopy={analysesManager.handleSaveAsCopy}
+                handletAnalysisId={currentAnalysisId}r
                 setProjectNameForSave={analysesManager.setProjectNameForSave}
                 saveError={analysesManager.saveError}
                 setSaveError={analysesManager.setSaveError}

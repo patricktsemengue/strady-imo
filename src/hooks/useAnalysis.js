@@ -1,29 +1,57 @@
 import React from 'react';
 import { scoreConfig } from '../config.js';
 import { calculateFinances, generatePriceScenarios } from '../utils/calculations';
+import { supabase } from '../supabaseClient';
 
 export const initialDataState = {
-    projectName: 'Nouveau Projet', prixAchat: 180000, coutTravaux: 15000, fraisAcquisition: 26100, fraisAnnexe: 2000, apport: 40000, tauxCredit: 3.5, dureeCredit: 25,
-    ville: '',
-    descriptionBien: '',// 'Appartement 2 chambres, bon état',
-    typeBien: 'Appartement',
-    surface: 85,
-    peb: 'C',
-    revenuCadastral: 1000,
-    tensionLocative: 7, loyerEstime: 900, chargesMensuelles: 100, vacanceLocative: 8,
-    quotite: 80,
-    chargesDetail: [], travauxDetail: [], enOrdreUrbanistique: false,
-    electriciteConforme: false,
-    rentUnits: [], // Champ pour sauvegarder la répartition des loyers
-    strengths: [], // New field for US 4.4
-    weaknesses: [], // New field for US 4.4
+    projectName: 'Nouveau Projet',
+    property: {
+        uuid: null, // To track saved analyses
+        typeBien: 'Appartement',
+        ville: '',
+        surface: 85,
+        nombreChambres: 2,
+        peb: 'C',
+        revenuCadastral: 1000,
+        anneeConstruction: 0,
+        description: '',
+        enOrdreUrbanistique: false,
+        electriciteConforme: false,
+    },
+    acquisition: {
+        prixAchat: 180000,
+        coutTravaux: {
+            total: 15000,
+            details: []
+        },
+        fraisNotaire: 3600,
+        droitsEnregistrement: 22500,
+    },
+    financing: {
+        apport: 40000,
+        tauxCredit: 3.5,
+        dureeCredit: 25,
+        quotite: 80, // Added from old structure
+    },
+    rental: {
+        loyerEstime: {
+            total: 900,
+            units: []
+        },
+        chargesAnnuelles: {
+            total: 1200, // 100/month * 12
+            details: []
+        },
+        vacanceLocative: 8, // Added from old structure
+    }
 };
 
-export const useAnalysis = () => {
+export const useAnalysis = ({ user, setNotification } = {}) => {
     const [data, setData] = React.useState(initialDataState);
     const [result, setResult] = React.useState(null);
     const [finances, setFinances] = React.useState(() => calculateFinances(initialDataState));
     const [tempNumericValue, setTempNumericValue] = React.useState(null);
+    const [validationErrors, setValidationErrors] = React.useState({});
     const [typeBienOptions] = React.useState(['Appartement', 'Maison', 'Immeuble', 'Commerce', 'Autre']);
     const [pebOptions] = React.useState(['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'N/C']);
 
@@ -31,9 +59,9 @@ export const useAnalysis = () => {
     React.useEffect(() => {
         if (data.quotite === 'custom') return;
 
-        const baseEmpruntable = (data.prixAchat || 0) + (data.coutTravaux || 0);
-        const frais = (data.fraisAcquisition || 0) + (data.fraisAnnexe || 0);
-        const selectedQuotite = Number(data.quotite) || 0;
+        const baseEmpruntable = (data.acquisition.prixAchat || 0) + (data.acquisition.coutTravaux.total || 0);
+        const frais = (data.acquisition.droitsEnregistrement || 0) + (data.acquisition.fraisNotaire || 0);
+        const selectedQuotite = Number(data.financing.quotite) || 0;
 
         let nouvelApport = 0;
 
@@ -46,40 +74,44 @@ export const useAnalysis = () => {
             nouvelApport = Math.max(0, frais - fraisFinances);
         }
 
-        setData(d => ({ ...d, apport: Math.round(nouvelApport) }));
+        setData(d => ({ ...d, financing: { ...d.financing, apport: Math.round(nouvelApport) } }));
 
-    }, [data.prixAchat, data.coutTravaux, data.fraisAcquisition, data.fraisAnnexe, data.quotite]);
+    }, [data.acquisition.prixAchat, data.acquisition.coutTravaux.total, data.acquisition.droitsEnregistrement, data.acquisition.fraisNotaire, data.financing.quotite]);
 
     // Utiliser useEffect pour mettre à jour les calculs
     React.useEffect(() => {
-        const requiredFields = [
-            'prixAchat', 'coutTravaux', 'fraisAcquisition', 'fraisAnnexe',
-            'apport', 'tauxCredit', 'dureeCredit'
-        ];
-
-        const isAFieldEmpty = requiredFields.some(field => data[field] === '');
-
-        if (isAFieldEmpty) {
-            return;
-        }
-
         setFinances(calculateFinances(data));
-
     }, [data]);
 
-    const handleDataChange = (name, value) => {
+    const handleDataChange = (path, value) => {
+        const keys = path.split('.');
         setData(prevData => {
-            const newData = { ...prevData, [name]: value };
-
-            if (name === 'prixAchat') {
-                newData.fraisAcquisition = Math.round((parseFloat(value) || 0) * 0.145);
+            let current = { ...prevData };
+            let newRef = current;
+    
+            for (let i = 0; i < keys.length - 1; i++) {
+                newRef[keys[i]] = { ...newRef[keys[i]] };
+                newRef = newRef[keys[i]];
+            }
+    
+            newRef[keys[keys.length - 1]] = value;
+    
+            // Special business logic
+            if (path === 'acquisition.prixAchat') {
+                current.acquisition.droitsEnregistrement = Math.round((parseFloat(value) || 0) * 0.125);
+            }
+            if (path === 'financing.apport') {
+                current.financing.quotite = 'custom';
             }
 
-            if (name === 'apport') {
-                newData.quotite = 'custom';
+            // Clear validation error when user types in the field
+            if (validationErrors[path]) {
+                const newErrors = { ...validationErrors };
+                delete newErrors[path];
+                setValidationErrors(newErrors);
             }
-
-            return newData;
+    
+            return current;
         });
     };
 
@@ -87,34 +119,45 @@ export const useAnalysis = () => {
         const { name, value, type } = e.target;
         const cleanedValue = String(value).replace(/\s/g, '');
         const processedValue = type === 'number' ? parseFloat(cleanedValue) || 0 : value;
-        handleDataChange(name, processedValue);
+        handleDataChange(name, processedValue); // name now corresponds to the path, e.g., "property.ville"
     };
 
     const handleTravauxUpdate = (total, items) => {
-        setData(d => ({ ...d, coutTravaux: total, travauxDetail: items }));
+        handleDataChange('acquisition.coutTravaux', { total, details: items });
     };
     const handleTensionUpdate = (newValue) => { setData(d => ({ ...d, tensionLocative: newValue })); };
     const handleVacancyUpdate = (newValue) => { setData(d => ({ ...d, vacanceLocative: newValue })); };
     const handleChargesUpdate = (total, items) => {
-        setData(d => ({ ...d, chargesMensuelles: total, chargesDetail: items }));
+        const annualTotal = total * 12;
+        handleDataChange('rental.chargesAnnuelles', { total: annualTotal, details: items });
     };
     
     const handleRentSplitUpdate = (total, units) => {
-        setData(d => ({ ...d, loyerEstime: total, rentUnits: units }));
+        handleDataChange('rental.loyerEstime', { total, units });
     };
 
-    const handleAcquisitionFeesUpdate = (newValue) => {
-        setData(d => ({ ...d, fraisAcquisition: newValue }));
-    };
+    const isAnalysisComplete = React.useCallback(() => {
+        const requiredPaths = [
+            'acquisition.prixAchat',
+            'financing.tauxCredit',
+            'financing.dureeCredit',
+            'rental.loyerEstime.total'
+        ];
+
+        return requiredPaths.every(path => {
+            const value = path.split('.').reduce((obj, key) => obj && obj[key], data);
+            return value !== null && value !== undefined && value > 0;
+        });
+    }, [data]);
 
     const calculateScore = () => {
-        const loyerAnnuelBrut = (data.loyerEstime || 0) * 12;
-        const chargesAnnuelles = (data.chargesMensuelles || 0) * 12;
-        const coutVacance = loyerAnnuelBrut * ((data.vacanceLocative || 0) / 100);
+        const loyerAnnuelBrut = (data.rental.loyerEstime.total || 0) * 12;
+        const chargesAnnuelles = data.rental.chargesAnnuelles.total || 0;
+        const coutVacance = loyerAnnuelBrut * ((data.rental.vacanceLocative || 0) / 100);
 
         const rendementNet = finances.coutTotalProjet > 0 ? ((loyerAnnuelBrut - chargesAnnuelles - coutVacance) / finances.coutTotalProjet) * 100 : 0;
         
-        const cashflowMensuel = (data.loyerEstime || 0) - (data.chargesMensuelles || 0) - finances.mensualiteEstimee;
+        const cashflowMensuel = (data.rental.loyerEstime.total || 0) - (chargesAnnuelles / 12) - finances.mensualiteEstimee;
         const cashflowAnnuel = cashflowMensuel * 12;
 
         let grade = 'E';
@@ -123,7 +166,7 @@ export const useAnalysis = () => {
         let yearsToRecover = null;
         let cashOnCash = null;
 
-        if ((data.apport || 0) <= 0) {
+        if ((data.financing.apport || 0) <= 0) {
             if (cashflowAnnuel > 0) { // Infinite return
                 const bestScore = scoreConfig.cashflowScore[0];
                 grade = bestScore.grade;
@@ -142,10 +185,10 @@ export const useAnalysis = () => {
             grade = worstScore.grade;
             motivation = worstScore.comment;
             score = 10;
-            cashOnCash = (cashflowAnnuel / data.apport) * 100;
+            cashOnCash = (cashflowAnnuel / data.financing.apport) * 100;
         } else {
-            yearsToRecover = (data.apport || 0) / cashflowAnnuel;
-            cashOnCash = (cashflowAnnuel / data.apport) * 100;
+            yearsToRecover = (data.financing.apport || 0) / cashflowAnnuel;
+            cashOnCash = (cashflowAnnuel / data.financing.apport) * 100;
             
             const foundTier = scoreConfig.cashflowScore.find(tier => yearsToRecover >= tier.minYears && yearsToRecover < tier.maxYears);
 
@@ -183,19 +226,73 @@ export const useAnalysis = () => {
         setResult(newResult);
     };
 
+    const calculateAndShowResult = () => {
+        console.log("Triggering calculation from AI action...");
+        calculateScore();
+    };
+
+    const saveAnalysis = async () => {
+        if (!user) {
+            if (setNotification) {
+                setNotification("Veuillez vous connecter pour sauvegarder votre analyse.", "error");
+            }
+            return;
+        }
+
+        // --- Validation Check ---
+        if (!data.property.ville || data.property.ville.trim() === '') {
+            const errorField = 'property.ville';
+            setValidationErrors({ [errorField]: true });
+
+            if (setNotification) {
+                setNotification("Veuillez renseigner une adresse pour l'analyse avant de sauvegarder.", "warning");
+            }
+            // Scroll to the invalid field
+            const element = document.querySelector(`[name="${errorField}"]`);
+            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            return;
+        }
+
+        try {
+            // Construct the payload to match the database table structure
+            const analysisToSave = {
+                user_id: user.id,
+                project_name: data.projectName,
+                ville: data.property.ville,
+                data: data, // The entire state object goes into the 'data' JSONB column
+                result: result, // The result object goes into the 'result' JSONB column
+                ...(data.property.uuid && { id: data.property.uuid }) // Map the local uuid to the database 'id' column
+            };
+
+            const { data: savedData, error } = await supabase
+                .from('analyses')
+                .upsert(analysisToSave, { onConflict: 'id' }) // Use 'id' for conflict resolution
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            setData(prev => ({ ...prev, property: { ...prev.property, uuid: savedData.uuid } }));
+            if (setNotification) setNotification("Analyse sauvegardée avec succès !", "success");
+        } catch (error) {
+            console.error("Erreur lors de la sauvegarde de l'analyse:", error);
+            if (setNotification) setNotification(`Erreur: ${error.message}`, "error");
+        }
+    };
+
     const handleNumericFocus = (e) => {
         const { name, value } = e.target;
         setTempNumericValue({ name, value });
-        setData(prevData => ({ ...prevData, [name]: '' }));
+        handleDataChange(name, ''); // Use the correct function for nested updates
     };
 
     const handleNumericBlur = (e) => {
         const { name } = e.target;
-        const currentValue = data[name];
+        const currentValue = name.split('.').reduce((obj, key) => obj && obj[key], data);
 
         if (currentValue === '' && tempNumericValue && tempNumericValue.name === name) {
-            const cleanedValue = String(tempNumericValue.value).replace(/\s/g, '');
-            setData(prevData => ({ ...prevData, [name]: parseFloat(cleanedValue) || 0 }));
+            handleDataChange(name, parseFloat(String(tempNumericValue.value).replace(/\s/g, '')) || 0);
         }
 
         setTempNumericValue(null);
@@ -208,6 +305,7 @@ export const useAnalysis = () => {
         setResult,
         finances,
         setFinances,
+        validationErrors,
         handleDataChange,
         handleInputChange,
         handleTravauxUpdate,
@@ -215,8 +313,10 @@ export const useAnalysis = () => {
         handleVacancyUpdate,
         handleChargesUpdate,
         handleRentSplitUpdate,
-        handleAcquisitionFeesUpdate,
         calculateScore,
+        isAnalysisComplete,
+        calculateAndShowResult,
+        saveAnalysis,
         handleNumericFocus,
         handleNumericBlur,
         generatePriceScenarios,

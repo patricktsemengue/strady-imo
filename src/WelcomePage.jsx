@@ -36,7 +36,7 @@ const WelcomePage = ({ onStart, onNavigate, user }) => {
                     {user ? (
                         // Bouton pour l'utilisateur authentifié
                         <button
-                            onClick={() => onNavigate('/ai-assistant')}
+                            onClick={() => onStart('/ai-assistant')}
                             className="w-full bg-emerald-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-lg"
                         >
                             Commencer une analyse

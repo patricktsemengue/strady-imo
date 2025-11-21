@@ -18,6 +18,7 @@ export const ModalProvider = ({ children }) => {
     const [isMetricModalOpen, setIsMetricModalOpen] = useState(false);
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
     const [isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen] = useState(false);
+    const [isAiAssistantModalOpen, setIsAiAssistantModalOpen] = useState(false);
     const [selectedMetric, setSelectedMetric] = useState(null);
 
     const value = {
@@ -36,6 +37,7 @@ export const ModalProvider = ({ children }) => {
         isMetricModalOpen, setIsMetricModalOpen,
         isCreditModalOpen, setIsCreditModalOpen,
         isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen,
+        isAiAssistantModalOpen, setIsAiAssistantModalOpen,
         selectedMetric, setSelectedMetric,
     };
 

@@ -98,7 +98,7 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
                 {region === 'Wallonie' && isSolePrimaryResidence && (
                     <div className="p-3 bg-gray-50 border rounded-lg text-sm">
                         <p className="text-gray-600">Le calcul utilise le Revenu Cadastral de votre analyse :</p>
-                        <p className="font-bold text-lg text-center text-blue-700 my-1">{revenuCadastral.toLocaleString('fr-BE')} €</p>
+                        <p className="font-bold text-lg text-center text-blue-700 my-1">{(revenuCadastral || 0).toLocaleString('fr-BE')} €</p>
                         <p className="text-xs text-gray-500 text-center">Cette valeur est utilisée pour évaluer l'éligibilité au taux réduit de 6% en Wallonie.</p>
                     </div>
                 )}

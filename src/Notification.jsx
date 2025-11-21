@@ -21,7 +21,7 @@ const Notification = ({ message, type, onClose }) => {
     const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
 
     return (
-        <div className={`fixed bottom-4 right-4 ${bgColor} text-white px-4 py-2 rounded shadow-lg flex items-center`}>
+        <div className={`fixed top-20 right-4 ${bgColor} text-white px-4 py-2 rounded shadow-lg flex items-center`}>
             <span>{message}</span>
             <button onClick={() => { setIsVisible(false); onClose(); }} className="ml-4 font-bold">
                 &times;

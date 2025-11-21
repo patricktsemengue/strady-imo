@@ -1,0 +1,85 @@
+{
+	"analysis_id":"11992fc8-2cae-40ec-b74b-362b6950a678", // null pour une nouvelle analyse
+	"user_id":"user_456def", // null pour une utilisateur non authentifié
+	"data" : {
+	  "peb": "E",
+	  "ville": "Rue de l'Yser 68, 6042 Lodelinsart",
+	  "apport": 41100,
+	  "quotite": 80,
+	  "surface": 150,
+	  "typeBien": "Immeuble à appartements (2 unités)",
+	  "prixAchat": 65000,
+	  
+	  "tauxCredit": 3.5,
+	   "coutTravaux": {
+		"total": 15000,
+		"details": [
+		  {
+			"id": "1763348874030-100",
+			"description": "Rénovation de la toiture",
+			"amount": 8000
+		  },
+		  {
+			"id": "1763348874030-101",
+			"description": "Remplacement des fenêtres",
+			"amount": 7000
+		  }
+		]
+	  },
+	  "dureeCredit": 25,
+	  "fraisAnnexe": 2000,
+	  "loyerEstime": {
+		"total": 1200,
+		"rentUnits": [
+			{
+			"id": "1763338874030-0",
+			"name": "Garage",
+			"rent": 100
+			},
+			{
+			"id": "1763338874030-1",
+			"name": "Studio",
+			"rent": 325
+			}
+		]
+	  },
+	  "projectName": "Immeuble à appartements (2 unités) - 150m² - PEB E - Rue de l'Yser 68, 6042 Lodelinsart",
+	  
+	  
+	  "nombreChambres": 2,
+	  "descriptionBien": "",
+	  "revenuCadastral": 1000,
+	  "tensionLocative": 7,
+	  "vacanceLocative": 8,
+	  "fraisAcquisition": 26100,
+	  "anneeConstruction": "",
+	  "chargesMensuelles": {
+		"total": 300,
+		"details": [
+		  {
+			"id": "1763358874030-200",
+			"description": "Charges de copropriété",
+			"amount": 150
+		  },
+		  {
+			"id": "1763358874030-201",
+			"description": "Assurance bâtiment",
+			"amount": 50
+		  },
+		  {
+			"id": "1763358874030-202",
+			"description": "Entretien chaudière",
+			"amount": 100
+		  }
+		]
+	},
+	  "electriciteConforme": false,
+	  "enOrdreUrbanistique": false,
+	  "recommendations":{
+		"strengths": [],
+		"weaknesses": [],
+		"improvementSuggestions": [],
+		"targetTenant": ""
+	  }
+	}
+}

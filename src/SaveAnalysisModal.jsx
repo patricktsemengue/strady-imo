@@ -1,14 +1,14 @@
 import React from 'react';
 import ConfirmationModal from './ConfirmationModal';
 
-const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisId, projectName, setProjectName, error, setError }) => {
+const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, currentAnalysisId, projectName, setProjectName, error, setError }) => {
     if (!isOpen) return null;
 
     return (
         <ConfirmationModal
             isOpen={isOpen}
             onClose={onClose}
-            onConfirm={currentAnalysisId ? onUpdate : onSave}
+            onConfirm={onUpdate} // Main button is now always "Update" if there's an ID
             title={currentAnalysisId ? "Mettre à jour l'analyse" : "Sauvegarder l'analyse"}
             confirmText={currentAnalysisId ? "Mettre à jour" : "Sauvegarder"}
             confirmDisabled={!projectName.trim()}
@@ -27,12 +27,15 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, currentAnalysisI
                     />
                     {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                 </div>
-                {currentAnalysisId && (
-                    <div className="text-sm text-gray-600">
-                        <p>Vous êtes sur le point de mettre à jour l'analyse existante.</p>
-                        <p>Pour sauvegarder une nouvelle copie, changez le nom du projet.</p>
-                    </div>
-                )}
+                {currentAnalysisId &&
+                    <button
+                        onClick={onSaveAsCopy}
+                        disabled={!projectName.trim()}
+                        className="w-full text-center px-4 py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Sauvegarder comme une copie
+                    </button>
+                }
             </div>
         </ConfirmationModal>
     );

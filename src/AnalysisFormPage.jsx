@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
-import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon } from './Icons';
+import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon, SparklesIcon } from './Icons';
 import FormattedInput from './components/FormattedInput';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -19,6 +19,7 @@ const AnalysisFormPage = ({
     finances,
     result,
     calculateScore,
+    validationErrors,
     typeBienOptions,
     pebOptions,
 }) => {
@@ -43,6 +44,7 @@ const AnalysisFormPage = ({
         setSelectedMetric,
         setIsObjectivesInfoModalOpen,
         setIsMetricModalOpen,
+        setIsAiAssistantModalOpen,
     } = useModal();
 
     useEffect(() => {
@@ -72,11 +74,9 @@ const AnalysisFormPage = ({
     };
 
     const handleDeleteNote = () => {
-        if (undoTimeoutRef.current) {
-            clearTimeout(undoTimeoutRef.current);
-        }
-        setLastNoteContent(data.descriptionBien);
-        handleDataChange('descriptionBien', '');
+        if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+        setLastNoteContent(data.property.description);
+        handleDataChange('property.description', '');
         setShowUndo(true);
         undoTimeoutRef.current = setTimeout(() => {
             setShowUndo(false);
@@ -86,7 +86,7 @@ const AnalysisFormPage = ({
 
     const handleUndoDeleteNote = () => {
         if (lastNoteContent !== null) {
-            handleDataChange('descriptionBien', lastNoteContent);
+            handleDataChange('property.description', lastNoteContent);
         }
         setShowUndo(false);
         setLastNoteContent(null);
@@ -101,14 +101,14 @@ const AnalysisFormPage = ({
 
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        const selectedText = data.descriptionBien.substring(start, end);
-        const beforeText = data.descriptionBien.substring(0, start);
-        const afterText = data.descriptionBien.substring(end);
+        const selectedText = data.property.description.substring(start, end);
+        const beforeText = data.property.description.substring(0, start);
+        const afterText = data.property.description.substring(end);
 
         const { startTag, endTag } = syntax;
         const newText = `${beforeText}${startTag}${selectedText}${endTag}${afterText}`;
 
-        handleDataChange('descriptionBien', newText);
+        handleDataChange('property.description', newText);
 
         // Refocus and set cursor position after update
         textarea.focus();
@@ -128,7 +128,7 @@ const AnalysisFormPage = ({
 
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        const value = data.descriptionBien || '';
+        const value = data.property.description || '';
 
         const selectedText = value.substring(start, end);
         const beforeText = value.substring(0, start);
@@ -136,7 +136,7 @@ const AnalysisFormPage = ({
 
         const newText = beforeText + selectedText.split('\n').map(line => `* ${line}`).join('\n') + afterText;
 
-        handleDataChange('descriptionBien', newText);
+        handleDataChange('property.description', newText);
 
         textarea.focus();
         setTimeout(() => textarea.setSelectionRange(start, end + (selectedText.split('\n').length * 2)), 0);
@@ -148,7 +148,7 @@ const AnalysisFormPage = ({
 
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        const value = data.descriptionBien || '';
+        const value = data.property.description || '';
 
         const selectedText = value.substring(start, end);
         const beforeText = value.substring(0, start);
@@ -157,7 +157,7 @@ const AnalysisFormPage = ({
         const newSelectedText = selectedText.split('\n').map((line, index) => `${index + 1}. ${line}`).join('\n');
         const newText = beforeText + newSelectedText + afterText;
 
-        handleDataChange('descriptionBien', newText);
+        handleDataChange('property.description', newText);
 
         textarea.focus();
         setTimeout(() => textarea.setSelectionRange(start, start + newSelectedText.length), 0);
@@ -170,9 +170,9 @@ const AnalysisFormPage = ({
                 { label: 'Cash-Flow / mois', value: `${result.cashflowMensuel} €`, gradeSensitive: true, metricKey: 'cashflow' },
                 { label: 'Rendement Net', value: `${result.rendementNet} %`, gradeSensitive: true, metricKey: 'rendementNet', auth: true },
                 { label: 'Cash-on-Cash', value: result.cashOnCash === Infinity ? '∞' : (result.cashOnCash !== null && isFinite(result.cashOnCash) ? `${result.cashOnCash.toFixed(2)} %` : 'N/A'), gradeSensitive: true, metricKey: 'cashOnCash', auth: true },
-                { label: 'Mensualité Crédit', value: `${result.mensualiteCredit} €`, gradeSensitive: false, metricKey: 'mensualiteCredit' },
-                { label: 'Apport Personnel', value: `${parseInt(data.apport).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'apport' },
-                { label: 'Coût Total', value: `${parseInt(result.coutTotal).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'coutTotal' },
+                { label: 'Mensualité Crédit', value: `${result.mensualiteCredit} €`, gradeSensitive: false, metricKey: 'mensualiteCredit' }, // This comes from result, not data
+                { label: 'Apport Personnel', value: `${parseInt(data.financing.apport).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'apport' },
+                { label: 'Coût Total', value: `${parseInt(result.coutTotal).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'coutTotal' }, // This comes from result, not data
             ],
             cashflow: [
                 { label: 'Cash-Flow / mois', value: `${result.cashflowMensuel} €`, gradeSensitive: true, metricKey: 'cashflow' },
@@ -190,13 +190,24 @@ const AnalysisFormPage = ({
                 { label: 'Coût Total', value: `${parseInt(result.coutTotal).toLocaleString('fr-BE')} €`, gradeSensitive: false, metricKey: 'coutTotal' },
             ]
         };
-    }, [result, data.apport]);
+    }, [result, data.financing.apport]);
 
     const gradeColorClass = result ? (result.grade === 'A' ? 'text-green-800' : result.grade === 'B' ? 'text-green-500' : result.grade === 'C' ? 'text-yellow-500' : result.grade === 'D' ? 'text-orange-500' : 'text-red-800') : '';
 
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-8 animate-fade-in pb-24">
+            {/* 
+            {user && (
+                <button
+                    onClick={() => setIsAiAssistantModalOpen(true)}
+                    className="fixed top-3/4 right-4 transform -translate-y-1/2 w-12 h-12 bg-purple-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-purple-700 active:bg-purple-800 transition-all duration-300 z-30 transform hover:scale-110 print-hidden"
+                    title="Ouvrir l'Assistant IA"
+                >
+                    <SparklesIcon />
+                </button>
+            )}
+            */}
             {/* --- Section 1: Détails du Bien --- */}
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Bien immobilier</h2>
@@ -214,8 +225,8 @@ const AnalysisFormPage = ({
                 <div className="mt-4">
                     <label className="block text-sm font-medium mb-2">Type de bien</label>
                     <div className="flex flex-wrap gap-2">
-                        {typeBienOptions.map(opt => (
-                            <button key={opt} onClick={() => handleDataChange('typeBien', opt)} className={`px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all ${data.typeBien === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>
+                        {typeBienOptions.map(opt => ( // Assuming typeBienOptions is still valid
+                            <button key={opt} onClick={() => handleDataChange('property.typeBien', opt)} className={`px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all ${data.property.typeBien === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>
                                 {opt}
                             </button>
                         ))}
@@ -224,8 +235,8 @@ const AnalysisFormPage = ({
                 <div className="mt-4">
                     <label className="block text-sm font-medium mb-2">Score PEB</label>
                     <div className="flex flex-wrap gap-2">
-                        {pebOptions.map(opt => (
-                            <button key={opt} onClick={() => handleDataChange('peb', opt)} className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.peb === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>
+                        {pebOptions.map(opt => ( // Assuming pebOptions is still valid
+                            <button key={opt} onClick={() => handleDataChange('property.peb', opt)} className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.property.peb === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>
                                 {opt}
                             </button>
                         ))}
@@ -236,8 +247,8 @@ const AnalysisFormPage = ({
                     <div>
                         <label className="block text-sm font-medium">Surface</label>
                         <FormattedInput
-                            name="surface"
-                            value={data.surface}
+                            name="property.surface"
+                            value={data.property.surface}
                             onChange={handleInputChange}
                             onFocus={handleNumericFocus}
                             onBlur={handleNumericBlur}
@@ -247,36 +258,43 @@ const AnalysisFormPage = ({
                     <div>
                         <label className="block text-sm font-medium">Revenu Cadastral</label>
                         <FormattedInput
-                            name="revenuCadastral"
-                            value={data.revenuCadastral}
+                            name="property.revenuCadastral"
+                            value={data.property.revenuCadastral}
                             onChange={handleInputChange}
                             onFocus={handleNumericFocus}
                             onBlur={handleNumericBlur}
                             unit="€"
                         />
                     </div>
-                    <div><label className="block text-sm font-medium">Adresse/ Ville / Commune <span className='text-red-400'>*</span></label><input type="text" name="ville" value={data.ville} onChange={handleInputChange} required placeholder='Rue de Strady 1, 5000 Namur' className="mt-1 w-full p-2 border rounded-md" /></div>
+                    <div>
+                        <label className="block text-sm font-medium">Adresse/ Ville / Commune <span className='text-red-400'>*</span></label>
+                        <input 
+                            type="text" name="property.ville" value={data?.property?.ville || ''} onChange={handleInputChange} required 
+                            placeholder='Rue de Strady 1, 5000 Namur' 
+                            className={`mt-1 w-full p-2 border rounded-md transition-all ${validationErrors?.['property.ville'] ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300'}`} 
+                        />
+                    </div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-2">En ordre urbanistique ?</label>
                         <div className="flex gap-2">
-                            <button onClick={() => handleDataChange('enOrdreUrbanistique', true)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.enOrdreUrbanistique ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Oui</button>
-                            <button onClick={() => handleDataChange('enOrdreUrbanistique', false)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${!data.enOrdreUrbanistique ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Non</button>
+                            <button onClick={() => handleDataChange('property.enOrdreUrbanistique', true)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.property.enOrdreUrbanistique ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Oui</button>
+                            <button onClick={() => handleDataChange('property.enOrdreUrbanistique', false)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${!data.property.enOrdreUrbanistique ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Non</button>
                         </div>
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-2">Électricité conforme ?</label>
                         <div className="flex gap-2">
-                            <button onClick={() => handleDataChange('electriciteConforme', true)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.electriciteConforme ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Oui</button>
-                            <button onClick={() => handleDataChange('electriciteConforme', false)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${!data.electriciteConforme ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Non</button>
+                            <button onClick={() => handleDataChange('property.electriciteConforme', true)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.property.electriciteConforme ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Oui</button>
+                            <button onClick={() => handleDataChange('property.electriciteConforme', false)} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${!data.property.electriciteConforme ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Non</button>
                         </div>
                     </div>
                 </div>
                 {user && (
                     <div className="mt-4">
                         <label className="block text-sm font-medium">Notes</label>
-                        {isEditingNotes || !data.descriptionBien ? (
+                        {isEditingNotes || !data.property.description ? (
                             <div className="mt-1 border rounded-md">
                                 <div className="flex items-center gap-1 p-1 bg-gray-100 border-b">
                                     <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyMarkdown({ startTag: '*', endTag: '*' })} className="p-1.5 rounded hover:bg-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed" title="Gras" disabled={!isTextSelected}><BoldIcon className="h-4 w-4" /></button>
@@ -288,8 +306,8 @@ const AnalysisFormPage = ({
                                 </div>
                                 <textarea
                                     ref={notesTextareaRef}
-                                    name="descriptionBien"
-                                    value={data.descriptionBien}
+                                    name="property.description"
+                                    value={data.property.description}
                                     onChange={handleInputChange}
                                     onSelect={handleNoteSelectionChange}
                                     onBlur={() => {
@@ -308,7 +326,7 @@ const AnalysisFormPage = ({
                                 <div
                                     onClick={() => setIsEditingNotes(true)}
                                     className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border max-h-48 overflow-y-auto custom-scrollbar cursor-pointer hover:border-blue-300 transition-colors"
-                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(data.descriptionBien)) }}
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(data.property.description)) }}
                                 />
                                 <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <button onClick={handleDeleteNote} title="Effacer les notes" className="p-2 bg-white/70 backdrop-blur-sm rounded-full shadow-md hover:bg-red-100">
@@ -335,8 +353,8 @@ const AnalysisFormPage = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div><label className="block text-sm font-medium text-gray-700">Prix d'achat</label>
                         <FormattedInput 
-                        name="prixAchat" 
-                        value={data.prixAchat} 
+                        name="acquisition.prixAchat" 
+                        value={data.acquisition.prixAchat} 
                         onChange={handleInputChange} 
                         onFocus={handleNumericFocus} 
                         onBlur={handleNumericBlur} 
@@ -347,8 +365,8 @@ const AnalysisFormPage = ({
                         <label className="block text-sm font-medium text-gray-700">Coût travaux</label>
                         <div className="flex items-center gap-2">
                             <FormattedInput
-                                name="coutTravaux"
-                                value={data.coutTravaux}
+                                name="acquisition.coutTravaux.total"
+                                value={data.acquisition.coutTravaux.total}
                                 onChange={handleInputChange}
                                 onFocus={handleNumericFocus}
                                 onBlur={handleNumericBlur}
@@ -361,8 +379,8 @@ const AnalysisFormPage = ({
                         <label className="block text-sm font-medium text-gray-700">Frais d'acquisition</label>
                         <div className="flex items-center gap-2">
                             <FormattedInput
-                                name="fraisAcquisition"
-                                value={data.fraisAcquisition}
+                                name="acquisition.droitsEnregistrement"
+                                value={data.acquisition.droitsEnregistrement}
                                 onChange={handleInputChange}
                                 onFocus={handleNumericFocus}
                                 onBlur={handleNumericBlur}
@@ -374,14 +392,14 @@ const AnalysisFormPage = ({
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Frais annexes</label>
-                        <FormattedInput name="fraisAnnexe" value={data.fraisAnnexe} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} placeholder="Agence, hypothèque..." unit="€" />
+                        <FormattedInput name="acquisition.fraisNotaire" value={data.acquisition.fraisNotaire} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} placeholder="Agence, hypothèque..." unit="€" />
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700">Quotité d'emprunt</label>
                         <p className="text-xs text-gray-500 mt-1 mb-2">Part du prix d'achat et des travaux financée par la banque. L'apport est calculé automatiquement.</p>
                         <div className="flex flex-wrap gap-2">
                             {[70, 80, 90, 100, 125].map((q) => (
-                                <button key={q} type="button" onClick={() => handleInputChange({ target: { name: 'quotite', value: q, type: 'number' } })} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.quotite === q ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>{q}%</button>
+                                <button key={q} type="button" onClick={() => handleInputChange({ target: { name: 'financing.quotite', value: q, type: 'number' } })} className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${data.financing.quotite === q ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>{q}%</button>
                             ))}
                         </div>
                     </div>
@@ -389,24 +407,24 @@ const AnalysisFormPage = ({
                         <label className="block text-sm font-medium text-gray-700">Apport personnel</label>
                         <div className="flex items-center gap-2">
                             <FormattedInput
-                                name="apport"
-                                value={data.apport}
+                                name="financing.apport"
+                                value={data.financing.apport}
                                 onChange={handleInputChange}
                                 onFocus={handleNumericFocus}
                                 onBlur={handleNumericBlur}
                                 unit="€"
                             />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{data.quotite === 'custom' ? "L'apport est en mode manuel. Sélectionnez une quotité pour réactiver le calcul auto." : "Calculé (Frais + Part non-financée) basé sur la quotité."}</p>
+                        <p className="text-xs text-gray-500 mt-1">{data.financing.quotite === 'custom' ? "L'apport est en mode manuel. Sélectionnez une quotité pour réactiver le calcul auto." : "Calculé (Frais + Part non-financée) basé sur la quotité."}</p>
                     </div>
-                    <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" min="0" name="tauxCredit" value={data.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Taux du crédit (%)</label><input type="number" step="0.1" min="0" name="financing.tauxCredit" value={data.financing.tauxCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" /></div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Durée du crédit (années)</label>
                         <div className="flex items-center gap-2 mt-1">
-                            <input type="number" name="dureeCredit" min="0" value={data.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
+                            <input type="number" name="financing.dureeCredit" min="0" value={data.financing.dureeCredit} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} className="mt-1 w-full p-2 border rounded-md" />
                             <div className="flex-shrink-0 flex gap-1">
                                 {[15, 20, 25, 30].map(duree => (
-                                    <button key={duree} onClick={() => handleDataChange('dureeCredit', duree)} className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.dureeCredit === duree ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`} title={`${duree} ans`}>{duree}</button>
+                                    <button key={duree} onClick={() => handleDataChange('financing.dureeCredit', duree)} className={`w-10 h-10 text-xs font-medium rounded-lg border-2 transition-all ${data.financing.dureeCredit === duree ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`} title={`${duree} ans`}>{duree}</button>
                                 ))}
                             </div>
                         </div>
@@ -427,8 +445,8 @@ const AnalysisFormPage = ({
                         <label className="block text-sm font-medium">Loyer hors charges</label>
                         <div className="flex items-center gap-2 mt-1">
                             <FormattedInput
-                                name="loyerEstime"
-                                value={data.loyerEstime}
+                                name="rental.loyerEstime.total"
+                                value={data.rental.loyerEstime.total}
                                 onChange={handleInputChange}
                                 onFocus={handleNumericFocus}
                                 onBlur={handleNumericBlur}
@@ -441,7 +459,7 @@ const AnalysisFormPage = ({
                     <div>
                         <label className="block text-sm font-medium">Charges d'exploitation</label>
                         <div className="flex items-center gap-2 mt-1">
-                            <FormattedInput name="chargesMensuelles" value={data.chargesMensuelles} onChange={handleInputChange} onFocus={handleNumericFocus} onBlur={handleNumericBlur} unit="€/mois" />
+                            <FormattedInput name="rental.chargesAnnuelles.total" value={Math.round(data.rental.chargesAnnuelles.total / 12)} onChange={(e) => handleDataChange('rental.chargesAnnuelles.total', e.target.value * 12)} onFocus={handleNumericFocus} onBlur={handleNumericBlur} unit="€/mois" />
                             <button onClick={() => setIsChargesEstimatorOpen(true)} title="Aide à l'évaluation des charges" className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"><ClipboardListIcon /></button>
                         </div>
                     </div>
@@ -451,6 +469,7 @@ const AnalysisFormPage = ({
             <button onClick={calculateScore} className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg">
                 Evaluer le Projet
             </button>
+            
 
             {/* --- Section 4: Résultats --- */}
             {result && (

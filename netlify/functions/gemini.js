@@ -29,7 +29,7 @@ export const handler = async (event) => {
     // Fonction de validation déplacée à l'intérieur du handler pour la propreté
     const validateInputs = ({ userPrompt, systemPrompt }) => {
       const MAX_USER_PROMPT_LENGTH = 15000;
-      const MAX_SYSTEM_PROMPT_LENGTH = 2000;
+      const MAX_SYSTEM_PROMPT_LENGTH = 10000;
 
       if (!userPrompt || typeof userPrompt !== 'string' || userPrompt.trim() === '') {
         const errorMessage = 'Le paramètre "userPrompt" est requis.';
@@ -97,15 +97,10 @@ export const handler = async (event) => {
         // === Tâches "Standard" (Coût: 1 CA) ===
         // Celles-ci nécessitent un raisonnement, géré par Flash.
         case 'ESTIMATE_RENOVATION':
-        case 'ESTIMATE_FURNITURE':
-        case 'ANALYZE_LOCATION':
         case 'QA': // QA (Légal, fiscal)
-        case 'ESTIMATE_COSTS':
+        case 'EXTRACT_URL': // Moved to Standard as it requires good extraction capabilities
           return 'gemini-2.5-flash'; // CORRIGÉ
 
-        // === Tâches "Utilitaire" (Coût: 1 CU) ===
-        // Tâches rapides, peu coûteuses, routées vers le modèle le moins cher.
-        case 'EXTRACT_URL':
         case 'RESTRUCTURE_TEXT':
         case 'EXTRACT_DATA':
           return 'gemini-2.5-flash-lite'; // AJOUTÉ

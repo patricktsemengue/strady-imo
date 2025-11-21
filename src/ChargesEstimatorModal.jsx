@@ -9,9 +9,9 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
 
     useEffect(() => {
         if (isOpen) {
-            // If charges are already detailed, use them. Otherwise, generate defaults.
-            if (data.chargesDetail && data.chargesDetail.length > 0) {
-                setCharges(data.chargesDetail);
+            // If charges are already detailed in the main data object, use them. Otherwise, generate defaults.
+            if (data.rental?.chargesAnnuelles?.details && data.rental.chargesAnnuelles.details.length > 0) {
+                setCharges(data.rental.chargesAnnuelles.details);
             } else {
                 // --- Smart Estimation Logic ---
                 const estimatedInsurance = (data.prixAchat > 0) ? Math.round(data.prixAchat * 0.0012) : 250; // Estimation: 0.12% of purchase price
