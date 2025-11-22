@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Logo } from './Logo';
-import { PrintIcon } from './Icons';
+import { Logo } from './Logo'; 
+import { PrintIcon, UserIcon } from './Icons';
 import { useAuth } from './hooks/useAuth';
 import { useModal } from './contexts/useModal';
 import FabMenu from './components/FabMenu';
@@ -27,7 +27,12 @@ const Layout = ({ children, handleNewProject }) => {
                     <Link to="/">
                         <Logo />
                     </Link>
-                    {/* Vous pouvez ajouter d'autres éléments de header ici si nécessaire */}
+                    {user && (
+                        <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors" title="Accéder à mon profil">
+                            <UserIcon className="h-5 w-5" />
+                            <span className="hidden sm:inline">Mon Profil</span>
+                        </button>
+                    )}
                 </div>
             </header>
 

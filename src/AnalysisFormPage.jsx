@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
-import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon, SparklesIcon } from './Icons';
+import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIcon, EyeIcon, FileCheckIcon, SaveIcon, QuestionMarkIcon, HomeIcon, TrashIcon, Undo2Icon, BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, ListIcon, ListOrderedIcon, SparklesIcon, CopyIcon } from './Icons';
 import FormattedInput from './components/FormattedInput';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -9,6 +9,7 @@ import DOMPurify from 'dompurify';
 // This component will hold the main analysis form
 const AnalysisFormPage = ({ 
     currentAnalysisId,
+    isDuplicating,
     handleOpenSaveModal,
     viewAnalysis,
     data,
@@ -32,6 +33,7 @@ const AnalysisFormPage = ({
     const [objective, setObjective] = useState(() => localStorage.getItem('analysisObjective') || 'all');
     const [sliderStyle, setSliderStyle] = useState({});
     const objectiveButtonsRef = useRef({});
+    const projectNameInputRef = useRef(null);
 
     const resultsRef = useRef(null);
     const notesTextareaRef = useRef(null);
@@ -63,6 +65,13 @@ const AnalysisFormPage = ({
             });
         }
     }, [objective]);
+
+    useEffect(() => {
+        if (isDuplicating && projectNameInputRef.current) {
+            projectNameInputRef.current.focus();
+            projectNameInputRef.current.select();
+        }
+    }, [isDuplicating]);
 
     const handleObjectiveChange = (newObjective) => {
         setObjective(newObjective);
@@ -216,6 +225,11 @@ const AnalysisFormPage = ({
                         <PencilIcon />
                         <span>Édition de : <strong>{data.projectName}</strong></span>
                     </div>
+                ) : isDuplicating ? (
+                    <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2 text-sm text-blue-800">
+                        <CopyIcon />
+                        <span>Copie de : <strong>{data.projectName}</strong>. Pensez à renommer cette analyse.</span>
+                    </div>
                 ) : (
                     <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-800">
                         <PlusCircleIcon />
@@ -243,7 +257,7 @@ const AnalysisFormPage = ({
                     </div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="hidden"><label className="block text-sm font-medium">Nom du Projet</label><input type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
+                    <div className="hidden"><label className="block text-sm font-medium">Nom du Projet</label><input ref={projectNameInputRef} type="text" name="projectName" value={data.projectName} onChange={handleInputChange} className="mt-1 w-full p-2 border rounded-md" /></div>
                     <div>
                         <label className="block text-sm font-medium">Surface</label>
                         <FormattedInput
@@ -431,9 +445,9 @@ const AnalysisFormPage = ({
                     </div>
                 </div>
                 <div className="mt-4 pt-4 border-t-2 border-dashed"><div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                    <div><p className="text-sm text-gray-600">Coût total du projet</p><p className="text-lg font-bold">{finances.coutTotalProjet.toLocaleString('fr-BE')} €</p></div>
-                    <div><p className="text-sm text-gray-600">Montant à financer</p><p className="text-lg font-bold text-blue-700">{(finances.montantAFinancer || 0).toLocaleString('fr-BE')} €</p></div>
-                    <div><p className="text-sm text-gray-600">Mensualité estimée</p><p className="text-lg font-bold text-red-600">{(finances.mensualiteEstimee || 0).toFixed(2)} €</p></div>
+                    <div><p className="text-sm text-gray-600">Coût total du projet</p><p className="text-lg font-bold">{(finances?.coutTotalProjet || 0).toLocaleString('fr-BE')} €</p></div>
+                    <div><p className="text-sm text-gray-600">Montant à financer</p><p className="text-lg font-bold text-blue-700">{(finances?.montantAFinancer || 0).toLocaleString('fr-BE')} €</p></div>
+                    <div><p className="text-sm text-gray-600">Mensualité estimée</p><p className="text-lg font-bold text-red-600">{(finances?.mensualiteEstimee || 0).toFixed(2)} €</p></div>
                 </div></div>
             </div>
 

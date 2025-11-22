@@ -7,8 +7,8 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, cu
     return (
         <ConfirmationModal
             isOpen={isOpen}
-            onClose={onClose}
-            onConfirm={onUpdate} // Main button is now always "Update" if there's an ID
+            onClose={onClose} 
+            onConfirm={currentAnalysisId ? onUpdate : onSave}
             title={currentAnalysisId ? "Mettre à jour l'analyse" : "Sauvegarder l'analyse"}
             confirmText={currentAnalysisId ? "Mettre à jour" : "Sauvegarder"}
             confirmDisabled={!projectName.trim()}

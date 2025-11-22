@@ -1,10 +1,15 @@
 import React from 'react';
-import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon, UserIcon } from './Icons';
+import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon, CopyIcon, WalletIcon } from './Icons';
 
-const DashboardPage = ({ user, onProfileClick, analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView }) => {
+const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView, onDuplicate, onUpgrade, highlightedAnalysisId }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
+
+    const isLimitReached = React.useMemo(() => {
+        if (maxAnalyses === -1) return false; // unlimited plan
+        return analyses.length >= maxAnalyses;
+    }, [analyses.length, maxAnalyses]);
 
 
     // Logique améliorée pour l'affichage des emplacements vides
@@ -77,15 +82,15 @@ const DashboardPage = ({ user, onProfileClick, analyses, onLoad, onDelete, onUpd
         setOpenMenuId(null);
     };
 
+    const handleDuplicateClick = (analysis) => {
+        onDuplicate(analysis); // Pass the full analysis object
+        setOpenMenuId(null);
+    };
+
     return (
         <div className="animate-fade-in">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-bold text-gray-800">Mes analyses</h1>
-                    <button onClick={onProfileClick} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors" title="Accéder à mon profil">
-                        <UserIcon className="h-5 w-5" /> <span className="hidden sm:inline">Mon Profil</span>
-                    </button>
-                </div>
+                <h1 className="text-2xl font-bold text-gray-800">Mes analyses</h1>
                 <div className="flex items-center gap-2 self-end sm:self-center">
                     <span className="text-sm font-medium text-gray-600">Trier par:</span>
                     <div className="flex justify-center gap-2" role="group">
@@ -110,7 +115,11 @@ const DashboardPage = ({ user, onProfileClick, analyses, onLoad, onDelete, onUpd
                     </div>
                 )}
                 {sortedAnalyses.map(analysis => (
-                    <div key={analysis.id} className="relative bg-white p-4 border rounded-lg flex flex-col shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300">
+                    <div 
+                        key={analysis.id} 
+                        className={`relative bg-white p-4 border rounded-lg flex flex-col shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 ${
+                            analysis.id === highlightedAnalysisId ? 'animate-flash' : ''
+                        }`}>
                         <div className="flex justify-between items-start mb-3">
                             <div className="flex-grow pr-2">
                                 {renamingId === analysis.id ? (
@@ -139,6 +148,14 @@ const DashboardPage = ({ user, onProfileClick, analyses, onLoad, onDelete, onUpd
                                         <button onClick={() => { onLoad(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"><PencilIcon /> Modifier</button>
                                         <button onClick={() => { onView(analysis.id); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"><EyeIcon /> Visualiser</button>
                                         <button onClick={() => handleStartRename(analysis)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"><TextCursorInputIcon /> Renommer</button>
+                                        <button 
+                                            onClick={!isLimitReached ? () => handleDuplicateClick(analysis) : undefined} 
+                                            className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${isLimitReached ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                                            disabled={isLimitReached}
+                                            title={isLimitReached ? "Vous avez atteint votre limite d'analyses." : "Dupliquer l'analyse"}
+                                        >
+                                            <CopyIcon /> Dupliquer
+                                        </button>
                                         <button onClick={() => handleDeleteClick(analysis)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><TrashIcon /> Supprimer</button>
                                     </div>
                                 )}
@@ -159,14 +176,26 @@ const DashboardPage = ({ user, onProfileClick, analyses, onLoad, onDelete, onUpd
                     </div>
                 ))}
                 {emptySlots.map((_, index) => (
-                    <div key={`empty-${index}`} className="p-8 border-2 border-dashed border-gray-300 rounded-lg flex flex-col justify-center items-center text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer" onClick={() => onLoad(null)}>
+                    <div 
+                        key={`empty-${index}`} 
+                        className={`p-8 border-2 border-dashed rounded-lg flex flex-col justify-center items-center transition-colors ${isLimitReached ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 cursor-pointer'}`}
+                        onClick={!isLimitReached ? () => onLoad(null) : undefined}
+                        title={isLimitReached ? "Vous avez atteint votre limite d'analyses." : "Créer une nouvelle analyse"}
+                    >
                         <PlusCircleIcon className="h-10 w-10 mb-2" />
                         <p className="font-semibold">Nouvelle analyse</p>
                     </div>
                 ))}
                 {analyses.length >= maxAnalyses && maxAnalyses > 0 && maxAnalyses !== -1 && (
-                    <div className="p-4 border border-red-200 bg-red-50 rounded-lg flex justify-center items-center text-red-600 font-semibold text-center">
-                        <p>Vous ne pouvez plus sauvegarder de nouvelle analyse. La limite de {maxAnalyses} est atteinte.</p>
+                    <div className="md:col-span-2 p-4 border border-orange-200 bg-orange-50 rounded-lg flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+                        <div>
+                            <p className="font-semibold text-orange-800">Vous avez atteint votre limite de {maxAnalyses} analyses.</p>
+                            <p className="text-sm text-orange-700">Passez au plan supérieur pour continuer à sauvegarder vos projets.</p>
+                        </div>
+                        <button onClick={onUpgrade} className="bg-orange-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition duration-300 flex-shrink-0 flex items-center gap-2">
+                            <WalletIcon />
+                            <span>Voir les abonnements</span>
+                        </button>
                     </div>
                 )}
             </div>

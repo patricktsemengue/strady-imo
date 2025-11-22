@@ -61,6 +61,10 @@ export default function App() {
     } = useAnalysis({ user, setNotification: showNotification });
 
     const [currentAnalysisId, setCurrentAnalysisId] = React.useState(null);
+    const [isDuplicating, setIsDuplicating] = React.useState(false);
+    const [isDuplicateModalOpen, setIsDuplicateModalOpen] = React.useState(false);
+    const [highlightedAnalysisId, setHighlightedAnalysisId] = React.useState(null);
+    const [analysisToDuplicate, setAnalysisToDuplicate] = React.useState(null);
     const { userPlan, maxAnalyses, setUserPlan } = useUserPlan(user);
 
     const aiHook = useAI({
@@ -87,6 +91,7 @@ export default function App() {
         initialDataState,
         aiHook,
         saveAnalysis, // Pass the saveAnalysis function here
+        setIsDuplicating, // Pass the setter to reset duplication state
     });
 
     React.useEffect(() => {
@@ -108,6 +113,36 @@ export default function App() {
         navigate('/auth');
     };
 
+    const handleDuplicateAnalysis = (analysis) => {
+        if (maxAnalyses !== -1 && analysesManager.analyses.length >= maxAnalyses) {
+            showNotification(`Vous avez atteint votre limite de ${maxAnalyses} analyses. Impossible de dupliquer.`, 'error');
+            return;
+        }
+        setAnalysisToDuplicate(analysis);
+        setIsDuplicateModalOpen(true);
+    };
+
+    const handleConfirmDuplicate = async (originalAnalysis, newName) => {
+        const duplicatedData = JSON.parse(JSON.stringify(originalAnalysis.data));
+        duplicatedData.projectName = newName;
+
+        // Use the new function from the manager to save the copy directly
+        const newAnalysis = await analysesManager.saveNewAnalysis(duplicatedData, originalAnalysis.result);
+
+        if (newAnalysis) {
+            showNotification("Analyse dupliquée et sauvegardée avec succès.", 'success');
+            setIsDuplicateModalOpen(false);
+            setAnalysisToDuplicate(null);
+            
+            // Set the ID to be highlighted
+            setHighlightedAnalysisId(newAnalysis.id);
+            setTimeout(() => {
+                setHighlightedAnalysisId(null);
+            }, 3000); // Highlight lasts for 3 seconds
+        }
+        // Error notification is handled inside saveNewAnalysis
+    };
+
     return (
         <WelcomeHandler user={user}>
             <Layout handleNewProject={analysesManager.handleNewProject}>
@@ -118,6 +153,7 @@ export default function App() {
                             userPlan={userPlan}
                             maxAnalyses={maxAnalyses}
                             currentAnalysisId={currentAnalysisId}
+                            isDuplicating={isDuplicating}
                             setCurrentAnalysisId={setCurrentAnalysisId}
                             handleOpenSaveModal={analysesManager.handleOpenSaveModal}
                             viewAnalysis={analysesManager.selectAnalysisToView}
@@ -144,6 +180,9 @@ export default function App() {
                             onUpdateName={analysesManager.handleUpdateAnalysisName}
                             maxAnalyses={maxAnalyses}
                             onView={analysesManager.selectAnalysisToView}
+                            onDuplicate={handleDuplicateAnalysis}
+                            onUpgrade={() => navigate('/plans')}
+                            highlightedAnalysisId={highlightedAnalysisId}
                         />} />
                     <Route path="/auth" element={<AuthPage onBack={() => navigate('/')} onNavigate={navigate} initialMode={authPageInitialMode} />} />
                     <Route path="/account" element={<AccountPage onBack={() => navigate('/')} onNavigate={navigate} userPlan={userPlan} analysesCount={analysesManager.analyses.length} />} />
@@ -173,6 +212,7 @@ export default function App() {
                 handleRentSplitUpdate={(total, units) => { handleRentSplitUpdate(total, units); setIsRentSplitterOpen(false); }}
                 handleUpdate={analysesManager.handleUpdate}
                 projectNameForSave={analysesManager.projectNameForSave}
+                onConfirmDuplicate={handleConfirmDuplicate}
                 handleSaveAsCopy={analysesManager.handleSaveAsCopy}
                 handletAnalysisId={currentAnalysisId}r
                 setProjectNameForSave={analysesManager.setProjectNameForSave}
@@ -180,6 +220,9 @@ export default function App() {
                 setSaveError={analysesManager.setSaveError}
                 analysisToDelete={analysesManager.analysisToDelete}
                 handleConfirmDelete={analysesManager.handleConfirmDelete}
+                isDuplicateModalOpen={isDuplicateModalOpen}
+                setIsDuplicateModalOpen={setIsDuplicateModalOpen}
+                analysisToDuplicate={analysisToDuplicate}
                 selectedMetric={selectedMetric}
                 authPageInitialMode={authPageInitialMode}
                 setAuthPageInitialMode={setAuthPageInitialMode}

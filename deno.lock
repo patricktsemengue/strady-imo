@@ -27,6 +27,7 @@
         "npm:eslint-plugin-react-refresh@~0.4.22",
         "npm:eslint@^9.36.0",
         "npm:globals@^16.4.0",
+        "npm:jsdom@^27.2.0",
         "npm:lucide-react@0.553",
         "npm:marked@17",
         "npm:node-fetch@^3.3.2",

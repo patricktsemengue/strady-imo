@@ -50,9 +50,8 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         navigate('/');
     };
     
-    const deleteAnalysis = (id) => {
-        const analysis = analyses.find(a => a.id === id);
-        if (analysis) {
+    const deleteAnalysis = (analysis) => {
+        if (analysis && analysis.id) {
             setAnalysisToDelete(analysis);
             setIsDeleteModalOpen(true);
         }
@@ -159,14 +158,14 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         }
         const analysisToUpdate = analyses.find(a => a.id === id);
         if (!analysisToUpdate) return;
-        const updatedData = { ...analysisToUpdate.data, projectName: newName };
+        const updatedData = { ...analysisToUpdate.data, project_name: newName, projectName: newName };
 
         if (user) {
             // Use supabase.from... directly, as analysisService.upsertAnalysis is missing
             const { data: upserted, error } = await supabase
                 .from('analyses')
                 .update({ project_name: newName, data: updatedData })
-                .eq('uuid', id)
+                .eq('id', id)
                 .select()
                 .single();
             if (!upserted) {
@@ -177,6 +176,31 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         const updatedAnalyses = analyses.map(a => a.id === id ? { ...a, project_name: newName, data: updatedData } : a);
         if (!user) localStorage.setItem('immoAnalyses', JSON.stringify(updatedAnalyses));
         setAnalyses(updatedAnalyses);
+    };
+
+    const saveNewAnalysis = async (analysisData, analysisResult) => {
+        if (!user) {
+            setNotification('Vous devez être connecté pour sauvegarder une analyse.', 'error');
+            return null;
+        }
+        if (maxAnalyses !== -1 && analyses.length >= maxAnalyses) {
+            setNotification(`Vous avez atteint votre limite de ${maxAnalyses} analyses.`, 'error');
+            return null;
+        }
+        try {
+            const { data: newAnalysis, error } = await supabase.from('analyses').insert([{
+                user_id: user.id,
+                project_name: analysisData.projectName,
+                data: analysisData,
+                result: analysisResult,
+            }]).select().single();
+            if (error) throw error;
+            setAnalyses(prevAnalyses => [newAnalysis, ...prevAnalyses]);
+            return newAnalysis;
+        } catch (error) {
+            setNotification(`Erreur lors de la sauvegarde de la copie : ${error.message}`, 'error');
+            return null;
+        }
     };
 
     return {
@@ -196,5 +220,6 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         handleUpdate,
         handleSaveAsCopy,
         handleUpdateAnalysisName,
+        saveNewAnalysis,
     };
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-
+import { CopyIcon, SaveIcon } from './Icons';
 import ConfirmationModal from './ConfirmationModal';
 import ProfileModal from './ProfileModal';
 import AiAssistantModal from './AiAssistantModal';
@@ -17,6 +17,48 @@ import ScoreExplanationModal from './ScoreExplanationModal';
 import SaveAnalysisModal from './SaveAnalysisModal';
 import ObjectivesInfoModal from './ObjectivesInfoModal';
 
+const DuplicateAnalysisModal = ({ isOpen, onClose, onConfirm, analysis }) => {
+    const [newName, setNewName] = React.useState('');
+    const [error, setError] = React.useState('');
+    const inputRef = React.useRef(null);
+    const MAX_LENGTH = 80;
+
+    React.useEffect(() => {
+        if (isOpen && analysis) {
+            const originalName = analysis.project_name || analysis.data.projectName;
+            setNewName(`${originalName} (copie)`);
+            setError('');
+            // Focus and select the input text when modal opens
+            setTimeout(() => inputRef.current?.select(), 100);
+        }
+    }, [isOpen, analysis]);
+
+    const handleConfirm = () => {
+        if (!newName.trim()) {
+            setError('Le nom ne peut pas être vide.');
+            return;
+        }
+        onConfirm(analysis, newName.trim());
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <ConfirmationModal
+            isOpen={isOpen}
+            onClose={onClose}
+            onConfirm={handleConfirm}
+            title="Dupliquer l'analyse"
+            confirmText="Dupliquer et Sauvegarder"
+            Icon={CopyIcon}
+        >
+            <p className="mb-4 text-sm text-gray-600">Veuillez entrer un nouveau nom pour la copie de l'analyse :</p>
+            <input ref={inputRef} type="text" value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={MAX_LENGTH} className={`w-full p-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`} />
+            <div className="text-right text-xs text-gray-500 mt-1">{newName.length}/{MAX_LENGTH}</div>
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </ConfirmationModal>
+    );
+};
 const Modals = ({
     userPlan,
     analyses,
@@ -30,7 +72,8 @@ const Modals = ({
     handleRentSplitUpdate,
     handleAcquisitionFeesUpdate,
     handleConfirmSave,
-    handleUpdateAnalysis,
+    handleUpdate,
+    onConfirmDuplicate,
     currentAnalysisId,
     projectNameForSave,
     setProjectNameForSave,
@@ -38,6 +81,9 @@ const Modals = ({
     setSaveError,
     analysisToDelete,
     handleConfirmDelete,
+    isDuplicateModalOpen,
+    setIsDuplicateModalOpen,
+    analysisToDuplicate,
 }) => {
     const {
         isEstimatorOpen, setIsEstimatorOpen,
@@ -116,7 +162,7 @@ const Modals = ({
                 isOpen={isSaveModalOpen}
                 onClose={() => setIsSaveModalOpen(false)}
                 onSave={handleConfirmSave}
-                onUpdate={handleUpdateAnalysis}
+                onUpdate={handleUpdate}
                 currentAnalysisId={currentAnalysisId}
                 projectName={projectNameForSave}
                 setProjectName={setProjectNameForSave}
@@ -169,6 +215,12 @@ const Modals = ({
                 isOpen={isAiAssistantModalOpen}
                 onClose={() => setIsAiAssistantModalOpen(false)}
                 {...aiHook}
+            />
+            <DuplicateAnalysisModal
+                isOpen={isDuplicateModalOpen}
+                onClose={() => setIsDuplicateModalOpen(false)}
+                onConfirm={onConfirmDuplicate}
+                analysis={analysisToDuplicate}
             />
         </>
     );
