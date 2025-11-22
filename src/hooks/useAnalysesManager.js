@@ -85,7 +85,7 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         }
     };
 
-    const handleOpenSaveModal = () => {
+    const handleOpenSaveModal = (id) => {
         if (!user) {
             setIsAuthModalOpen(true);
             return;
@@ -139,8 +139,8 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         }
 
         // Create a new data object for the copy, without the uuid
-        const copyData = { ...data, projectName: projectNameForSave, property: { ...data.property, uuid: null } };
-        setData(copyData); // Set the main state to this new copy
+        // const copyData = { ...data, projectName: projectNameForSave, property: { ...data.property, uuid: null } };
+        // setData(copyData); // Set the main state to this new copy
 
         // Wait for state to update then save. A small timeout ensures setData has completed.
         setTimeout(async () => {

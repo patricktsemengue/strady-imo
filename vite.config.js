@@ -9,4 +9,8 @@ export default defineConfig({
       external: ['@netlify/functions'],
     },
   },
+  optimizeDeps: {
+    // This is a workaround for a known issue with @google/generative-ai and Vite
+    exclude: ['@google/generative-ai'],
+  },
 })

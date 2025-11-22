@@ -4,6 +4,20 @@ import ConfirmationModal from './ConfirmationModal';
 const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, currentAnalysisId, projectName, setProjectName, error, setError }) => {
     if (!isOpen) return null;
 
+    const handleConfirm = currentAnalysisId ? onUpdate : onSave;
+
+    const handleProjectNameChange = (e) => {
+        setProjectName(e.target.value);
+        if (error) setError('');
+    };
+
+    const handleKeyDown = (e) => {
+        // Allow submission on Enter key press if the project name is not empty
+        if (e.key === 'Enter' && projectName.trim()) {
+            handleConfirm();
+        }
+    };
+
     return (
         <ConfirmationModal
             isOpen={isOpen}
@@ -19,11 +33,10 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, cu
                     <input
                         type="text"
                         value={projectName}
-                        onChange={(e) => {
-                            setProjectName(e.target.value);
-                            if (error) setError('');
-                        }}
+                        onChange={handleProjectNameChange}
+                        onKeyDown={handleKeyDown}
                         className={`mt-1 w-full p-2 border rounded-md ${error ? 'border-red-500' : ''}`}
+                        autoFocus
                     />
                     {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                 </div>
