@@ -19,7 +19,13 @@ export const ModalProvider = ({ children }) => {
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
     const [isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen] = useState(false);
     const [isAiAssistantModalOpen, setIsAiAssistantModalOpen] = useState(false);
+    const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+    
     const [selectedMetric, setSelectedMetric] = useState(null);
+    const [analysisToDelete, setAnalysisToDelete] = useState(null);
+    const [analysisToDuplicate, setAnalysisToDuplicate] = useState(null);
+    const [projectNameForSave, setProjectNameForSave] = useState('');
+    const [saveError, setSaveError] = useState('');
 
     const value = {
         isEstimatorOpen, setIsEstimatorOpen,
@@ -38,7 +44,12 @@ export const ModalProvider = ({ children }) => {
         isCreditModalOpen, setIsCreditModalOpen,
         isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen,
         isAiAssistantModalOpen, setIsAiAssistantModalOpen,
+        isDuplicateModalOpen, setIsDuplicateModalOpen,
         selectedMetric, setSelectedMetric,
+        analysisToDelete, setAnalysisToDelete,
+        analysisToDuplicate, setAnalysisToDuplicate,
+        projectNameForSave, setProjectNameForSave,
+        saveError, setSaveError,
     };
 
     return (

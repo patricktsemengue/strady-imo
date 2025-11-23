@@ -1,3 +1,4 @@
+import { deepCopy } from './deepCopy';
 export const calculateFinances = (data) => {
     // Corrected paths to match the nested data structure
     const coutTotal = 
@@ -33,7 +34,7 @@ export const generatePriceScenarios = (analysis) => {
         const newPrixAchat = (originalData.acquisition?.prixAchat || 0) * discountFactor;
 
         // Create a deep copy to avoid modifying the original data object
-        const scenarioData = JSON.parse(JSON.stringify(originalData));
+        const scenarioData = deepCopy(originalData);
         scenarioData.acquisition.prixAchat = newPrixAchat;
         scenarioData.acquisition.droitsEnregistrement = Math.round(newPrixAchat * 0.125);
         

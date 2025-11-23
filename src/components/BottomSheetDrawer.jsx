@@ -19,13 +19,14 @@ const BottomSheetDrawer = ({ isOpen, onClose, title, children, footer }) => {
                 </div>
 
                 {/* Header */}
+                {/*
                 <div className="flex justify-between items-center p-4 border-b border-gray-200">
                     <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
                     <button onClick={onClose} className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
                         <XIcon />
                     </button>
                 </div>
-
+                */}
                 {/* Content (Scrollable) */}
                 <div className="overflow-y-auto flex-grow p-6 custom-scrollbar">
                     <div className="h-full">

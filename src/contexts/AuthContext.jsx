@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient'; 
+import { clearCache, clearRemoteCache } from '../services/aiCacheService';
 
 export const AuthContext = createContext(null);
 
@@ -19,6 +20,12 @@ export const AuthProvider = ({ children }) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (event === 'SIGNED_IN') {
+          clearCache();
+          if (session?.user) {
+            clearRemoteCache(session.user.id, session.access_token);
+          }
+        }
         setUser(session?.user ?? null);
         setLoading(false);
       }
@@ -69,7 +76,14 @@ export const AuthProvider = ({ children }) => {
         }
       }
     }),
-    signOut: () => supabase.auth.signOut(),
+    signOut: async () => {
+        clearCache();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            await clearRemoteCache(session.user.id, session.access_token);
+        }
+        await supabase.auth.signOut();
+    },
     resetPassword: (email) => supabase.functions.invoke('custom-password-reset', { body: { email } }),
     
     // --- EXPOSER LES NOUVELLES FONCTIONS ---

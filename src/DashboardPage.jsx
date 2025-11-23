@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon, CopyIcon, WalletIcon } from './Icons';
 import ConfirmationDrawer from './components/ConfirmationDrawer';
 
-const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView, onDuplicate, onUpgrade, highlightedAnalysisId }) => {
+const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView, onDuplicate, onUpgrade, highlightedAnalysisId, loadMoreAnalyses, hasMore, loading }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
@@ -202,6 +202,17 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
                 )}
             </div>
 
+            {hasMore && (
+                <div className="mt-8 text-center">
+                    <button
+                        onClick={loadMoreAnalyses}
+                        disabled={loading}
+                        className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
+                    >
+                        {loading ? 'Chargement...' : 'Charger plus'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

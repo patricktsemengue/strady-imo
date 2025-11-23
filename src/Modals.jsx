@@ -21,7 +21,6 @@ import DuplicateAnalysisDrawer from './components/DuplicateAnalysisDrawer';
 const Modals = ({
     userPlan,
     analyses,
-    handleSignOut,
     aiHook,
     handleTravauxUpdate,
     data,
@@ -30,18 +29,11 @@ const Modals = ({
     handleChargesUpdate,
     handleRentSplitUpdate,
     handleAcquisitionFeesUpdate,
-    handleSaveNewAnalysis,
-    onConfirmDuplicate,
     currentAnalysisId,
-    projectNameForSave,
-    setProjectNameForSave,
-    saveError,
-    setSaveError,
-    analysisToDelete,
+    handleSignOut,
+    handleSaveNewAnalysis,
     handleConfirmDelete,
-    isDuplicateModalOpen,
-    setIsDuplicateModalOpen,
-    analysisToDuplicate,
+    onConfirmDuplicate,
 }) => {
     const {
         isEstimatorOpen, setIsEstimatorOpen,
@@ -60,7 +52,12 @@ const Modals = ({
         isCreditModalOpen, setIsCreditModalOpen,
         isObjectivesInfoModalOpen, setIsObjectivesInfoModalOpen,
         isAiAssistantModalOpen, setIsAiAssistantModalOpen,
+        isDuplicateModalOpen, setIsDuplicateModalOpen,
         selectedMetric,
+        analysisToDelete,
+        analysisToDuplicate,
+        projectNameForSave, setProjectNameForSave,
+        saveError, setSaveError,
     } = useModal();
     const { user, setAuthPageInitialMode } = useAuth();
     const navigate = useNavigate();

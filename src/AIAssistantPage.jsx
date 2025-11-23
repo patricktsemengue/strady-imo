@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SparklesIcon, AlertTriangleIcon, MicIcon, SendIcon, TrashIcon } from './Icons';
-import AIResponse from './components/AIResponse'; // Import the dedicated component
+import { SparklesIcon, AlertTriangleIcon, MicIcon, SendIcon, TrashIcon, UserIcon} from './Icons';
+import AIResponse from './components/AIResponse'; 
 import { useAuth } from './hooks/useAuth';
 import { useModal } from './contexts/useModal';
 import AppFooter from './components/AppFooter';
@@ -164,11 +164,19 @@ const AiAssistantPage = ({
                         </h2>
                         */}
                     </div>
-                    {conversation.length > 0 && (
+
+                    {user && (
+                        <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors" title="Accéder à mon profil">
+                            <UserIcon className="h-5 w-5" />
+                            <span className="hidden sm:inline">Mon Profil</span>
+                        </button>
+                    )}
+
+                    {/*conversation.length > 0 && (
                         <button onClick={handleClearChat} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors" title="Effacer la conversation">
                             <TrashIcon className="h-4 w-4" /> <span className="hidden sm:inline">Effacer</span>
                         </button>
-                    )}
+                    )*/}
                     {/*userPlan && (
                         <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${userPlan.current_ai_credits > 0 || userPlan.current_ai_credits === -1 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
                             Crédits restants: {userPlan.current_ai_credits === -1 ? 'Illimités' : userPlan.current_ai_credits}
@@ -241,7 +249,7 @@ const AiAssistantPage = ({
                                 }}
                                 rows="1"
                                 placeholder={isListening ? "Parlez maintenant..." : "Posez une question, collez une URL ou une annonce..."}
-                                className="w-full p-3 border rounded-lg pl-14 resize-none pb-12"
+                                className="w-full p-3 border rounded-lg pl-14 pr-24 resize-none pb-12"
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
@@ -263,6 +271,11 @@ const AiAssistantPage = ({
                             </div>
                             {/* Action Buttons inside Textarea */}
                             <div className="absolute bottom-2 right-2 flex items-center gap-3">
+                                {conversation.length > 0 && (
+                                    <button onClick={handleClearChat} className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Effacer la conversation">
+                                        <TrashIcon className="h-6 w-6" />
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleUserMessage}
                                     disabled={isGeminiLoading || !aiInput.trim() || (userPlan && userPlan.current_ai_credits === 0)}

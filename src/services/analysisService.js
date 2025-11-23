@@ -1,11 +1,19 @@
 import { supabase } from '../supabaseClient';
 
-const loadAnalyses = async (userId) => {
-    const { data, error } = await supabase
+const loadAnalyses = async (userId, limit = 10, cursor = null) => {
+    let query = supabase
         .from('analyses')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
+
+    if (cursor) {
+        query = query.lt('created_at', cursor);
+    }
+
+    query = query.limit(limit);
+
+    const { data, error } = await query;
 
     if (error) {
         console.error("Erreur lors du chargement des analyses cloud:", error);

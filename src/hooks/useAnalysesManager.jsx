@@ -14,18 +14,48 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
     const [analyses, setAnalyses] = React.useState([]);
     const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
     const [viewingAnalysis, setViewingAnalysis] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
+    const [hasMore, setHasMore] = React.useState(true);
     
     const [projectNameForSave, setProjectNameForSave] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
 
-    React.useEffect(() => {
-        const loadAnalyses = async () => {
-            const loadedAnalyses = user 
-                ? await analysisService.loadAnalyses(user.id) 
-                : JSON.parse(localStorage.getItem('immoAnalyses') || '[]');
+    const loadMoreAnalyses = async () => {
+        if (loading || !hasMore) return;
+        setLoading(true);
+
+        const cursor = analyses.length > 0 ? analyses[analyses.length - 1].created_at : null;
+        const loadedAnalyses = user 
+            ? await analysisService.loadAnalyses(user.id, 10, cursor)
+            : JSON.parse(localStorage.getItem('immoAnalyses') || '[]');
+        
+        if(user) {
+            setAnalyses(prev => {
+                const existingIds = new Set(prev.map(a => a.id));
+                const newAnalyses = loadedAnalyses.filter(a => !existingIds.has(a.id));
+                return [...prev, ...newAnalyses];
+            });
+            if (loadedAnalyses.length < 10) {
+                setHasMore(false);
+            }
+        } else {
             setAnalyses(loadedAnalyses);
-        };
-        loadAnalyses();
+            setHasMore(false);
+        }
+
+        setLoading(false);
+    };
+
+    React.useEffect(() => {
+        if (user) {
+            setAnalyses([]);
+            setHasMore(true);
+            loadMoreAnalyses();
+        } else {
+            const localAnalyses = JSON.parse(localStorage.getItem('immoAnalyses') || '[]');
+            setAnalyses(localAnalyses);
+            setHasMore(false);
+        }
     }, [user]);
 
     const loadAnalysis = (id) => {
@@ -234,5 +264,8 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         handleUpdateAnalysisName,
         saveDuplicatedAnalysis,
         handleUpdateAnalysis,
+        loadMoreAnalyses,
+        hasMore,
+        loading,
     };
 };

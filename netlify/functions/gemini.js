@@ -1,13 +1,13 @@
-import { netlify } from "@netlify/functions";
+import { get, set } from './cache.js';
 
 export const handler = async (event) => {
   // --- GESTION DU PREFLIGHT CORS ---
   if (event.httpMethod === 'OPTIONS') {
     return {
-      statusCode: 200, 
+      statusCode: 204,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
       },
       body: ''
@@ -24,6 +24,21 @@ export const handler = async (event) => {
     }
 
     const { systemPrompt, userPrompt, taskType } = JSON.parse(event.body);
+
+    // --- CACHE ---
+    const cacheKey = `${systemPrompt}-${userPrompt}`;
+    const cachedData = get(cacheKey);
+    if (cachedData) {
+      console.log('[INFO] Réponse servie depuis le cache.');
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify(cachedData),
+      };
+    }
 
     // --- VALIDATION DES DONNÉES D'ENTRÉE ---
     // Fonction de validation déplacée à l'intérieur du handler pour la propreté
@@ -144,6 +159,10 @@ export const handler = async (event) => {
     
     const data = await response.json();
     console.log('[INFO] Réponse de l\'API Gemini reçue avec succès.');
+
+    // --- MISE EN CACHE ---
+    set(cacheKey, data);
+
     return {
       statusCode: 200, 
       headers: { 

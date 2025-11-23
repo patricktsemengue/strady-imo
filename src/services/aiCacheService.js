@@ -120,3 +120,25 @@ export const setInCache = async (request, response, userId) => {
     })()
   ]);
 };
+
+export const clearCache = () => {
+    console.log('[CACHE] Clearing local cache...');
+    for (const key in localStorage) {
+        if (key.startsWith(CACHE_PREFIX)) {
+            localStorage.removeItem(key);
+        }
+    }
+};
+
+export const clearRemoteCache = async (userId, accessToken) => {
+    console.log('[CACHE] Clearing remote cache...');
+    const { error } = await supabase.functions.invoke('clear-ai-cache', {
+        body: { user_id: userId },
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    if (error) {
+        console.error('[CACHE] Error clearing remote cache:', error);
+    }
+};
