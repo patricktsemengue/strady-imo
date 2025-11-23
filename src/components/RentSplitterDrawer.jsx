@@ -1,20 +1,19 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { TrashIcon, PlusCircleIcon } from './Icons';
-import { generateUniqueId } from './utils/generateUniqueId';
-import BottomDrawerModal from './BottomDrawerModal';
+import { TrashIcon, PlusCircleIcon } from '../Icons';
+import { generateUniqueId } from '../utils/generateUniqueId';
+import BottomSheetDrawer from './BottomSheetDrawer';
+import FormattedInput from './FormattedInput';
 
-import FormattedInput from './components/FormattedInput';
-const RentSplitterModal = ({ isOpen, onClose, onApply, initialUnits = [] }) => {
+const RentSplitterDrawer = ({ isOpen, onClose, onApply, initialUnits = [] }) => {
     const [units, setUnits] = useState(initialUnits.length > 0 ? initialUnits : [{ id: generateUniqueId(), name: 'Garage', rent: 100 }, { id: generateUniqueId(), name: 'Studio', rent: 325 }]);
-    
+
     useEffect(() => {
-        // Assure que les unités initiales ont des IDs uniques pour la session
         const unitsWithIds = initialUnits.map(u => ({ ...u, id: u.id || generateUniqueId() }));
         if (unitsWithIds.length > 0) {
             setUnits(unitsWithIds);
         }
     }, [initialUnits, isOpen]);
-    
+
     const addUnit = () => {
         setUnits([...units, { id: generateUniqueId(), name: `Unité ${units.length + 1}`, rent: 0 }]);
     };
@@ -41,7 +40,7 @@ const RentSplitterModal = ({ isOpen, onClose, onApply, initialUnits = [] }) => {
     );
 
     return (
-        <BottomDrawerModal
+        <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
             title="Répartition des Loyers par Unité"
@@ -82,8 +81,8 @@ const RentSplitterModal = ({ isOpen, onClose, onApply, initialUnits = [] }) => {
                     <PlusCircleIcon /> Ajouter une unité
                 </button>
             </div>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 
-export default RentSplitterModal;
+export default RentSplitterDrawer;

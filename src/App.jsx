@@ -6,7 +6,7 @@ import { useAI } from './hooks/useAI';
 import { useModal } from './contexts/useModal';
 import { useNotification } from './contexts/useNotification';
 import { useUserPlan } from './hooks/useUserPlan.js';
-import { useAnalysesManager } from './hooks/useAnalysesManager.js';
+import { useAnalysesManager } from './hooks/useAnalysesManager.jsx';
 
 import Layout from './Layout';
 import Modals from './Modals';
@@ -127,7 +127,7 @@ export default function App() {
         duplicatedData.projectName = newName;
 
         // Use the new function from the manager to save the copy directly
-        const newAnalysis = await analysesManager.saveNewAnalysis(duplicatedData, originalAnalysis.result);
+        const newAnalysis = await analysesManager.saveDuplicatedAnalysis(duplicatedData, originalAnalysis.result);
 
         if (newAnalysis) {
             showNotification("Analyse dupliquée et sauvegardée avec succès.", 'success');
@@ -155,7 +155,9 @@ export default function App() {
                             currentAnalysisId={currentAnalysisId}
                             isDuplicating={isDuplicating}
                             setCurrentAnalysisId={setCurrentAnalysisId}
-                            handleOpenSaveModal={analysesManager.handleOpenSaveModal}
+                            handleUpdateAnalysis={analysesManager.handleUpdateAnalysis}
+                            handleOpenSaveDrawer={analysesManager.handleOpenSaveDrawer}
+                            handleNewProject={analysesManager.handleNewProject}
                             viewAnalysis={analysesManager.selectAnalysisToView}
                             data={data}
                             handleDataChange={handleDataChange}
@@ -210,7 +212,7 @@ export default function App() {
                 handleVacancyUpdate={(newValue) => { handleVacancyUpdate(newValue); setIsVacancyEstimatorOpen(false); }}
                 handleChargesUpdate={(total, items) => { handleChargesUpdate(total, items); setIsChargesEstimatorOpen(false); }}
                 handleRentSplitUpdate={(total, units) => { handleRentSplitUpdate(total, units); setIsRentSplitterOpen(false); }}
-                handleUpdate={analysesManager.handleUpdate}
+                handleSaveNewAnalysis={analysesManager.handleSaveNewAnalysis}
                 projectNameForSave={analysesManager.projectNameForSave}
                 onConfirmDuplicate={handleConfirmDuplicate}
                 handleSaveAsCopy={analysesManager.handleSaveAsCopy}

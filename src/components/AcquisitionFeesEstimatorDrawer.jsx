@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { AlertTriangleIcon, ClipboardListIcon, HelpIcon, ChevronDownIcon } from './Icons';
-import BottomDrawerModal from './BottomDrawerModal';
+import { AlertTriangleIcon, ClipboardListIcon, HelpIcon, ChevronDownIcon } from '../Icons';
+import BottomSheetDrawer from './BottomSheetDrawer';
 
-const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, revenuCadastral }) => {
+const AcquisitionFeesEstimatorDrawer = ({ isOpen, onClose, onApply, prixAchat, revenuCadastral }) => {
     const [region, setRegion] = useState('Wallonie');
     const [isSolePrimaryResidence, setIsSolePrimaryResidence] = useState(true);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
- 
+
     useEffect(() => {
         if (!isOpen) {
             setIsDetailsOpen(false); // Reset on close
@@ -21,28 +21,23 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
 
         if (isSolePrimaryResidence) {
             if (region === 'Wallonie') {
-                // Abattement de 40.000€ pour les premiers 430.000€ (depuis 1er juillet 2023)
                 if (base <= 430000) {
                     abattement = Math.min(base, 40000);
                 }
-                // Taux réduit pour habitation modeste
-                if (revenuCadastral > 0 && revenuCadastral <= 745 && base <= 267737) { // Plafond 2024
+                if (revenuCadastral > 0 && revenuCadastral <= 745 && base <= 267737) {
                     rate = 0.06;
                     description = "Taux réduit (6%)";
                 }
             } else if (region === 'Bruxelles') {
                 rate = 0.125;
-                // Abattement de 200.000€ pour les biens jusqu'à 600.000€ (depuis 1er avril 2023)
                 if (base <= 600000) {
                     abattement = Math.min(base, 200000);
                 }
             } else if (region === 'Flandre') {
-                rate = 0.03; // Taux pour résidence principale unique
+                rate = 0.03;
                 description = "Taux unique (3%)";
-                // Pas d'abattement en Flandre, mais droits réduits ("meeneembaarheid" a été supprimé)
             }
         } else {
-            // Taux pour résidence secondaire / investissement
             if (region === 'Flandre') rate = 0.12;
             else rate = 0.125;
         }
@@ -50,9 +45,8 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
         const baseImposable = Math.max(0, base - abattement);
         const droitsEnregistrement = baseImposable * rate;
 
-        // Estimation très simplifiée des frais de notaire et autres
-        const fraisNotaire = 1500 + (base * 0.005); // Formule très approximative
-        const fraisDivers = 1200; // Transcription, recherches, etc.
+        const fraisNotaire = 1500 + (base * 0.005);
+        const fraisDivers = 1200;
         const tvaSurFrais = (fraisNotaire + fraisDivers) * 0.21;
         const totalFees = droitsEnregistrement + fraisNotaire + fraisDivers + tvaSurFrais;
 
@@ -68,14 +62,13 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
     );
 
     return (
-        <BottomDrawerModal
+        <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
             title="Estimateur des Frais d'Acquisition"
             footer={modalFooter}
         >
             <div className="space-y-6">
-                {/* --- Questions --- */}
                 <div className="space-y-4">
                     <h3 className="font-semibold text-lg flex items-center gap-2 text-gray-700">
                         <HelpIcon />
@@ -103,7 +96,6 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
                     </div>
                 )}
 
-                {/* --- Disclaimer --- */}
                 <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                     <AlertTriangleIcon />
                     <p className="text-xs text-yellow-800">
@@ -111,7 +103,6 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
                     </p>
                 </div>
 
-                {/* --- Results --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div className="bg-gray-50 border rounded-lg order-2 md:order-1">
                         <button onClick={() => setIsDetailsOpen(!isDetailsOpen)} className="w-full p-4 flex justify-between items-center text-left">
@@ -140,8 +131,8 @@ const AcquisitionFeesEstimatorModal = ({ isOpen, onClose, onApply, prixAchat, re
                     </div>
                 </div>
             </div>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 
-export default AcquisitionFeesEstimatorModal;
+export default AcquisitionFeesEstimatorDrawer;

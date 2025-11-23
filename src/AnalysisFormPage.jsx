@@ -5,13 +5,14 @@ import { PencilIcon, PlusCircleIcon, CalculatorIcon, LayersIcon, ClipboardListIc
 import FormattedInput from './components/FormattedInput';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import ConfirmationModal from './ConfirmationModal';
+import ConfirmationDrawer from './components/ConfirmationDrawer';
 
 // This component will hold the main analysis form
 const AnalysisFormPage = ({ 
     currentAnalysisId,
     isDuplicating,
-    handleOpenSaveModal,
+    handleUpdateAnalysis,
+    handleOpenSaveDrawer,
     handleNewProject,
     viewAnalysis,
     data,
@@ -225,12 +226,14 @@ const AnalysisFormPage = ({
                 <div className="bg-white p-4 rounded-lg shadow-md print-hidden">
                     <div className="flex justify-between items-center mb-4 border-b pb-2">
                         <h2 className="text-xl font-bold text-gray-800">Bien immobilier</h2>
-                        {currentAnalysisId && (
-                            <button onClick={() => setIsNewAnalysisModalOpen(true)} className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                                <PlusCircleIcon /> Nouvelle Analyse
-                            </button>
-                        )}
                     </div>
+                    <button
+                        onClick={() => setIsNewAnalysisModalOpen(true)}
+                        className="fixed bottom-24 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 active:bg-green-600 transition-all duration-300 z-30 transform hover:scale-110 print-hidden"
+                        title="Nouvelle Analyse"
+                    >
+                        <PlusCircleIcon />
+                    </button>
                     {currentAnalysisId ? (
                         <div className="mb-4 p-2 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2 text-sm text-purple-800">
                             <PencilIcon />
@@ -507,10 +510,15 @@ const AnalysisFormPage = ({
                                         <EyeIcon /> Visualiser
                                     </button>
                                 )}
-                                <button onClick={() => handleOpenSaveModal(currentAnalysisId)} className={`text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all ${currentAnalysisId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'}`} title={currentAnalysisId ? "Mettre à jour l'analyse" : "Sauvegarder l'analyse"}>
-                                    {currentAnalysisId ? <FileCheckIcon /> : <SaveIcon />}
-                                    {currentAnalysisId ? 'Mettre à jour' : 'Sauvegarder'}
-                                </button>
+                                {currentAnalysisId ? (
+                                    <button onClick={handleUpdateAnalysis} className="bg-orange-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 flex items-center gap-2 transition-all" title="Mettre à jour l'analyse">
+                                        <FileCheckIcon /> Mettre à jour
+                                    </button>
+                                ) : (
+                                    <button onClick={handleOpenSaveDrawer} className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center gap-2 transition-all" title="Sauvegarder l'analyse">
+                                        <SaveIcon /> Sauvegarder
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <div className={`text-center p-4 rounded-lg mb-4 ${result.grade === 'A' ? 'bg-green-100' : result.grade === 'B' ? 'bg-green-50' : result.grade === 'C' ? 'bg-yellow-50' : result.grade === 'D' ? 'bg-orange-50' : 'bg-red-100'}`}>
@@ -584,7 +592,7 @@ const AnalysisFormPage = ({
                     </div>
                 )}
             </div>
-            <ConfirmationModal
+            <ConfirmationDrawer
                 isOpen={isNewAnalysisModalOpen}
                 onClose={() => setIsNewAnalysisModalOpen(false)}
                 onConfirm={() => {
@@ -596,7 +604,7 @@ const AnalysisFormPage = ({
                 confirmButtonVariant="danger"
             >
                 <p>Toutes les modifications non sauvegardées sur l'analyse en cours seront perdues. Êtes-vous sûr de vouloir continuer ?</p>
-            </ConfirmationModal>
+            </ConfirmationDrawer>
         </>
     );
 };

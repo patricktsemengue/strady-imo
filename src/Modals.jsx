@@ -3,62 +3,21 @@ import { useModal } from './contexts/useModal';
 import { useAuth } from './hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { CopyIcon, SaveIcon } from './Icons';
-import ConfirmationModal from './ConfirmationModal';
-import ProfileModal from './ProfileModal';
-import AiAssistantModal from './AiAssistantModal';
-import WorkEstimatorModal from './WorkEstimatorModal';
-import TensionLocativeEstimatorModal from './TensionLocativeEstimatorModal';
-import VacancyEstimatorModal from './VacancyEstimatorModal';
-import ChargesEstimatorModal from './ChargesEstimatorModal';
-import RentSplitterModal from './RentSplitterModal';
-import AcquisitionFeesEstimatorModal from './AcquisitionFeesEstimatorModal';
-import MetricExplanationModal from './MetricExplanationModal';
-import ScoreExplanationModal from './ScoreExplanationModal';
-import SaveAnalysisModal from './SaveAnalysisModal';
-import ObjectivesInfoModal from './ObjectivesInfoModal';
+import ConfirmationDrawer from './components/ConfirmationDrawer';
+import ProfileDrawer from './components/ProfileDrawer';
+import AiAssistantDrawer from './components/AiAssistantDrawer';
+import WorkEstimatorDrawer from './components/WorkEstimatorDrawer';
+import TensionLocativeEstimatorDrawer from './components/TensionLocativeEstimatorDrawer';
+import VacancyEstimatorDrawer from './components/VacancyEstimatorDrawer';
+import ChargesEstimatorDrawer from './components/ChargesEstimatorDrawer';
+import RentSplitterDrawer from './components/RentSplitterDrawer';
+import AcquisitionFeesEstimatorDrawer from './components/AcquisitionFeesEstimatorDrawer';
+import MetricExplanationDrawer from './components/MetricExplanationDrawer';
+import ScoreExplanationDrawer from './components/ScoreExplanationDrawer';
+import SaveAnalysisDrawer from './components/SaveAnalysisDrawer';
+import ObjectivesInfoDrawer from './components/ObjectivesInfoDrawer';
 
-const DuplicateAnalysisModal = ({ isOpen, onClose, onConfirm, analysis }) => {
-    const [newName, setNewName] = React.useState('');
-    const [error, setError] = React.useState('');
-    const inputRef = React.useRef(null);
-    const MAX_LENGTH = 80;
-
-    React.useEffect(() => {
-        if (isOpen && analysis) {
-            const originalName = analysis.project_name || analysis.data.projectName;
-            setNewName(`${originalName} (copie)`);
-            setError('');
-            // Focus and select the input text when modal opens
-            setTimeout(() => inputRef.current?.select(), 100);
-        }
-    }, [isOpen, analysis]);
-
-    const handleConfirm = () => {
-        if (!newName.trim()) {
-            setError('Le nom ne peut pas être vide.');
-            return;
-        }
-        onConfirm(analysis, newName.trim());
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <ConfirmationModal
-            isOpen={isOpen}
-            onClose={onClose}
-            onConfirm={handleConfirm}
-            title="Dupliquer l'analyse"
-            confirmText="Dupliquer et Sauvegarder"
-            Icon={CopyIcon}
-        >
-            <p className="mb-4 text-sm text-gray-600">Veuillez entrer un nouveau nom pour la copie de l'analyse :</p>
-            <input ref={inputRef} type="text" value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={MAX_LENGTH} className={`w-full p-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`} />
-            <div className="text-right text-xs text-gray-500 mt-1">{newName.length}/{MAX_LENGTH}</div>
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </ConfirmationModal>
-    );
-};
+import DuplicateAnalysisDrawer from './components/DuplicateAnalysisDrawer';
 const Modals = ({
     userPlan,
     analyses,
@@ -71,8 +30,7 @@ const Modals = ({
     handleChargesUpdate,
     handleRentSplitUpdate,
     handleAcquisitionFeesUpdate,
-    handleConfirmSave,
-    handleUpdate,
+    handleSaveNewAnalysis,
     onConfirmDuplicate,
     currentAnalysisId,
     projectNameForSave,
@@ -109,7 +67,7 @@ const Modals = ({
 
     return (
         <>
-            <ProfileModal
+            <ProfileDrawer
                 isOpen={isProfileModalOpen}
                 onClose={() => setIsProfileModalOpen(false)}
                 onNavigate={(path) => {
@@ -121,7 +79,7 @@ const Modals = ({
                 userPlan={userPlan}
                 analyses={analyses}
             />
-            <ConfirmationModal
+            <ConfirmationDrawer
                 isOpen={isSignOutModalOpen}
                 onClose={() => setIsSignOutModalOpen(false)}
                 onConfirm={handleSignOut}
@@ -130,9 +88,9 @@ const Modals = ({
             >
                 <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
                 <p className="mt-2 text-sm text-gray-600">Toute analyse non sauvegardée sera perdue.</p>
-            </ConfirmationModal>
+            </ConfirmationDrawer>
 
-            <WorkEstimatorModal 
+            <WorkEstimatorDrawer 
                 isOpen={isEstimatorOpen} 
                 onClose={() => setIsEstimatorOpen(false)}
                 onSave={(total, items) => {
@@ -141,35 +99,34 @@ const Modals = ({
                 }} 
                 initialValue={data?.coutTravaux || 0} 
             />
-            <TensionLocativeEstimatorModal isOpen={isTensionEstimatorOpen} onClose={() => setIsTensionEstimatorOpen(false)} onApply={handleTensionUpdate} />
-            <VacancyEstimatorModal isOpen={isVacancyEstimatorOpen} onClose={() => setIsVacancyEstimatorOpen(false)} onApply={handleVacancyUpdate} currentTension={data?.tensionLocative} />
-            <ChargesEstimatorModal isOpen={isChargesEstimatorOpen} onClose={() => setIsChargesEstimatorOpen(false)} onApply={handleChargesUpdate} data={data} />
-            <RentSplitterModal isOpen={isRentSplitterOpen} onClose={() => setIsRentSplitterOpen(false)} onApply={handleRentSplitUpdate} initialUnits={data?.rentUnits} />
-            <AcquisitionFeesEstimatorModal
+            <TensionLocativeEstimatorDrawer isOpen={isTensionEstimatorOpen} onClose={() => setIsTensionEstimatorOpen(false)} onApply={handleTensionUpdate} />
+            <VacancyEstimatorDrawer isOpen={isVacancyEstimatorOpen} onClose={() => setIsVacancyEstimatorOpen(false)} onApply={handleVacancyUpdate} currentTension={data?.tensionLocative} />
+            <ChargesEstimatorDrawer isOpen={isChargesEstimatorOpen} onClose={() => setIsChargesEstimatorOpen(false)} onApply={handleChargesUpdate} data={data} />
+            <RentSplitterDrawer isOpen={isRentSplitterOpen} onClose={() => setIsRentSplitterOpen(false)} onApply={handleRentSplitUpdate} initialUnits={data?.rentUnits} />
+            <AcquisitionFeesEstimatorDrawer
                 isOpen={isAcquisitionFeesEstimatorOpen}
                 onClose={() => setIsAcquisitionFeesEstimatorOpen(false)}
                 onApply={handleAcquisitionFeesUpdate} 
                 prixAchat={data?.prixAchat}
                 revenuCadastral={data?.property.revenuCadastral}
             />
-            <MetricExplanationModal
+            <MetricExplanationDrawer
                 isOpen={isMetricModalOpen}
                 onClose={() => setIsMetricModalOpen(false)}
                 metric={selectedMetric}
             />
-            <ScoreExplanationModal isOpen={isScoreModalOpen} onClose={() => setIsScoreModalOpen(false)} />
-            <SaveAnalysisModal
+            <ScoreExplanationDrawer isOpen={isScoreModalOpen} onClose={() => setIsScoreModalOpen(false)} />
+            <SaveAnalysisDrawer
                 isOpen={isSaveModalOpen}
                 onClose={() => setIsSaveModalOpen(false)}
-                onSave={handleConfirmSave}
-                onUpdate={handleUpdate}
+                onSave={handleSaveNewAnalysis}
                 currentAnalysisId={currentAnalysisId}
                 projectName={projectNameForSave}
                 setProjectName={setProjectNameForSave}
                 error={saveError}
                 setError={setSaveError}
             />
-            <ConfirmationModal
+            <ConfirmationDrawer
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
                 onConfirm={() => {
@@ -182,8 +139,8 @@ const Modals = ({
             >
                 <p>Pour sauvegarder et gérer vos analyses, veuillez créer un compte gratuit.</p>
                 <p className="mt-2 text-sm text-gray-600">C'est rapide et vous permettra de conserver votre historique.</p>
-            </ConfirmationModal>
-            <ConfirmationModal
+            </ConfirmationDrawer>
+            <ConfirmationDrawer
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleConfirmDelete}
@@ -192,8 +149,8 @@ const Modals = ({
             >
                 <p>Êtes-vous sûr de vouloir supprimer l'analyse : <strong>{analysisToDelete?.project_name || analysisToDelete?.data.projectName}</strong> ?</p>
                 <p className="mt-2 text-sm text-red-600">Cette action est irréversible.</p>
-            </ConfirmationModal>
-            <ConfirmationModal
+            </ConfirmationDrawer>
+            <ConfirmationDrawer
                 isOpen={isCreditModalOpen}
                 onClose={() => setIsCreditModalOpen(false)}
                 onConfirm={() => {
@@ -205,18 +162,18 @@ const Modals = ({
             >
                 <p>Vous n'avez plus de crédits pour utiliser l'assistant IA.</p>
                 <p className="mt-2 text-sm text-gray-600">Pour continuer à bénéficier de l'analyse intelligente, veuillez recharger vos crédits.</p>
-            </ConfirmationModal>
+            </ConfirmationDrawer>
 
-            <ObjectivesInfoModal
+            <ObjectivesInfoDrawer
                 isOpen={isObjectivesInfoModalOpen}
                 onClose={() => setIsObjectivesInfoModalOpen(false)}
             />
-            <AiAssistantModal
+            <AiAssistantDrawer
                 isOpen={isAiAssistantModalOpen}
                 onClose={() => setIsAiAssistantModalOpen(false)}
                 {...aiHook}
             />
-            <DuplicateAnalysisModal
+            <DuplicateAnalysisDrawer
                 isOpen={isDuplicateModalOpen}
                 onClose={() => setIsDuplicateModalOpen(false)}
                 onConfirm={onConfirmDuplicate}

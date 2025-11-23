@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SparklesIcon, AlertTriangleIcon, MicIcon, SendIcon } from './Icons';
-import BottomDrawerModal from './BottomDrawerModal';
-import AIResponse from './components/AIResponse'; // Import the dedicated component
+import { SparklesIcon, AlertTriangleIcon, MicIcon, SendIcon } from '../Icons';
+import BottomSheetDrawer from './BottomSheetDrawer';
+import AIResponse from './AIResponse';
 
-const AiAssistantModal = ({
+const AiAssistantDrawer = ({
     isOpen,
     onClose,
     aiInput,
@@ -16,13 +16,12 @@ const AiAssistantModal = ({
     aiActions,
     handleAiActionClick,
     handleGeneralQuery,
-    handleNewPrompt, // Added prop
+    handleNewPrompt,
     userPlan,
     checkAiCredits,
     getAiButtonTooltip,
-    prePromptConfig = [] // Pass prePromptConfig as a prop
+    prePromptConfig = []
 }) => {
-    // --- Logique pour la dictée vocale ---
     const [isListening, setIsListening] = useState(false);
     const [conversation, setConversation] = useState([]);
     const recognitionRef = useRef(null);
@@ -47,7 +46,6 @@ const AiAssistantModal = ({
                     finalTranscript += event.results[i][0].transcript;
                 }
             }
-            // Met à jour le champ de texte avec le texte final
             if (finalTranscript) {
                 setAiInput(prev => prev + finalTranscript + ' ');
             }
@@ -62,7 +60,6 @@ const AiAssistantModal = ({
 
     useEffect(() => {
         if (isOpen) {
-            // Reset conversation when modal opens
             setConversation([]);
             setAiInput('');
         }
@@ -79,7 +76,7 @@ const AiAssistantModal = ({
             chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
         }
     }, [conversation]);
-    
+
     const toggleListening = () => {
         if (isListening) {
             recognitionRef.current?.stop();
@@ -99,7 +96,6 @@ const AiAssistantModal = ({
 
     const modalContent = (
         <div className="flex flex-col h-[60vh]">
-            {/* Chat History */}
             <div ref={chatHistoryRef} className="overflow-y-auto flex-grow space-y-4 pb-4">
                 <div className="flex items-start gap-3 justify-start">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
@@ -143,7 +139,6 @@ const AiAssistantModal = ({
                 {geminiError && !isGeminiLoading && <p className="text-red-500 text-sm mt-2">{geminiError}</p>}
             </div>
 
-            {/* Input Area */}
             <div className="pt-4 border-t border-gray-200 bg-white">
                 <div className="relative">
                     <textarea
@@ -172,12 +167,6 @@ const AiAssistantModal = ({
         </div>
     );
 
-    const modalFooter = (
-        <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Fermer</button>
-        </div>
-    );
-
     const modalTitle = (
         <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-2">
@@ -193,16 +182,15 @@ const AiAssistantModal = ({
     );
 
     return (
-        <BottomDrawerModal
+        <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
             title={modalTitle}
             footer={<div className="flex justify-end"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Fermer</button></div>}
-            maxWidth="max-w-4xl"
         >
             {modalContent}
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 
-export default AiAssistantModal;
+export default AiAssistantDrawer;

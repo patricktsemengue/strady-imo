@@ -1,15 +1,11 @@
 import React from 'react';
 import { ArrowUpDownIcon, EllipsisVerticalIcon, EyeIcon, PencilIcon, TextCursorInputIcon, TrashIcon, HomeIcon, PlusCircleIcon, CopyIcon, WalletIcon } from './Icons';
-import ConfirmationModal from './ConfirmationModal';
+import ConfirmationDrawer from './components/ConfirmationDrawer';
 
 const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, onView, onDuplicate, onUpgrade, highlightedAnalysisId }) => {
     const [sortOrder, setSortOrder] = React.useState('createdAt');
     const [sortDirection, setSortDirection] = React.useState('desc');
     const [openMenuId, setOpenMenuId] = React.useState(null);
-
-    // --- États pour la suppression ---
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-    const [analysisToDelete, setAnalysisToDelete] = React.useState(null);
 
 
     const isLimitReached = React.useMemo(() => {
@@ -84,17 +80,8 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
     };
 
     const handleDeleteClick = (analysis) => {
-        setAnalysisToDelete(analysis);
-        setIsDeleteModalOpen(true);
+        onDelete(analysis);
         setOpenMenuId(null);
-    };
-
-    const handleConfirmDelete = () => {
-        if (analysisToDelete) {
-            onDelete(analysisToDelete);
-        }
-        setIsDeleteModalOpen(false);
-        setAnalysisToDelete(null);
     };
 
     const handleDuplicateClick = (analysis) => {
@@ -214,19 +201,7 @@ const DashboardPage = ({ analyses, onLoad, onDelete, onUpdateName, maxAnalyses, 
                     </div>
                 )}
             </div>
-            {analysisToDelete && (
-                <ConfirmationModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={() => setIsDeleteModalOpen(false)}
-                    onConfirm={handleConfirmDelete}
-                    title="Supprimer l'analyse"
-                    confirmText="Supprimer"
-                    confirmButtonVariant="danger"
-                >
-                    <p>Êtes-vous sûr de vouloir supprimer l'analyse "<strong>{analysisToDelete.project_name || analysisToDelete.data.projectName}</strong>" ?</p>
-                    <p className="text-sm text-gray-500 mt-2">Cette action est irréversible.</p>
-                </ConfirmationModal>
-            )}
+
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import ConfirmationModal from './ConfirmationModal';
+import ConfirmationDrawer from './components/ConfirmationDrawer';
 
 const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, currentAnalysisId, projectName, setProjectName, error, setError }) => {
     if (!isOpen) return null;
@@ -19,7 +19,7 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, cu
     };
 
     return (
-        <ConfirmationModal
+        <ConfirmationDrawer
             isOpen={isOpen}
             onClose={onClose} 
             onConfirm={currentAnalysisId ? onUpdate : onSave}
@@ -40,7 +40,7 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, cu
                     />
                     {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                 </div>
-                {currentAnalysisId &&
+                {/*currentAnalysisId &&
                     <button
                         onClick={onSaveAsCopy}
                         disabled={!projectName.trim()}
@@ -48,9 +48,9 @@ const SaveAnalysisModal = ({ isOpen, onClose, onSave, onUpdate, onSaveAsCopy, cu
                     >
                         Sauvegarder comme une copie
                     </button>
-                }
+                */}
             </div>
-        </ConfirmationModal>
+        </ConfirmationDrawer>
     );
 };
 

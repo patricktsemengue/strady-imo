@@ -13,4 +13,8 @@ export default defineConfig({
     // This is a workaround for a known issue with @google/generative-ai and Vite
     exclude: ['@google/generative-ai'],
   },
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/hooks/useAnalysis.test.js',
+  },
 })

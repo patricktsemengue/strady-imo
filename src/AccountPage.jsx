@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { supabase } from './supabaseClient';
-import ConfirmationModal from './ConfirmationModal';
+import ConfirmationDrawer from './components/ConfirmationDrawer';
 import { WalletIcon, UserIcon, ShieldCheckIcon, AlertTriangleIcon, BriefcaseIcon, SendIcon, UsersIcon } from './Icons';
 import { useNotification } from './contexts/useNotification';
 
@@ -370,7 +370,7 @@ const AccountPage = ({ onNavigate, userPlan, analysesCount }) => {
                 {error && <p className="text-red-600 font-semibold text-center mt-4">{error}</p>}
             </div>
 
-            <ConfirmationModal
+            <ConfirmationDrawer
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onConfirm={handleConfirmDelete}
@@ -378,7 +378,7 @@ const AccountPage = ({ onNavigate, userPlan, analysesCount }) => {
                 isLoading={loading}
             >
                 <p>Êtes-vous absolument sûr ? Cette action est irréversible et désactivera votre compte ainsi que toutes vos données.</p>
-            </ConfirmationModal>
+            </ConfirmationDrawer>
         </>
     );
 };

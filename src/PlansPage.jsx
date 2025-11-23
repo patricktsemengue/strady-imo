@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { useAuth } from './hooks/useAuth';
-import ConfirmationModal from './ConfirmationModal';
+import ConfirmationDrawer from './components/ConfirmationDrawer';
 import PlanCard from './PlanCard';
 import { useNotification } from './contexts/useNotification';
 
@@ -136,7 +136,7 @@ const PlansPage = ({ userPlan, onNavigate }) => {
                 ))}
             </div>
             {isModalOpen && (
-                <ConfirmationModal
+                <ConfirmationDrawer
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onConfirm={handleConfirmSubscription}
@@ -158,7 +158,7 @@ const PlansPage = ({ userPlan, onNavigate }) => {
                             <span className="text-sm text-gray-700">Je confirme avoir lu et accepté les <button type="button" onClick={() => onNavigate('terms')} className="text-blue-600 underline">Conditions Générales d'Utilisation</button>. Je comprends qu'en confirmant, je conclus un contrat et que, conformément à la législation européenne et belge, je dispose d'un droit de rétractation de 14 jours.</span>
                         </label>
                     </div>
-                </ConfirmationModal>
+                </ConfirmationDrawer>
             )}
         </div>
     );

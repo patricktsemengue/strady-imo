@@ -1,6 +1,7 @@
 import React from 'react';
+import BottomSheetDrawer from './BottomSheetDrawer';
 
-const MetricExplanationModal = ({ isOpen, onClose, metric }) => {
+const MetricExplanationDrawer = ({ isOpen, onClose, metric }) => {
     const explanations = {
         rendementNet: {
             title: "Rendement Net",
@@ -12,7 +13,7 @@ const MetricExplanationModal = ({ isOpen, onClose, metric }) => {
             explanation: "Représente le bénéfice ou la perte mensuelle après déduction de toutes les charges (y compris le crédit) des revenus locatifs.",
             formula: "Loyer Mensuel - Charges - Mensualité Crédit"
         },
-        cashOnCash: { // Corrected from coc to cashOnCash
+        cashOnCash: {
             title: "CoC Return (Cash-on-Cash)",
             explanation: "Mesure le rendement de vos fonds propres investis (votre apport). C'est le ratio entre le cash-flow annuel et votre apport personnel.",
             formula: "(Cash-Flow Annuel / Apport) x 100"
@@ -38,23 +39,28 @@ const MetricExplanationModal = ({ isOpen, onClose, metric }) => {
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
-            <div className={`bg-white rounded-t-2xl sm:rounded-lg shadow-xl p-6 w-full max-w-full sm:max-w-lg transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full'} sm:translate-y-0`} onClick={e => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold mb-4">{content.title}</h2>
-                <p className="text-gray-700 mb-4">{content.explanation}</p>
-                {content.formula && (
-                    <div className="bg-gray-100 p-3 rounded-md text-center">
-                        <p className="text-sm font-semibold">Formule :</p>
-                        <p className="text-sm font-mono">{content.formula}</p>
-                    </div>
-                )}
-                <div className="flex justify-end gap-3 pt-6 mt-4 border-t">
-                    <button onClick={onClose} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Fermer</button>
-                </div>
-            </div>
+    const footer = (
+        <div className="flex justify-end gap-3">
+            <button onClick={onClose} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Fermer</button>
         </div>
+    );
+
+    return (
+        <BottomSheetDrawer
+            isOpen={isOpen}
+            onClose={onClose}
+            title={content.title}
+            footer={footer}
+        >
+            <p className="text-gray-700 mb-4">{content.explanation}</p>
+            {content.formula && (
+                <div className="bg-gray-100 p-3 rounded-md text-center">
+                    <p className="text-sm font-semibold">Formule :</p>
+                    <p className="text-sm font-mono">{content.formula}</p>
+                </div>
+            )}
+        </BottomSheetDrawer>
     );
 };
 
-export default MetricExplanationModal;
+export default MetricExplanationDrawer;

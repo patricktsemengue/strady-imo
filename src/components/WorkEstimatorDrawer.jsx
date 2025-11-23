@@ -1,43 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon } from './Icons';
-import BottomDrawerModal from './BottomDrawerModal';
-import FormattedInput from './components/FormattedInput';
- 
-const WorkEstimatorModal = ({ isOpen, onClose, onSave, initialValue }) => {
+import { PlusIcon, TrashIcon } from '../Icons';
+import BottomSheetDrawer from './BottomSheetDrawer';
+import FormattedInput from './FormattedInput';
+
+const WorkEstimatorDrawer = ({ isOpen, onClose, onSave, initialValue }) => {
     const defaultWorkItem = { name: '', cost: '' };
     const exampleWorkItems = [
         { name: 'Mise en conformité électrique', cost: 2500 },
         { name: 'Peinture', cost: 1500 },
         { name: 'Salle de bain', cost: 2500 },
     ];
- 
+
     const [workItems, setWorkItems] = useState(initialValue > 0 ? [{ name: 'Travaux existants', cost: initialValue }] : exampleWorkItems);
     const [errors, setErrors] = useState([]);
- 
+
     useEffect(() => {
         if (isOpen) {
             setWorkItems(initialValue > 0 ? [{ name: 'Travaux existants', cost: initialValue }] : exampleWorkItems);
             setErrors([]); // Reset errors when modal opens
         }
     }, [isOpen, initialValue]);
- 
+
     const handleItemChange = (index, field, value) => {
         const newItems = [...workItems];
         newItems[index][field] = value;
         setWorkItems(newItems);
     };
- 
+
     const addNewItem = () => {
         setWorkItems([...workItems, { ...defaultWorkItem }]);
     };
- 
+
     const removeItem = (index) => {
         const newItems = workItems.filter((_, i) => i !== index);
         setWorkItems(newItems);
     };
- 
+
     const totalCost = workItems.reduce((total, item) => total + (parseFloat(item.cost) || 0), 0);
- 
+
     const validateItems = () => {
         const newErrors = workItems.map(item => {
             const itemErrors = {};
@@ -49,35 +49,35 @@ const WorkEstimatorModal = ({ isOpen, onClose, onSave, initialValue }) => {
             }
             return itemErrors;
         });
- 
+
         setErrors(newErrors);
         return !newErrors.some(itemErrors => Object.keys(itemErrors).length > 0);
     };
- 
+
     const handleSave = () => {
         if (validateItems()) {
             onSave(totalCost, workItems);
             onClose();
         }
     };
- 
+
     const modalFooter = (
         <>
             <div className="flex justify-between items-center">
                 <span className="text-xl font-bold">Coût Total Estimé:</span>
                 <span className="text-2xl font-bold text-blue-700">{totalCost.toLocaleString('fr-BE')} €</span>
             </div>
-            <button 
-                onClick={handleSave} 
+            <button
+                onClick={handleSave}
                 className="w-full mt-4 bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition duration-300"
             >
                 Appliquer ce montant
             </button>
         </>
     );
- 
+
     return (
-        <BottomDrawerModal
+        <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
             title="Estimation du Coût des Travaux"
@@ -117,8 +117,8 @@ const WorkEstimatorModal = ({ isOpen, onClose, onSave, initialValue }) => {
                 <PlusIcon />
                 Ajouter une ligne
             </button>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 
-export default WorkEstimatorModal;
+export default WorkEstimatorDrawer;

@@ -85,44 +85,56 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         }
     };
 
-    const handleOpenSaveModal = (id) => {
+    const handleUpdateAnalysis = async () => {
+        const saved = await saveAnalysis(true);
+        if (saved) {
+            const loadedAnalyses = await analysisService.loadAnalyses(user.id);
+            setAnalyses(loadedAnalyses);
+        }
+    };
+
+    const handleOpenSaveDrawer = () => {
         if (!user) {
             setIsAuthModalOpen(true);
             return;
         }
-        if (!data.property.ville || !data.property.ville.trim()) {
-            setNotification('Le champ "Adresse/ Ville / Commune" est obligatoire.', 'error');
-            return;
+        if (!data.property.uuid) { // Only open modal for new analyses
+            if (!data.property.ville || !data.property.ville.trim()) {
+                setNotification('Le champ "Adresse/ Ville / Commune" est obligatoire.', 'error');
+                return;
+            }
+            if (userPlan && analyses.length >= maxAnalyses && maxAnalyses !== -1) {
+                setNotification(`Limite de ${maxAnalyses} analyses atteinte.`, 'error');
+                return;
+            }
+            const parts = [data.property.typeBien, data.property.surface > 0 && `${data.property.surface}m²`, data.property.peb && data.property.peb !== 'N/C' && `PEB ${data.property.peb}`, data.property.ville].filter(Boolean);
+            setProjectNameForSave(parts.join(' - ') || data.projectName);
+            setSaveError('');
+            setIsSaveModalOpen(true);
         }
-        if (userPlan && analyses.length >= maxAnalyses && maxAnalyses !== -1) {
-            setNotification(`Limite de ${maxAnalyses} analyses atteinte.`, 'error');
-            return;
-        }
-        const parts = [data.property.typeBien, data.property.surface > 0 && `${data.property.surface}m²`, data.property.peb && data.property.peb !== 'N/C' && `PEB ${data.property.peb}`, data.property.ville].filter(Boolean);
-        setProjectNameForSave(parts.join(' - ') || data.projectName);
-        setSaveError('');
-        setIsSaveModalOpen(true);
     };
 
-    const handleUpdate = async () => {
+    const handleSaveNewAnalysis = async () => {
         if (!projectNameForSave.trim()) {
             setSaveError('Le nom du projet ne peut pas être vide.');
             return;
         }
         // Check if another analysis (not the current one) already has this name
-        if (analyses.some(a => a.id !== data.property.uuid && (a.project_name || a.data.projectName) === projectNameForSave)) {
+        if (analyses.some(a => (a.project_name || a.data.projectName) === projectNameForSave)) {
             setSaveError('Ce nom de projet existe déjà.');
             return;
         }
 
         const dataToSave = { ...data, projectName: projectNameForSave };
-        setData(dataToSave);
 
         try {
-            await saveAnalysis(); // This will perform an upsert
-            const loadedAnalyses = await analysisService.loadAnalyses(user.id);
-            setAnalyses(loadedAnalyses);
-            setIsSaveModalOpen(false);
+            const saved = await saveAnalysis(false, dataToSave); // This will perform an upsert for a new analysis
+            if (saved) {
+                const loadedAnalyses = await analysisService.loadAnalyses(user.id);
+                setAnalyses(loadedAnalyses);
+                setIsSaveModalOpen(false);
+                setNotification("Analyse sauvegardée avec succès !", "success");
+            }
         } catch (error) {
             setSaveError(error.message);
         }
@@ -178,7 +190,7 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         setAnalyses(updatedAnalyses);
     };
 
-    const saveNewAnalysis = async (analysisData, analysisResult) => {
+    const saveDuplicatedAnalysis = async (analysisData, analysisResult) => {
         if (!user) {
             setNotification('Vous devez être connecté pour sauvegarder une analyse.', 'error');
             return null;
@@ -216,10 +228,11 @@ export const useAnalysesManager = ({ data, result, currentAnalysisId, setCurrent
         setProjectNameForSave,
         saveError,
         setSaveError,
-        handleOpenSaveModal,
-        handleUpdate,
+        handleOpenSaveDrawer,
+        handleSaveNewAnalysis,
         handleSaveAsCopy,
         handleUpdateAnalysisName,
-        saveNewAnalysis,
+        saveDuplicatedAnalysis,
+        handleUpdateAnalysis,
     };
 };

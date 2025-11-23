@@ -125,8 +125,8 @@ export const useAnalysis = ({ user, setNotification } = {}) => {
     const handleTravauxUpdate = (total, items) => {
         handleDataChange('acquisition.coutTravaux', { total, details: items });
     };
-    const handleTensionUpdate = (newValue) => { setData(d => ({ ...d, tensionLocative: newValue })); };
-    const handleVacancyUpdate = (newValue) => { setData(d => ({ ...d, vacanceLocative: newValue })); };
+    const handleTensionUpdate = (newValue) => { handleDataChange('tensionLocative', newValue); };
+    const handleVacancyUpdate = (newValue) => { handleDataChange('rental.vacanceLocative', newValue); };
     const handleChargesUpdate = (total, items) => {
         const annualTotal = total * 12;
         handleDataChange('rental.chargesAnnuelles', { total: annualTotal, details: items });
@@ -231,16 +231,18 @@ export const useAnalysis = ({ user, setNotification } = {}) => {
         calculateScore();
     };
 
-    const saveAnalysis = async () => {
+    const saveAnalysis = async (isUpdate = false, dataToSave = null) => {
         if (!user) {
             if (setNotification) {
                 setNotification("Veuillez vous connecter pour sauvegarder votre analyse.", "error");
             }
-            return;
+            return null;
         }
 
+        const analysisData = dataToSave || data;
+
         // --- Validation Check ---
-        if (!data.property.ville || data.property.ville.trim() === '') {
+        if (!analysisData.property.ville || analysisData.property.ville.trim() === '') {
             const errorField = 'property.ville';
             setValidationErrors({ [errorField]: true });
 
@@ -251,18 +253,18 @@ export const useAnalysis = ({ user, setNotification } = {}) => {
             const element = document.querySelector(`[name="${errorField}"]`);
             element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            return;
+            return null;
         }
 
         try {
             // Construct the payload to match the database table structure
             const analysisToSave = {
                 user_id: user.id,
-                project_name: data.projectName,
-                ville: data.property.ville,
-                data: data, // The entire state object goes into the 'data' JSONB column
+                project_name: analysisData.projectName,
+                ville: analysisData.property.ville,
+                data: analysisData, // The entire state object goes into the 'data' JSONB column
                 result: result, // The result object goes into the 'result' JSONB column
-                ...(data.property.uuid && { id: data.property.uuid }) // Map the local uuid to the database 'id' column
+                ...(analysisData.property.uuid && { id: analysisData.property.uuid }) // Map the local uuid to the database 'id' column
             };
 
             const { data: savedData, error } = await supabase
@@ -273,11 +275,13 @@ export const useAnalysis = ({ user, setNotification } = {}) => {
 
             if (error) throw error;
 
-            setData(prev => ({ ...prev, property: { ...prev.property, uuid: savedData.uuid } }));
-            if (setNotification) setNotification("Analyse sauvegardée avec succès !", "success");
+            setData(prev => ({ ...prev, ...analysisData, property: { ...prev.property, uuid: savedData.id } })); // Use savedData.id
+            if (setNotification) setNotification(isUpdate ? "Analyse mise à jour avec succès !" : "Analyse sauvegardée avec succès !", "success");
+            return savedData;
         } catch (error) {
             console.error("Erreur lors de la sauvegarde de l'analyse:", error);
             if (setNotification) setNotification(`Erreur: ${error.message}`, "error");
+            return null;
         }
     };
 

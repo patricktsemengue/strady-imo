@@ -1,26 +1,21 @@
-
 import React, { useEffect } from 'react';
-import BottomDrawerModal from './BottomDrawerModal';
+import BottomSheetDrawer from './BottomSheetDrawer';
 
-// ---  Composant Modal de  Confirmation ---
 const ConfirmationDrawer = ({ isOpen, onClose, onConfirm, title, children, isLoading, confirmText = 'Confirmer', confirmDisabled = false, confirmButtonVariant = 'primary' }) => {
-    
+
     useEffect(() => {
         const handleKeyDown = (event) => {
-            // Close the modal if the Escape key is pressed
             if (event.key === 'Escape') {
                 onClose();
             }
         };
 
-        // Add event listener only when the modal is open
         if (isOpen) {
             document.addEventListener('keydown', handleKeyDown);
         }
 
-        // Cleanup function to remove the event listener
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]); // Rerun the effect if isOpen or onClose changes
+    }, [isOpen, onClose]);
 
     const confirmButtonStyles = {
         primary: 'bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300',
@@ -49,9 +44,9 @@ const ConfirmationDrawer = ({ isOpen, onClose, onConfirm, title, children, isLoa
     );
 
     return (
-        <BottomDrawerModal isOpen={isOpen} onClose={onClose} title={title} footer={modalFooter}>
+        <BottomSheetDrawer isOpen={isOpen} onClose={onClose} title={title} footer={modalFooter}>
             <div className="text-gray-700">{children}</div>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 

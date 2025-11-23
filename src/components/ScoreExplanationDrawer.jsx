@@ -1,8 +1,8 @@
 import React from 'react';
-import { scoreConfig } from './config';
-import BottomDrawerModal from './BottomDrawerModal';
+import { scoreConfig } from '../config';
+import BottomSheetDrawer from './BottomSheetDrawer';
 
-const ScoreExplanationModal = ({ isOpen, onClose }) => {
+const ScoreExplanationDrawer = ({ isOpen, onClose }) => {
     const getGradeColor = (grade) => {
         if (grade.startsWith('A')) return 'bg-green-100 text-green-800';
         if (grade.startsWith('B')) return 'bg-yellow-100 text-yellow-800';
@@ -18,7 +18,7 @@ const ScoreExplanationModal = ({ isOpen, onClose }) => {
     );
 
     return (
-        <BottomDrawerModal
+        <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
             title="Comprendre le Score Strady"
@@ -49,8 +49,8 @@ const ScoreExplanationModal = ({ isOpen, onClose }) => {
                     </tbody>
                 </table>
             </div>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 
-export default ScoreExplanationModal;
+export default ScoreExplanationDrawer;

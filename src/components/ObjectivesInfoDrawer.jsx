@@ -1,5 +1,5 @@
 import React from 'react';
-import BottomDrawerModal from './BottomDrawerModal';
+import BottomSheetDrawer from './BottomSheetDrawer';
 
 const objectives = [
     {
@@ -20,7 +20,7 @@ const objectives = [
     }
 ];
 
-const ObjectivesInfoModal = ({ isOpen, onClose }) => {
+const ObjectivesInfoDrawer = ({ isOpen, onClose }) => {
     const modalFooter = (
         <div className="flex justify-end">
             <button onClick={onClose} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Fermer</button>
@@ -28,7 +28,7 @@ const ObjectivesInfoModal = ({ isOpen, onClose }) => {
     );
 
     return (
-        <BottomDrawerModal isOpen={isOpen} onClose={onClose} title="Les Objectifs d'Analyse" footer={modalFooter}>
+        <BottomSheetDrawer isOpen={isOpen} onClose={onClose} title="Les Objectifs d'Analyse" footer={modalFooter}>
             <div className="space-y-4 text-sm">
                 <p className="text-gray-600">
                     Les objectifs vous permettent de filtrer les résultats pour vous concentrer sur les indicateurs qui comptent le plus pour vous.
@@ -40,7 +40,7 @@ const ObjectivesInfoModal = ({ isOpen, onClose }) => {
                     </div>
                 ))}
             </div>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
-export default ObjectivesInfoModal;
+export default ObjectivesInfoDrawer;

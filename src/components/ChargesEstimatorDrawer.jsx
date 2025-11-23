@@ -1,22 +1,20 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { generateUniqueId } from './utils/generateUniqueId';
-import { TrashIcon, PlusCircleIcon } from './Icons';
-import BottomDrawerModal from './BottomDrawerModal';
-import FormattedInput from './components/FormattedInput';
+import { generateUniqueId } from '../utils/generateUniqueId';
+import { TrashIcon, PlusCircleIcon } from '../Icons';
+import BottomSheetDrawer from './BottomSheetDrawer';
+import FormattedInput from './FormattedInput';
 
-const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
+const ChargesEstimatorDrawer = ({ isOpen, onClose, onApply, data }) => {
     const [charges, setCharges] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
-            // If charges are already detailed in the main data object, use them. Otherwise, generate defaults.
             if (data.rental?.chargesAnnuelles?.details && data.rental.chargesAnnuelles.details.length > 0) {
                 setCharges(data.rental.chargesAnnuelles.details);
             } else {
-                // --- Smart Estimation Logic ---
-                const estimatedInsurance = (data.prixAchat > 0) ? Math.round(data.prixAchat * 0.0012) : 250; // Estimation: 0.12% of purchase price
-                const estimatedPrecompte = (data.revenuCadastral > 0) ? Math.round(data.revenuCadastral * 1.8) : 950; // Estimation: RC * 1.8
-                const estimatedVacancy = (data.loyerEstime > 0) ? Math.round(data.loyerEstime * 0.0833) : 125; // Estimation: ~1 month of rent / 12
+                const estimatedInsurance = (data.prixAchat > 0) ? Math.round(data.prixAchat * 0.0012) : 250;
+                const estimatedPrecompte = (data.revenuCadastral > 0) ? Math.round(data.revenuCadastral * 1.8) : 950;
+                const estimatedVacancy = (data.loyerEstime > 0) ? Math.round(data.loyerEstime * 0.0833) : 125;
 
                 const defaultCharges = [
                     { id: generateUniqueId(), object: 'Assurance PNO (Propriétaire Non-Occupant)', price: estimatedInsurance, periodicity: 'An' },
@@ -65,12 +63,11 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
     );
 
     return (
-        <BottomDrawerModal
+        <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
             title="Estimateur de Charges"
             footer={modalFooter}
-            maxWidth="max-w-3xl"
         >
             <div className="space-y-3">
                 {charges.map((charge, index) => (
@@ -117,8 +114,8 @@ const ChargesEstimatorModal = ({ isOpen, onClose, onApply, data }) => {
                     <PlusCircleIcon /> Ajouter une charge
                 </button>
             </div>
-        </BottomDrawerModal>
+        </BottomSheetDrawer>
     );
 };
 
-export default ChargesEstimatorModal;
+export default ChargesEstimatorDrawer;
