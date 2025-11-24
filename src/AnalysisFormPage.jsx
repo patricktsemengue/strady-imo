@@ -227,13 +227,15 @@ const AnalysisFormPage = ({
                     <div className="flex justify-between items-center mb-4 border-b pb-2">
                         <h2 className="text-xl font-bold text-gray-800">Bien immobilier</h2>
                     </div>
-                    <button
-                        onClick={() => setIsNewAnalysisModalOpen(true)}
-                        className="fixed bottom-24 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 active:bg-green-600 transition-all duration-300 z-30 transform hover:scale-110 print-hidden"
-                        title="Nouvelle Analyse"
-                    >
-                        <PlusCircleIcon />
-                    </button>
+                    {user && (
+                        <button
+                            onClick={() => setIsNewAnalysisModalOpen(true)}
+                            className="fixed bottom-24 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 active:bg-green-600 transition-all duration-300 z-30 transform hover:scale-110 print-hidden"
+                            title="Nouvelle Analyse"
+                        >
+                            <PlusCircleIcon />
+                        </button>
+                    )}
                     {currentAnalysisId ? (
                         <div className="mb-4 p-2 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2 text-sm text-purple-800">
                             <PencilIcon />

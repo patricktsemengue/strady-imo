@@ -77,6 +77,18 @@ const AppContent = () => {
         }
     }, [user, location.pathname, navigate, showNotification]);
 
+    React.useEffect(() => {
+        const state = localStorage.getItem('analysisState');
+        if (state) {
+            if (state === 'initial') {
+                analysisHook.setData(analysisHook.initialDataState);
+            } else if (state === 'new') {
+                analysisHook.setData(analysisHook.newInitialDataState);
+            }
+            localStorage.removeItem('analysisState');
+        }
+    }, [location.pathname]);
+
     const handleSignOut = async () => {
         setIsSignOutModalOpen(false);
         setIsProfileModalOpen(false);

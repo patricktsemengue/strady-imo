@@ -18,6 +18,7 @@ import AnalysisFormPage from './AnalysisFormPage';
 import AIAssistantPage from './AIAssistantPage';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
+import NotFoundPage from './NotFoundPage';
 
 const AppRouter = ({
     user,
@@ -36,7 +37,6 @@ const AppRouter = ({
 
     return (
         <Routes>
-            <Route path="/welcome" element={<PublicRoute><WelcomePage onNavigate={navigate} /></PublicRoute>} />
             <Route path="/" element={
                 user ? (
                     <AnalysisFormPage
@@ -63,7 +63,29 @@ const AppRouter = ({
                         pebOptions={analysisProps.pebOptions}
                     />
                 ) : (
-                    <Navigate to="/welcome" />
+                    <AnalysisFormPage
+                        analyses={analysesManager.analyses}
+                        userPlan={userPlan}
+                        maxAnalyses={maxAnalyses}
+                        currentAnalysisId={analysisProps.currentAnalysisId}
+                        isDuplicating={analysisProps.isDuplicating}
+                        setCurrentAnalysisId={analysisProps.setCurrentAnalysisId}
+                        handleUpdateAnalysis={analysesManager.handleUpdateAnalysis}
+                        handleOpenSaveDrawer={analysesManager.handleOpenSaveDrawer}
+                        handleNewProject={analysesManager.handleNewProject}
+                        viewAnalysis={analysesManager.selectAnalysisToView}
+                        data={analysisProps.data}
+                        handleDataChange={analysisProps.handleDataChange}
+                        handleInputChange={analysisProps.handleInputChange}
+                        handleNumericFocus={analysisProps.handleNumericFocus}
+                        handleNumericBlur={analysisProps.handleNumericBlur}
+                        finances={analysisProps.finances}
+                        result={analysisProps.result}
+                        validationErrors={analysisProps.validationErrors}
+                        calculateScore={analysisProps.calculateScore}
+                        typeBienOptions={analysisProps.typeBienOptions}
+                        pebOptions={analysisProps.pebOptions}
+                    />
                 )
             } />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage
@@ -82,6 +104,31 @@ const AppRouter = ({
                 hasMore={analysesManager.hasMore}
                 loading={analysesManager.loading}
             /></ProtectedRoute>} />
+            <Route path="/analysis-form" element={
+                    <AnalysisFormPage
+                        analyses={analysesManager.analyses}
+                        userPlan={userPlan}
+                        maxAnalyses={maxAnalyses}
+                        currentAnalysisId={analysisProps.currentAnalysisId}
+                        isDuplicating={analysisProps.isDuplicating}
+                        setCurrentAnalysisId={analysisProps.setCurrentAnalysisId}
+                        handleUpdateAnalysis={analysesManager.handleUpdateAnalysis}
+                        handleOpenSaveDrawer={analysesManager.handleOpenSaveDrawer}
+                        handleNewProject={analysesManager.handleNewProject}
+                        viewAnalysis={analysesManager.selectAnalysisToView}
+                        data={analysisProps.data}
+                        handleDataChange={analysisProps.handleDataChange}
+                        handleInputChange={analysisProps.handleInputChange}
+                        handleNumericFocus={analysisProps.handleNumericFocus}
+                        handleNumericBlur={analysisProps.handleNumericBlur}
+                        finances={analysisProps.finances}
+                        result={analysisProps.result}
+                        validationErrors={analysisProps.validationErrors}
+                        calculateScore={analysisProps.calculateScore}
+                        typeBienOptions={analysisProps.typeBienOptions}
+                        pebOptions={analysisProps.pebOptions}
+                    />
+            } />
             <Route path="/auth" element={<PublicRoute><AuthPage onBack={() => navigate('/')} onNavigate={navigate} initialMode={authPageInitialMode} /></PublicRoute>} />
             <Route path="/account" element={<ProtectedRoute><AccountPage onBack={() => navigate('/')} onNavigate={navigate} userPlan={userPlan} analysesCount={analysesManager.analyses.length} /></ProtectedRoute>} />
             <Route path="/feedback" element={<ProtectedRoute><FeedbackPage onBack={() => navigate('/')} /></ProtectedRoute>} />
@@ -95,6 +142,7 @@ const AppRouter = ({
             <Route path="/view-analysis" element={<AnalysisViewPage analysis={analysesManager.viewingAnalysis} scenarios={analysisProps.generatePriceScenarios(analysesManager.viewingAnalysis)} onBack={() => navigate('/dashboard')} />} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage onBack={() => navigate('/')} maxAnalyses={maxAnalyses} /></ProtectedRoute>} />
             <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistantPage {...aiHook} userPlan={userPlan} handleNewProject={analysesManager.handleNewProject} /></ProtectedRoute>} />
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );
 }

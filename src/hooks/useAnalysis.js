@@ -15,7 +15,7 @@ export const initialDataState = {
         revenuCadastral: 1000,
         anneeConstruction: 0,
         description: '',
-        enOrdreUrbanistique: false,
+        enOrdreUrbanistique: true,
         electriciteConforme: false,
     },
     acquisition: {
@@ -45,6 +45,63 @@ export const initialDataState = {
         vacanceLocative: 8, // Added from old structure
     }
 };
+
+export const newInitialDataState = {
+    projectName: '',
+    property: {
+        uuid: null, 
+        typeBien: '',
+        ville: '',
+        surface: 0,
+        nombreChambres: 0,
+        peb: '',
+        revenuCadastral: 0,
+        anneeConstruction: 0,
+        description: '',
+        enOrdreUrbanistique: false,
+        electriciteConforme: false,
+    },
+    acquisition: {
+        prixAchat: 0,
+        coutTravaux: {
+            total: 0,
+            details: [
+                { label: 'Travail 1', montant: 0 },
+                { label: 'Travail 2', montant: 0 },
+                
+            ]
+        },
+        fraisNotaire: 0,
+        droitsEnregistrement: 0,
+    },
+    financing: {
+        apport: 0,
+        tauxCredit: 0,
+        dureeCredit: 0,
+        quotite: 0, // Added from old structure
+    },
+    rental: {
+        loyerEstime: {
+            total: 0,
+            units: [
+                { label: 'Unité 1', montant: 0 },
+                { label: 'Unité 2', montant: 0 },
+                { label: 'Unité 3', montant: 0 },
+            ]
+        },
+        chargesAnnuelles: {
+            total: 0, // 100/month * 12
+            details: [
+                { label: 'Charges communes', montant: 0 },
+                { label: 'Assurances', montant: 0 },
+                { label: 'Autres', montant: 0 },
+            ]
+        },
+        vacanceLocative: 8, // Added from old structure
+    }
+};
+
+
 
 export const useAnalysis = ({ user, setNotification } = {}) => {
     const [data, setData] = React.useState(initialDataState);
@@ -325,6 +382,7 @@ export const useAnalysis = ({ user, setNotification } = {}) => {
         handleNumericBlur,
         generatePriceScenarios,
         initialDataState,
+        newInitialDataState,
         typeBienOptions,
         pebOptions
     };

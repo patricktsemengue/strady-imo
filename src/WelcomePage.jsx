@@ -38,6 +38,7 @@ const WelcomePage = ({ onStart, onNavigate, user }) => {
                         <button
                             onClick={() => {
                                 // On vide le cache du formulaire de l'assistant IA pour repartir de zéro
+                                localStorage.setItem('analysisState', 'new');
                                 localStorage.removeItem('aiAssistantData');
                                 onStart('/ai-assistant');
                             }}
@@ -48,7 +49,7 @@ const WelcomePage = ({ onStart, onNavigate, user }) => {
                     ) : (
                         // Boutons pour l'utilisateur non-authentifié
                         <>
-                            <button onClick={onStart} className="w-full bg-white text-blue-600 border-2 border-blue-600 font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-50 transition duration-300">
+                            <button onClick={() => { localStorage.setItem('analysisState', 'initial'); onStart('/analysis-form'); }} className="w-full bg-white text-blue-600 border-2 border-blue-600 font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-50 transition duration-300">
                                 Essayer le simulateur
                             </button>
                             <button onClick={() => { setAuthPageInitialMode('signUp'); onNavigate('/auth'); }} className="w-full bg-blue-600 text-white font-bold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg">
