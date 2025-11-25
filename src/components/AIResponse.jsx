@@ -5,7 +5,10 @@ import { Edit3Icon, MessageSquarePlusIcon, HomeIcon, BedDoubleIcon, EuroIcon, Le
 import './AIResponse.css';
 
 /**
- * Affiche la réponse JSON complète de l'IA (texte + actions).
+ * Affiche la réponse conversationnelle de l'IA et des actions lisibles par l'utilisateur.
+ * Le composant masque les blocs JSON (fenced code blocks) dans le texte et
+ * affiche des résumés textuels des actions proposées. Les objets JSON complets
+ * restent disponibles dans `response.actions` pour être traités côté backend.
  * @param {object} props
  * @param {object} props.response - L'objet JSON complet de l'IA.
  * @param {function} props.onUpdateField - Callback pour les actions 'UPDATE_FIELD'.
@@ -19,13 +22,16 @@ const AIResponse = ({ response, actions = [], onActionClick, onUpdateField, onNe
 
   // --- EFFET "MACHINE À ÉCRIRE" ---
   useEffect(() => {
-    if (response?.text) {
-      setDisplayedText(response.text);
-    } else {
-      setDisplayedText('');
+    let fullText = '';
+    if (response?.analysisSummary?.narrative) {
+      fullText += response.analysisSummary.narrative + '\n\n';
     }
+    if (response?.text) {
+      fullText += response.text;
+    }
+    setDisplayedText(fullText);
     setIsTyping(false); // L'animation est désactivée
-  }, [response.text]); // Se déclenche quand le texte de la réponse change
+  }, [response.text, response.analysisSummary?.narrative]); // Se déclenche quand le texte de la réponse change
 
   const handleActionClick = (action) => {
     if (onActionClick) {
@@ -108,15 +114,59 @@ const AIResponse = ({ response, actions = [], onActionClick, onUpdateField, onNe
   };
 
 
+  const actionSummaries = useMemo(() => {
+    const all = (actions || response?.actions || []);
+    const summaries = all.map(a => {
+      if (!a) return null;
+      // Ne pas inclure les chaînes simples ici, elles sont gérées par promptActions
+      if (typeof a === 'string') return null;
+
+      if (a.type === 'UPDATE_FIELD' && a.payload) {
+        return `Mettre à jour ${formatLabel(a.payload.field)} → ${formatValue(a.payload.value)}`;
+      }
+      if (a.type === 'NEW_PROMPT') {
+        return a.label || (a.payload ? String(a.payload) : 'Nouvelle question');
+      }
+      // Fallback: show a readable type or label but avoid dumping payload JSON
+      return a.label || a.type || 'Action suggérée';
+    }).filter(Boolean);
+
+    // Add recommendations from the response object
+    if (response?.data?.Recommendations && Array.isArray(response.data.Recommendations)) {
+      response.data.Recommendations.forEach(rec => {
+        if (rec.optimisationLocation) {
+          summaries.push(`Recommandation: ${rec.optimisationLocation}`);
+        }
+      });
+    }
+
+    return summaries;
+  }, [actions, response?.actions, response?.data?.Recommendations]);
+
+  // Conditional rendering check moved here to respect Rules of Hooks
   if (!response || !response.text) {
     return null;
   }
 
+  // Remove any fenced code blocks that look like JSON so raw JSON isn't shown to users.
+  const stripJsonCodeBlocks = (text) => {
+    if (!text) return text;
+    // Remove ```json ... ``` and any ``` ... ``` blocks that contain a JSON object
+    let cleaned = text.replace(/```json[\s\S]*?```/gi, '');
+    cleaned = cleaned.replace(/```[\s\S]*?\{[\s\S]*?\}[\s\S]*?```/g, '');
+    // Also remove inline JSON-looking blocks between markers like "JSON UPDATED" that might have leaked
+    cleaned = cleaned.replace(/JSON UPDATED[\s\S]*?\{[\s\S]*?\}/g, '');
+    return cleaned.trim();
+  };
+
+  const textForDisplay = stripJsonCodeBlocks(displayedText);
+
   // 1. Conversion du Markdown en HTML brut
-  const rawHtml = marked.parse(displayedText);
+  const rawHtml = marked.parse(textForDisplay);
 
   // 2. Sanitisation du HTML pour supprimer tout code potentiellement dangereux
   const sanitizedHtml = DOMPurify.sanitize(rawHtml);
+
 
   return (
     <div className="ai-response-container space-y-4">
@@ -124,6 +174,22 @@ const AIResponse = ({ response, actions = [], onActionClick, onUpdateField, onNe
         className="ai-response-content"
         dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
+
+      {actionSummaries.length > 0 && !promptActions.some(a => typeof a === 'string') && (
+        <div className="ai-action-summary-container">
+          <h5 className="ai-action-summary-header">Actions (texte)</h5>
+          <div className="flex flex-wrap gap-2">
+            {actionSummaries.map((txt, i) => (
+              <button key={i} onClick={() => {
+                const rawAction = (actions || response?.actions || [])[i];
+                if (rawAction) handleActionClick(rawAction);
+              }} className="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full hover:bg-gray-200">
+                {txt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {updateActions.length > 0 && (
         <div className="ai-data-key-container">
@@ -152,7 +218,7 @@ const AIResponse = ({ response, actions = [], onActionClick, onUpdateField, onNe
                     onClick={() => onActionClick(action)}
                     className="bg-purple-100 text-purple-800 text-sm font-semibold px-3 py-1 rounded-full hover:bg-purple-200 transition-colors"
                 >
-                    {action}
+                    {typeof action === 'string' ? action : action.label}
                 </button>
             ))}
         </div>
@@ -167,7 +233,7 @@ const AIResponse = ({ response, actions = [], onActionClick, onUpdateField, onNe
                 className="ai-action-button"
               >
                 <MessageSquarePlusIcon className="ai-action-icon" />
-                <span>{action.label}</span>
+                <span>{typeof action === 'string' ? action : action.label}</span>
               </button>
             ))}
           </div>

@@ -1,29 +1,32 @@
 import React from 'react';
 import { supabase } from '../supabaseClient';
-import systemPrompt from '../models/AiAssistantPersona.md?raw'; // Vite feature to import file as raw text
+import systemPrompt from '../models/AiAssistantPersona.md?raw';
 import { aiService } from '../services/aiService';
+import { conversationService } from '../services/conversationService';
 import { sanitizeData } from '../utils/sanitize';
 import { initialDataState } from './useAnalysis';
 
 /**
- * Deeply merges two objects. It's immutable.
- * @param {object} target - The original object.
- * @param {object} source - The object with new properties to merge.
- * @returns {object} A new object with merged properties.
+ * Sets a value in a nested object based on a dot-separated path.
+ * This is a mutable operation on the passed object.
+ * @param {object} obj - The object to modify.
+ * @param {string} path - The path to the property to set (e.g., "financialInputs.purchasePrice").
+ * @param {*} value - The value to set.
  */
-const deepMerge = (target, source) => {
-    const output = { ...target };
-    if (target && typeof target === 'object' && source && typeof source === 'object') {
-        Object.keys(source).forEach(key => {
-            if (source[key] && typeof source[key] === 'object' && key in target) {
-                output[key] = deepMerge(target[key], source[key]);
-            } else {
-                output[key] = source[key];
-            }
-        });
+const setValueByPath = (obj, path, value) => {
+    const keys = path.split('.');
+    let current = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+        // If a key in the path is missing, we cannot proceed.
+        if (current[keys[i]] === undefined || typeof current[keys[i]] !== 'object') {
+            console.error(`[setValueByPath] Invalid path: "${path}". Key "${keys[i]}" does not exist or is not an object.`);
+            return;
+        }
+        current = current[keys[i]];
     }
-    return output;
+    current[keys[keys.length - 1]] = value;
 };
+
 
 export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotification, typeBienOptions, setTypeBienOptions, setIsCreditModalOpen, setIsSaveModalOpen, currentData, calculateAndShowResult, isAnalysisComplete, saveAnalysis }) => {
     const [aiInput, setAiInput] = React.useState('');
@@ -37,16 +40,29 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
     const [isGeminiLoading, setIsGeminiLoading] = React.useState(false);
     const [geminiError, setGeminiError] = React.useState('');
     const [conversation, setConversation] = React.useState([]);
+    const [currentConversation, setCurrentConversation] = React.useState(null);
+
+    React.useEffect(() => {
+        if (user) {
+            const loadConversation = async () => {
+                const conversationData = await conversationService.getOrCreateConversation(user.id);
+                setCurrentConversation(conversationData);
+                if (conversationData) {
+                    const messages = await conversationService.getMessages(conversationData.id);
+                    setConversation(messages);
+                }
+            };
+            loadConversation();
+        }
+    }, [user]);
 
     const checkAiCredits = () => {
         if (!user) {
-            // setNotification("Connectez-vous pour utiliser l'assistant IA", 'error'); // Optionally show a notification or open auth modal if user is not logged in
             return false;
         }
         if (userPlan && userPlan.current_ai_credits === -1) return true; // Unlimited credits
         if (userPlan && userPlan.current_ai_credits > 0) return true;
         
-        // If user has 0 credits and is logged in, open the credit modal
         if (user && userPlan && userPlan.current_ai_credits === 0) {
             setIsCreditModalOpen(true);
         }
@@ -60,54 +76,32 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
     };
 
     const handleGeneralQuery = async (conversationHistory, newUserInput) => {
-        // Set loading state and clear previous results
+        if (!currentConversation) {
+            setGeminiError("La conversation n'a pas pu être chargée.");
+            return;
+        }
+
         setIsGeminiLoading(true);
-        setGeminiError(''); // Clear previous errors
-        setConversation(prev => [...prev, { sender: 'user', content: newUserInput.trim() }]);
-        setHasApplied(false); // Reset applied state for new query
+        setGeminiError('');
+        
+        const userMessageContent = newUserInput.trim();
+        const tempUserMessage = { sender: 'user', content: userMessageContent, created_at: new Date().toISOString(), conversation_id: currentConversation.id, user_id: user.id };
+        const tempAiMessage = { sender: 'ai', content: '', created_at: new Date().toISOString(), conversation_id: currentConversation.id, user_id: user.id };
+        setConversation(prev => [...prev, tempUserMessage, tempAiMessage]);
+
+        setHasApplied(false);
         setHasSavedNote(false);
 
-        let finalUserInput = newUserInput;
-        let taskType = 'QA'; // Default task type
+        await conversationService.addMessage({
+            conversation_id: currentConversation.id,
+            user_id: user.id,
+            sender: 'user',
+            content: userMessageContent,
+        });
 
-        // URL detection logic
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const urls = newUserInput.match(urlRegex);
-
-        if (urls && urls.length > 0) {
-            try {
-                console.log("URL détectée. Extraction du contenu...");
-                // Call your new Netlify function
-                const scrapeResponse = await fetch('/.netlify/functions/url-scraper', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: urls[0] }),
-                });
-
-                if (!scrapeResponse.ok) {
-                    const errorText = await scrapeResponse.text();
-                    let errorMessage = errorText;
-                    try {
-                        const errorBody = JSON.parse(errorText);
-                        errorMessage = errorBody.error || errorText;
-                    } catch (e) {
-                        // The error is not JSON, so we'll just use the raw text.
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                const scrapedData = await scrapeResponse.json();
-                // Prepend the scraped content to the user input for the AI
-                finalUserInput = `CONTENU DU SITE WEB: ${scrapedData.content}`;
-                taskType = 'EXTRACT_URL'; // Set the task type for the AI
-                
-            } catch (error) {
-                console.error("L'extraction a échoué:", error);
-                setGeminiError(`Erreur d'extraction d'URL : ${error.message}`);
-                setIsGeminiLoading(false);
-                return;
-            }
-        }
+        const taskType = urls && urls.length > 0 ? 'EXTRACT_URL' : 'QA';
 
         try {
             const requestPayload = {
@@ -115,32 +109,71 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
                 taskType,
                 isAnalysisComplete: isAnalysisComplete ? isAnalysisComplete() : false
             };
-            const apiResponseText = await aiService.fetchAIResponse(requestPayload, user?.id, currentData, conversationHistory, finalUserInput);
-            const { conversationalPart, jsonData, error } = aiService.parseAIResponse(apiResponseText);
+            
+            const response = await aiService.fetchAIResponse(requestPayload, conversation, newUserInput);
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponseChunks = [];
 
-            if (error) {
-                setGeminiError(error);
-                setIsGeminiLoading(false);
-                return;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                fullResponseChunks.push(value);
             }
 
-            if (jsonData?.data) {
-                const sanitizedUpdate = sanitizeData(jsonData.data, initialDataState);
-                setData(prevData => deepMerge(prevData, sanitizedUpdate));
+            // Manually concatenate the Uint8Arrays
+            const totalLength = fullResponseChunks.reduce((acc, arr) => acc + arr.length, 0);
+            const concatenatedChunks = new Uint8Array(totalLength);
+            let offset = 0;
+            for (const chunk of fullResponseChunks) {
+                concatenatedChunks.set(chunk, offset);
+                offset += chunk.length;
             }
             
-            const newAiMessage = {
-                sender: 'ai',
-                content: conversationalPart,
-                actions: jsonData?.suggestedActions || [],
-            };
-            setConversation(prev => [...prev, newAiMessage]);
+            const fullResponseJsonString = decoder.decode(concatenatedChunks);
+            
+            // Call the modified aiService.parseAIResponse
+            const { conversationalPart, jsonData, usageMetadata: parsedUsageMetadata, error } = aiService.parseAIResponse(fullResponseJsonString);
+            if (error) setGeminiError(error);
 
-            // Note: Credit decrement logic could also be moved to the service if it becomes more complex
-            const newCreditCount = userPlan?.current_ai_credits - 1;
-            // ... (credit update logic remains here for now)
-        } catch (error) {
-            setGeminiError(error.message);
+            if (parsedUsageMetadata) { // Use the usageMetadata from the parsed result
+                conversationService.logTokenUsage({
+                    user_id: user.id,
+                    prompt_tokens: parsedUsageMetadata.promptTokenCount,
+                    candidates_tokens: parsedUsageMetadata.candidatesTokenCount,
+                    total_tokens: parsedUsageMetadata.totalTokenCount,
+                    analysis_id: data?.analysisId,
+                });
+            }
+
+            if (jsonData?.action === 'UPDATE_DATA' && jsonData.payload) {
+                setData(prevData => {
+                    const newData = JSON.parse(JSON.stringify(prevData));
+                    Object.entries(jsonData.payload).forEach(([path, value]) => {
+                        setValueByPath(newData, path, value);
+                    });
+                    return newData;
+                });
+            }
+
+            const finalAiMessage = {
+                conversation_id: currentConversation.id,
+                user_id: user.id,
+                sender: 'ai',
+                content: conversationalPart.trim(), // Use conversationalPart
+                actions: jsonData?.suggestedActions || null,
+            };
+            const savedAiMessage = await conversationService.addMessage(finalAiMessage);
+
+            setConversation(prev => {
+                const newConv = [...prev];
+                newConv[newConv.length - 1] = savedAiMessage;
+                return newConv;
+            });
+
+        } catch (err) {
+            setGeminiError(err.message);
         } finally {
             setIsGeminiLoading(false);
         }
@@ -153,10 +186,7 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         }
     };
 
-
-
     const handleSaveAiResponse = () => {
-        // Extrait uniquement les sections pertinentes de la réponse de l'IA
         const startIndex = geminiResponse.indexOf('## 1.');
         let relevantText = geminiResponse;
         if (startIndex !== -1) {
@@ -174,9 +204,6 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
     };
 
     const handleApplyAiResponse = () => {
-        // This function is now obsolete as data is applied automatically.
-        // It can be removed or repurposed if you need a manual "apply" button for other reasons.
-        // For now, we can just show a notification.
         setNotification('Les données de l\'IA sont appliquées automatiquement.', 'info');
         setHasApplied(true);
         if (setIsSaveModalOpen) setIsSaveModalOpen(true);
@@ -211,7 +238,7 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
         resetAI,
         checkAiCredits,
         getAiButtonTooltip,
-        calculateAndShowResult, // Expose the function
+        calculateAndShowResult,
         saveAnalysis,
     };
 };

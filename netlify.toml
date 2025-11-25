@@ -4,14 +4,8 @@
 
 [dev]
   # Commande pour lancer votre app (déjà dans package.json)
-  command = "npm run dev"
+  command = "vite"
   # Port par défaut pour le serveur local
   port = 8888
   # Port sur lequel votre app Vite s'exécute
   targetPort = 5173
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
