@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { HomeIcon, DashboardIcon,  UserIcon, SparklesIcon, HelpIcon } from '../Icons';
 
@@ -13,16 +14,17 @@ const NavItem = ({ to, icon, label, page, activeCondition }) => (
 );
 
 const AppFooter = ({ user, onProfileClick, isAIAssistantPage = false }) => {
+    const { t } = useTranslation();
     const location = useLocation();
     const page = isAIAssistantPage ? 'ai-assistant' : (location.pathname.substring(1) || 'main');
 
     return (
         <footer className={`bg-white/90 backdrop-blur-sm border-t-2 shadow-top ${isAIAssistantPage ? '' : 'fixed'} bottom-0 left-0 right-0 z-50 print-hidden`}>
             <nav className="max-w-4xl mx-auto flex justify-around p-2">
-                {user && <NavItem to="/ai-assistant" icon={<SparklesIcon />} label="Assistant IA" page={page} activeCondition={p => p === 'ai-assistant'} />}
-                <NavItem to="/" icon={<HomeIcon />} label="Analyse" page={page} activeCondition={p => p === 'main'} />
-                {user ? <NavItem to="/dashboard" icon={<DashboardIcon />} label="Mes analyses" page={page} activeCondition={p => p === 'dashboard'} /> : (
-                    <NavItem to="/auth" icon={<UserIcon />} label="Connexion" page={page} activeCondition={p => p === 'auth'} />
+                {user && <NavItem to="/ai-assistant" icon={<SparklesIcon />} label={t('ai_assistant')} page={page} activeCondition={p => p === 'ai-assistant'} />}
+                <NavItem to="/" icon={<HomeIcon />} label={t('analysis')} page={page} activeCondition={p => p === 'main'} />
+                {user ? <NavItem to="/dashboard" icon={<DashboardIcon />} label={t('my_analyses')} page={page} activeCondition={p => p === 'dashboard'} /> : (
+                    <NavItem to="/auth" icon={<UserIcon />} label={t('login')} page={page} activeCondition={p => p === 'auth'} />
                 )}
             </nav>            
         </footer>

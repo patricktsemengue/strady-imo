@@ -7,6 +7,7 @@ import { useModal } from './contexts/useModal';
 import AppFooter from './components/AppFooter';
 import Copyright from './Copyright';
 import { Logo } from './Logo';
+import { useTranslation } from 'react-i18next';
 
 const AiAssistantPage = ({
     aiInput,
@@ -30,6 +31,8 @@ const AiAssistantPage = ({
     const { user } = useAuth();
     const { setIsProfileModalOpen } = useModal();
     const navigate = useNavigate();
+
+    const { t } = useTranslation();
 
     const GOTO_DASHBOARD_ACTION = "Accéder directement à vos analyses sauvegardées";
     const GOTO_FORM_ACTION = "Accéder au formulaire";
@@ -248,7 +251,7 @@ const AiAssistantPage = ({
                                     if (checkAiCredits()) setAiInput(e.target.value);
                                 }}
                                 rows="1"
-                                placeholder={isListening ? "Parlez maintenant..." : "Posez une question, collez une URL ou une annonce..."}
+                                placeholder={isListening ? t('speak_now_message') : t('type_your_message_here')}
                                 className="w-full p-3 border rounded-lg pl-14 pr-24 resize-none pb-12"
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -263,7 +266,7 @@ const AiAssistantPage = ({
                                         type="button"
                                         onClick={toggleListening}
                                         className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
-                                        title={isListening ? "Arrêter la dictée" : "Commencer la dictée vocale"}
+                                        title={isListening ? t('stop_speak_now') : t('speak_now_message')} 
                                     >
                                         <MicIcon />
                                     </button>
@@ -289,7 +292,7 @@ const AiAssistantPage = ({
                         {/* AI Warning */}
                         {conversation.some(m => m.sender === 'ai') && (
                             <p className="text-xs text-gray-500 text-center mt-3 flex items-center justify-center gap-1.5">
-                                <AlertTriangleIcon className="h-4 w-4 flex-shrink-0 text-yellow-500" /> L'assistant IA peut commettre des erreurs. Vérifiez toujours les informations importantes.
+                                <AlertTriangleIcon className="h-4 w-4 flex-shrink-0 text-yellow-500" /> {t('ai_warning')}
                             </p>
                         )}
                     </div>

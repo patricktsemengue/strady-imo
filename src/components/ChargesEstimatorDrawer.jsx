@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { generateUniqueId } from '../utils/generateUniqueId';
 import { TrashIcon, PlusCircleIcon } from '../Icons';
 import BottomSheetDrawer from './BottomSheetDrawer';
 import FormattedInput from './FormattedInput';
 
 const ChargesEstimatorDrawer = ({ isOpen, onClose, onApply, data }) => {
+    const { t } = useTranslation();
     const [charges, setCharges] = useState([]);
 
     useEffect(() => {
@@ -17,14 +19,14 @@ const ChargesEstimatorDrawer = ({ isOpen, onClose, onApply, data }) => {
                 const estimatedVacancy = (data.loyerEstime > 0) ? Math.round(data.loyerEstime * 0.0833) : 125;
 
                 const defaultCharges = [
-                    { id: generateUniqueId(), object: 'Assurance PNO (Propriétaire Non-Occupant)', price: estimatedInsurance, periodicity: 'An' },
-                    { id: generateUniqueId(), object: 'Précompte immobilier', price: estimatedPrecompte, periodicity: 'An' },
-                    { id: generateUniqueId(), object: 'Provision pour vacance locative', price: estimatedVacancy, periodicity: 'Mois' },
+                    { id: generateUniqueId(), object: t('pno_insurance'), price: estimatedInsurance, periodicity: 'An' },
+                    { id: generateUniqueId(), object: t('property_tax'), price: estimatedPrecompte, periodicity: 'An' },
+                    { id: generateUniqueId(), object: t('provision_for_vacancy'), price: estimatedVacancy, periodicity: 'Mois' },
                 ];
                 setCharges(defaultCharges);
             }
         }
-    }, [isOpen, data]);
+    }, [isOpen, data, t]);
 
     const addCharge = () => {
         setCharges([...charges, { id: generateUniqueId(), object: '', price: 0, periodicity: 'Mois' }]);
@@ -52,12 +54,12 @@ const ChargesEstimatorDrawer = ({ isOpen, onClose, onApply, data }) => {
     const modalFooter = (
         <>
             <div className="text-right mb-4">
-                <span className="text-lg font-medium">Total Charges Mensuelles:</span>
+                <span className="text-lg font-medium">{t('total_monthly_charges')}</span>
                 <span className="text-2xl font-bold text-red-600 ml-2">{totalCharges.toFixed(2)} €</span>
             </div>
             <div className="flex justify-end gap-3">
-                <button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Annuler</button>
-                <button onClick={() => onApply(totalCharges, charges)} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Appliquer</button>
+                <button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">{t('cancel')}</button>
+                <button onClick={() => onApply(totalCharges, charges)} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">{t('apply')}</button>
             </div>
         </>
     );
@@ -66,52 +68,52 @@ const ChargesEstimatorDrawer = ({ isOpen, onClose, onApply, data }) => {
         <BottomSheetDrawer
             isOpen={isOpen}
             onClose={onClose}
-            title="Estimateur de Charges"
+            title={t('charges_estimator')}
             footer={modalFooter}
         >
             <div className="space-y-3">
                 {charges.map((charge, index) => (
                     <div key={charge.id} className="p-3 border rounded-lg grid grid-cols-1 md:grid-cols-7 gap-3 items-center">
                         <div className="md:col-span-3">
-                            <label className="text-sm font-medium">Charge {index + 1}</label>
+                            <label className="text-sm font-medium">{t('charge')} {index + 1}</label>
                             <input
                                 type="text"
-                                placeholder="Ex: Assurance PNO"
+                                placeholder={t('charge_placeholder')}
                                 value={charge.object}
                                 onChange={(e) => updateCharge(charge.id, 'object', e.target.value)}
                                 className="mt-1 w-full p-2 border rounded-md"
                             />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="text-sm font-medium">Montant (€)</label>
+                            <label className="text-sm font-medium">{t('amount')}</label>
                             <FormattedInput
                                 name="price"
-                                placeholder="Montant"
+                                placeholder={t('amount')}
                                 value={charge.price}
                                 onChange={(e) => updateCharge(charge.id, 'price', e.target.value)}
                                 unit="€"
                             />
                         </div>
                         <div className="md:col-span-1">
-                            <label className="text-sm font-medium">Période</label>
+                            <label className="text-sm font-medium">{t('period')}</label>
                             <select
                                 value={charge.periodicity}
                                 onChange={(e) => updateCharge(charge.id, 'periodicity', e.target.value)}
                                 className="mt-1 w-full p-2 border rounded-md"
                             >
-                                <option>Mois</option>
-                                <option>An</option>
+                                <option>{t('month')}</option>
+                                <option>{t('year')}</option>
                             </select>
                         </div>
                         <div className="text-right md:pt-6">
-                            <button onClick={() => removeCharge(charge.id)} className="p-2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full" title="Supprimer la charge">
+                            <button onClick={() => removeCharge(charge.id)} className="p-2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full" title={t('delete_charge')}>
                                 <TrashIcon />
                             </button>
                         </div>
                     </div>
                 ))}
                 <button onClick={addCharge} className="w-full flex items-center justify-center gap-2 mt-4 py-2 px-4 border-2 border-dashed rounded-lg text-blue-600 hover:bg-blue-50 border-blue-400">
-                    <PlusCircleIcon /> Ajouter une charge
+                    <PlusCircleIcon /> {t('add_charge')}
                 </button>
             </div>
         </BottomSheetDrawer>

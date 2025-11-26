@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SparklesIcon, AlertTriangleIcon, MicIcon, SendIcon } from '../Icons';
 import BottomSheetDrawer from './BottomSheetDrawer';
 import AIResponse from './AIResponse';
@@ -22,6 +23,7 @@ const AiAssistantDrawer = ({
     getAiButtonTooltip,
     prePromptConfig = []
 }) => {
+    const { t } = useTranslation();
     const [isListening, setIsListening] = useState(false);
     const [conversation, setConversation] = useState([]);
     const recognitionRef = useRef(null);
@@ -30,7 +32,7 @@ const AiAssistantDrawer = ({
     useEffect(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            console.warn("La reconnaissance vocale n'est pas supportée par ce navigateur.");
+            console.warn(t('voice_recognition_not_supported'));
             return;
         }
 
@@ -56,7 +58,7 @@ const AiAssistantDrawer = ({
         };
 
         recognitionRef.current = recognition;
-    }, [setAiInput]);
+    }, [setAiInput, t]);
 
     useEffect(() => {
         if (isOpen) {
@@ -69,7 +71,7 @@ const AiAssistantDrawer = ({
         if (geminiResponse && !isGeminiLoading) {
             setConversation(prev => [...prev, { sender: 'ai', content: geminiResponse, actions: aiActions }]);
         }
-    }, [geminiResponse, isGeminiLoading]);
+    }, [geminiResponse, isGeminiLoading, aiActions]);
 
     useEffect(() => {
         if (chatHistoryRef.current) {
@@ -102,7 +104,7 @@ const AiAssistantDrawer = ({
                         <SparklesIcon className="w-5 h-5 text-purple-600" />
                     </div>
                     <div className="text-gray-800">
-                        <AIResponse response={{ text: "Bonjour ! Comment puis-je vous aider avec cette analyse ? Vous pouvez me demander de modifier un champ. Par exemple : 'change le loyer à 750€'." }} />
+                        <AIResponse response={{ text: t('ai_greeting') }} />
                     </div>
                 </div>
 
@@ -146,13 +148,13 @@ const AiAssistantDrawer = ({
                         value={aiInput}
                         onChange={(e) => { if (checkAiCredits()) setAiInput(e.target.value); }}
                         rows="1"
-                        placeholder={isListening ? "Parlez maintenant..." : "Ex: 'Change le prix d'achat à 250000€'"}
+                        placeholder={isListening ? t('speak_now') : t('change_price_example')}
                         className="w-full p-3 border rounded-lg pl-14 resize-none pb-12"
                         onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUserMessage(); } }}
                     />
                     <div className="absolute top-3 left-3 flex items-center">
                         {recognitionRef.current && (
-                            <button type="button" onClick={toggleListening} className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`} title={isListening ? "Arrêter la dictée" : "Commencer la dictée vocale"}>
+                            <button type="button" onClick={toggleListening} className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`} title={isListening ? t('stop_dictation') : t('start_dictation')}>
                                 <MicIcon />
                             </button>
                         )}
@@ -171,11 +173,11 @@ const AiAssistantDrawer = ({
         <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-2">
                 <SparklesIcon />
-                <span>Assistant Immobilier IA</span>
+                <span>{t('ai_real_estate_assistant')}</span>
             </div>
             {userPlan && (
                 <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${userPlan.current_ai_credits > 0 || userPlan.current_ai_credits === -1 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
-                    Crédits: {userPlan.current_ai_credits === -1 ? 'Illimités' : userPlan.current_ai_credits}
+                    {t('credits')} {userPlan.current_ai_credits === -1 ? t('unlimited') : userPlan.current_ai_credits}
                 </span>
             )}
         </div>
@@ -186,7 +188,7 @@ const AiAssistantDrawer = ({
             isOpen={isOpen}
             onClose={onClose}
             title={modalTitle}
-            footer={<div className="flex justify-end"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">Fermer</button></div>}
+            footer={<div className="flex justify-end"><button onClick={onClose} className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400">{t('close')}</button></div>}
         >
             {modalContent}
         </BottomSheetDrawer>

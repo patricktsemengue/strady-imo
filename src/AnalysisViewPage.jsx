@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Logo } from './Logo';
 import { useModal } from './contexts/useModal'; // Import useModal
 import { marked } from 'marked';
@@ -36,9 +37,10 @@ const getArcPath = (x, y, radius, startAngle, endAngle) => {
 };
 
 const PieChart = ({ data }) => {
+    const { t } = useTranslation();
     const total = data.reduce((sum, item) => sum + item.value, 0);
     if (total === 0) {
-        return <div className="text-center text-gray-500 p-4">Aucune donnée de coût à afficher.</div>;
+        return <div className="text-center text-gray-500 p-4">{t('no_cost_data')}</div>;
     }
 
     let cumulativeAngle = -Math.PI / 2; // Start at the top
@@ -62,7 +64,7 @@ const PieChart = ({ data }) => {
                         <li key={item.label} className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
-                                <span>{item.label} ({percentage}%)</span>
+                                <span>{t(item.label)} ({percentage}%)</span>
                             </div>
                             <span className="font-semibold">{item.value.toLocaleString('fr-BE')} €</span>
                         </li>
@@ -74,6 +76,7 @@ const PieChart = ({ data }) => {
 };
 
 const RevenueExpenseChart = ({ revenue, expenses }) => {
+    const { t } = useTranslation();
     const total = Math.max(revenue, expenses, 1); // Avoid division by zero
     const revenuePercentage = (revenue / total) * 100;
     const expensePercentage = (expenses / total) * 100;
@@ -83,7 +86,7 @@ const RevenueExpenseChart = ({ revenue, expenses }) => {
             {/* Barre des Revenus */}
             <div>
                 <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-green-700">Revenus Mensuels</span>
+                    <span className="font-medium text-green-700">{t('monthly_revenue')}</span>
                     <span className="font-bold text-green-700">{revenue.toLocaleString('fr-BE')} €</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-5">
@@ -97,7 +100,7 @@ const RevenueExpenseChart = ({ revenue, expenses }) => {
             {/* Barre des Dépenses */}
             <div>
                 <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-amber-700">Dépenses Mensuelles Totales</span>
+                    <span className="font-medium text-amber-700">{t('total_monthly_expenses')}</span>
                     <span className="font-bold text-amber-700">{expenses.toLocaleString('fr-BE')} €</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-5">
@@ -129,30 +132,31 @@ const InfoBubble = ({ metricId }) => {
 
 
 
-const metricInfos = {
+const metricInfos = (t) => ({
     score: {
-        title: "Score Strady",
-        description: "Évalue la rapidité à laquelle le cash-flow net généré permet de reconstituer l'apport personnel. Un score 'A' indique un retour sur apport en moins de 5 ans.",
-        formula: "Basé sur le CoC Return"
+        title: t('strady_score'),
+        description: t('metric_score_description'),
+        formula: t('metric_score_formula')
     },
     rendementNet: {
-        title: "Rendement Net",
-        description: "Mesure la rentabilité intrinsèque du bien avant financement. Il prend en compte les loyers et les charges d'exploitation, mais exclut le coût du crédit.",
+        title: t('net_yield'),
+        description: t('metric_rendementNet_description'),
         formula: "((Loyer Annuel - Charges) / Coût Total) x 100"
     },
     cashflow: {
-        title: "Cash-Flow Mensuel",
-        description: "Représente le bénéfice ou la perte mensuelle après déduction de toutes les charges (y compris le crédit) des revenus locatifs.",
+        title: t('cash_flow_month'),
+        description: t('metric_cashflow_description'),
         formula: "Loyer Mensuel - Charges - Mensualité Crédit"
     },
     coc: {
-        title: "CoC Return (Cash-on-Cash)",
-        description: "Mesure le rendement de vos fonds propres investis (votre apport). C'est le ratio entre le cash-flow annuel et votre apport personnel.",
+        title: t('cash_on_cash'),
+        description: t('metric_coc_description'),
         formula: "(Cash-Flow Annuel / Apport) x 100"
     }
-};
+});
 
 const ResultCard = ({ label, value, unit = '', grade = 'C', info }) => {
+    const { t } = useTranslation();
     const gradeColor =
         grade.startsWith('A') ? 'bg-green-100 text-green-800' :
             grade.startsWith('B') ? 'bg-yellow-100 text-yellow-800' :
@@ -164,13 +168,14 @@ const ResultCard = ({ label, value, unit = '', grade = 'C', info }) => {
     return (
         <div className={`p-4 rounded-lg text-center ${gradeColor}`}>
             <div className="text-sm font-medium flex justify-center items-center gap-1">
-                <span>{label}</span>
+                <span>{t(label)}</span>
                 {info && <InfoBubble metricId={info} />}
             </div>
             <div className="text-2xl font-bold">{value}{unit}</div>
         </div>
     );
 };
+
 
 // A basic Info icon component.
 const InfoIcon = (props) => (
@@ -181,6 +186,7 @@ const InfoIcon = (props) => (
     </svg>
 );
 const FeasibilityAnalysis = ({ user, newMonthlyPayment }) => {
+    const { t } = useTranslation();
     const profile = user?.user_metadata?.financial_profile;
 
     if (!profile || profile.profileType !== 'INDIVIDUAL') {
@@ -206,17 +212,18 @@ const FeasibilityAnalysis = ({ user, newMonthlyPayment }) => {
     };
 
     return (
-        <Section title="Faisabilité du Projet (selon votre profil)" icon={<TargetIcon />}>
-            <p className="text-sm text-gray-500 mb-4">Cette estimation se base sur les données de votre profil financier pour évaluer l'impact de ce projet sur votre taux d'endettement.</p>
+        <Section title={t('feasibility_of_the_project')} icon={<TargetIcon />}>
+            <p className="text-sm text-gray-500 mb-4">{t('feasibility_estimation_note')}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DataRow label="Taux d'endettement actuel" value={`${debtRatioBefore.toFixed(1)} %`} />
-                <DataRow label="Taux d'endettement après projet" value={<span className={`font-bold ${getRatioColor(debtRatioAfter)}`}>{debtRatioAfter.toFixed(1)} %</span>} />
+                <DataRow label={t('current_debt_ratio')} value={`${debtRatioBefore.toFixed(1)} %`} />
+                <DataRow label={t('debt_ratio_after_project')} value={<span className={`font-bold ${getRatioColor(debtRatioAfter)}`}>{debtRatioAfter.toFixed(1)} %</span>} />
             </div>
         </Section>
     );
 };
 
 const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {    
+    const { t } = useTranslation();
     React.useEffect(() => {
         if (analysis) {
             const originalTitle = document.title;
@@ -229,9 +236,9 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
     if (!analysis) {
         return (
             <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg text-center">
-                <p className="text-red-600">Analyse non trouvée.</p>
+                <p className="text-red-600">{t('analysis_not_found')}</p>
                 <button onClick={onBack} className="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">
-                    &larr; Retour au tableau de bord
+                    {t('back_to_dashboard')}
                 </button>
             </div>
         );
@@ -246,10 +253,10 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
         mensualiteCredit: result?.mensualiteCredit ? parseFloat(result.mensualiteCredit) : 0,
     };
     const costBreakdownData = [
-        { label: "Prix d'achat", value: data.prixAchat || 0, color: '#2c5282' }, // Hiver: Bleu Profond
-        { label: "Coût des travaux", value: data.coutTravaux || 0, color: '#dd6b20' }, // Automne: Orange Terreux
-        { label: "Frais d'acquisition", value: data.fraisAcquisition || 0, color: '#38a169' }, // Printemps: Vert Forêt
-        { label: "Frais annexes", value: data.fraisAnnexe || 0, color: '#d69e2e' }, // Été: Jaune Doré
+        { label: "purchase_price", value: data.prixAchat || 0, color: '#2c5282' }, // Hiver: Bleu Profond
+        { label: "work_cost", value: data.coutTravaux || 0, color: '#dd6b20' }, // Automne: Orange Terreux
+        { label: "acquisition_fees", value: data.fraisAcquisition || 0, color: '#38a169' }, // Printemps: Vert Forêt
+        { label: "additional_fees", value: data.fraisAnnexe || 0, color: '#d69e2e' }, // Été: Jaune Doré
     ];
 
 
@@ -261,32 +268,32 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
                     <h1 className="text-2xl font-bold text-gray-800">{data.projectName}</h1>
                     <p className="text-gray-500">{data.ville}</p>
                 </div>
-                <button onClick={onBack} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 print-hidden">&larr; Retour</button>
+                <button onClick={onBack} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 print-hidden">{t('back')}</button>
             </div>
             <div className="hidden print-block mb-6 border-b pb-4">
                 <Logo />
                 <h1 className="text-3xl font-bold text-gray-800 mt-6">{data.projectName}</h1>
-                <p className="text-xl text-blue-600 font-semibold mt-1">Rapport d'Analyse - {data.ville}</p>
-                <p className="text-sm text-gray-500 mt-2">Rapport généré le {new Date().toLocaleDateString('fr-BE')}</p>
+                <p className="text-xl text-blue-600 font-semibold mt-1">{t('analysis_report')}{data.ville}</p>
+                <p className="text-sm text-gray-500 mt-2">{t('report_generated_on')}{new Date().toLocaleDateString('fr-BE')}</p>
             </div>
 
             {/* --- Avertissement --- */}
             <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 mb-6 print-hidden">
                 <AlertTriangleIcon />
                 <p className="text-sm text-yellow-800">
-                    <strong>Avertissement :</strong> Les chiffres et indicateurs présentés dans ce rapport sont des estimations basées sur les données que vous avez fournies. Ils sont destinés à des fins d'information et ne constituent pas un conseil financier.
+                    <Trans i18nKey="warning_text" components={{ strong: <strong /> }} />
                 </p>
             </div>
 
             {/* --- Section Résultats --- */}
             {result && (
-                <Section title="Synthèse Financière" icon={<BriefcaseIcon />}>
+                <Section title={t('financial_summary')} icon={<BriefcaseIcon />}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <ResultCard label="Score Strady" value={result.grade} grade={result.grade} info="score" />
-                        <ResultCard label="Rendement Net" value={result.rendementNet} unit=" %" grade={result.grade} info="rendementNet" />
-                        <ResultCard label="Cash-Flow /mois" value={result.cashflowMensuel} unit=" €" grade={result.grade} info="cashflow" />
+                        <ResultCard label="strady_score" value={result.grade} grade={result.grade} info="score" />
+                        <ResultCard label="net_yield" value={result.rendementNet} unit=" %" grade={result.grade} info="rendementNet" />
+                        <ResultCard label="cash_flow_month" value={result.cashflowMensuel} unit=" €" grade={result.grade} info="cashflow" />
                         <ResultCard 
-                            label="CoC Return" 
+                            label="cash_on_cash"
                             value={result.cashOnCash === Infinity ? '∞' : (isFinite(result.cashOnCash) ? result.cashOnCash.toFixed(1) : 'N/A')} 
                             unit={result.cashOnCash !== null && isFinite(result.cashOnCash) ? " %" : ""} 
                             grade={result.grade}
@@ -304,16 +311,16 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
 
             {/* US 2.4: Negotiation Scenarios Table */}
             {scenarios && scenarios.length > 0 && (
-                <Section title="Potentiel de Négociation" icon={<TrendingUpIcon />}>
+                <Section title={t('negotiation_potential')} icon={<TrendingUpIcon />}>
                     <div className="overflow-x-auto border rounded-lg">
                         <table className="w-full text-sm text-left text-gray-600">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3">Scénario</th>
-                                    <th scope="col" className="px-6 py-3 text-right">Prix d'Achat</th>
-                                    <th scope="col" className="px-6 py-3 text-right">Cash-Flow /mois</th>
-                                    <th scope="col" className="px-6 py-3 text-right">Rendement Net</th>
-                                    <th scope="col" className="px-6 py-3 text-right">CoC Return</th>
+                                    <th scope="col" className="px-6 py-3">{t('scenario')}</th>
+                                    <th scope="col" className="px-6 py-3 text-right">{t('purchase_price')}</th>
+                                    <th scope="col" className="px-6 py-3 text-right">{t('cash_flow_month')}</th>
+                                    <th scope="col" className="px-6 py-3 text-right">{t('net_yield')}</th>
+                                    <th scope="col" className="px-6 py-3 text-right">{t('cash_on_cash')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -337,12 +344,12 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
             )}
 
             {/* US 4.1: Fiscal Comparison */}
-            <Section title="Analyse Fiscale Comparative" icon={<BriefcaseIcon />}>
+            <Section title={t('comparative_fiscal_analysis')} icon={<BriefcaseIcon />}>
                 <FiscalComparison data={data} result={result} />
             </Section>
 
             {result && (
-                <Section title="Visualisation du Cash-Flow Mensuel" icon={<BriefcaseIcon />}>
+                <Section title={t('monthly_cash_flow_visualization')} icon={<BriefcaseIcon />}>
                     <RevenueExpenseChart
                         revenue={data.loyerEstime || 0}
                         expenses={(parseFloat(result.mensualiteCredit) || 0) + (data.chargesMensuelles || 0)}
@@ -350,14 +357,14 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
                 </Section>
             )}
 
-            <Section title="Structure de l'Investissement et du Financement" icon={<EuroIcon />}>
+            <Section title={t('investment_and_financing_structure')} icon={<EuroIcon />}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     <div className="md:col-span-2"><PieChart data={costBreakdownData} /></div>
                     {/* --- Détail de l'investissement --- */}
                     <div className="bg-gray-50 p-4 rounded-lg border">
-                        <h3 className="font-semibold text-lg mb-3">Structure des Coûts</h3>
-                        <DataRow label="Prix d'achat" value={data.prixAchat} unit="€" />
-                        <DataRow label="Coût des travaux" value={data.coutTravaux} unit="€" />
+                        <h3 className="font-semibold text-lg mb-3">{t('cost_structure')}</h3>
+                        <DataRow label={t('purchase_price')} value={data.prixAchat} unit="€" />
+                        <DataRow label={t('work_cost')} value={data.coutTravaux} unit="€" />
                         {data.travauxDetail && data.travauxDetail.length > 0 && (
                             <div className="pl-4 ml-2 my-2 text-sm text-gray-600 space-y-1 border-l-2 border-gray-200">
                                 {data.travauxDetail.map((item, index) => (
@@ -368,32 +375,32 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
                                 ))}
                             </div>
                         )}
-                        <DataRow label="Frais d'acquisition" value={data.fraisAcquisition} unit="€" />
-                        <DataRow label="Frais annexes" value={data.fraisAnnexe} unit="€" />
+                        <DataRow label={t('acquisition_fees')} value={data.fraisAcquisition} unit="€" />
+                        <DataRow label={t('additional_fees')} value={data.fraisAnnexe} unit="€" />
                         <div className="flex justify-between items-center py-2 border-t-2 mt-2 font-bold">
-                            <span>Coût Total du Projet</span>
+                            <span>{t('total_project_cost')}</span>
                             <span>{finances.coutTotal.toLocaleString('fr-BE')} €</span>
                         </div>
                     </div>
 
                     {/* --- Structure du Financement --- */}
                     <div className="bg-gray-50 p-4 rounded-lg border">
-                        <h3 className="font-semibold text-lg mb-3">Montage Financier</h3>
-                        <DataRow label="Coût Total du Projet" value={finances.coutTotal} unit="€" />
-                        <DataRow label="Apport personnel" value={data.apport} unit="€" />
+                        <h3 className="font-semibold text-lg mb-3">{t('financing_structure')}</h3>
+                        <DataRow label={t('total_project_cost')} value={finances.coutTotal} unit="€" />
+                        <DataRow label={t('personal_contribution')} value={data.apport} unit="€" />
                         <div className="flex justify-between items-center py-2 border-t-2 mt-2 font-bold text-blue-600">
-                            <span>Besoin de Financement</span>
+                            <span>{t('financing_need')}</span>
                             <span>{finances.montantAFinancer.toLocaleString('fr-BE')} €</span>
                         </div>
-                        <DataRow label="Taux / Durée" value={`${data.tauxCredit}% / ${data.dureeCredit} ans`} />
-                        <DataRow label="Mensualité du crédit" value={finances.mensualiteCredit?.toFixed(2)} unit="€" isHighlighted />
+                        <DataRow label={t('rate_duration')} value={`${data.tauxCredit}% / ${data.dureeCredit} ans`} />
+                        <DataRow label={t('monthly_credit_payment')} value={finances.mensualiteCredit?.toFixed(2)} unit="€" isHighlighted />
                     </div>
                 </div>
             </Section>
 
-            <Section title="Prévisions d'Exploitation" icon={<BuildingIcon />}>
-                <DataRow label="Loyer estimé Hors Charges" value={data.loyerEstime} unit="€/mois" />
-                <DataRow label="Charges d'exploitation estimées" value={data.chargesMensuelles} unit="€/mois" />
+            <Section title={t('operating_forecasts')} icon={<BuildingIcon />}>
+                <DataRow label={t('estimated_rent_excluding_charges')} value={data.loyerEstime} unit="€/mois" />
+                <DataRow label={t('estimated_operating_charges')} value={data.chargesMensuelles} unit="€/mois" />
                 {data.chargesDetail && data.chargesDetail.length > 0 && (
                     <div className="pl-4 mt-2 text-sm text-gray-600 space-y-1">
                         {data.chargesDetail.map(charge => {
@@ -409,22 +416,22 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
                 )}
             </Section>
 
-            <Section title="Caractéristiques du Bien" icon={<FileTextIcon />}>
-                <DataRow label="Type de bien" value={data.typeBien} />
-                <DataRow label="Surface" value={data.surface} unit="m²" />
-                <DataRow label="Score PEB" value={data.peb} />
-                <DataRow label="Revenu Cadastral" value={data.revenuCadastral} unit="€" />
-                <DataRow label="Électricité conforme" value={data.electriciteConforme ? 'Oui' : 'Non'} />
-                <DataRow label="En ordre urbanistique" value={data.enOrdreUrbanistique ? 'Oui' : 'Non'} />
+            <Section title={t('property_characteristics')} icon={<FileTextIcon />}>
+                <DataRow label={t('property_type')} value={data.typeBien} />
+                <DataRow label={t('surface')} value={data.surface} unit="m²" />
+                <DataRow label={t('peb_score')} value={data.peb} />
+                <DataRow label={t('cadastral_income')} value={data.revenuCadastral} unit="€" />
+                <DataRow label={t('electricity_compliant')} value={data.electriciteConforme ? t('yes') : t('no')} />
+                <DataRow label={t('urbanistic_order')} value={data.enOrdreUrbanistique ? t('yes') : t('no')} />
             </Section>
 
             {/* US 4.4: Strengths and Weaknesses */}
             {(data.strengths?.some(s => s.trim() !== '') || data.weaknesses?.some(w => w.trim() !== '')) && (
-                <Section title="Analyse Qualitative" icon={<FileTextIcon />}>
+                <Section title={t('qualitative_analysis')} icon={<FileTextIcon />}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {data.strengths?.some(s => s.trim() !== '') && (
                             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><ThumbsUpIcon /> Points Forts</h3>
+                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><ThumbsUpIcon /> {t('strengths')}</h3>
                                 <ul className="list-disc list-inside space-y-1 text-gray-700">
                                     {data.strengths.filter(s => s.trim() !== '').map((strength, index) => <li key={index}>{strength}</li>)}
                                 </ul>
@@ -432,7 +439,7 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
                         )}
                         {data.weaknesses?.some(w => w.trim() !== '') && (
                             <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><ThumbsDownIcon /> Points Faibles</h3>
+                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><ThumbsDownIcon /> {t('weaknesses')}</h3>
                                 <ul className="list-disc list-inside space-y-1 text-gray-700">
                                     {data.weaknesses.filter(w => w.trim() !== '').map((weakness, index) => <li key={index}>{weakness}</li>)}
                                 </ul>
@@ -444,7 +451,7 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
 
             {/* --- Section Notes --- */}
             {data.descriptionBien && (
-                <Section title="Notes et Commentaires" icon={<FileTextIcon />}>
+                <Section title={t('notes_and_comments')} icon={<FileTextIcon />}>
                     <div className="relative group">
                         <div
                             className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border max-h-72 overflow-y-auto custom-scrollbar"
@@ -452,10 +459,10 @@ const AnalysisViewPage = ({ analysis, onBack, scenarios }) => {
                         />
                         <button
                             onClick={onBack}
-                            title="Modifier les notes"
+                            title={t('edit_notes')}
                             className="absolute top-3 right-3 flex items-center gap-1 bg-white/60 backdrop-blur-sm text-gray-600 hover:bg-gray-200 hover:text-gray-800 px-2 py-1 rounded-lg text-xs font-semibold border border-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         >
-                            <PencilIcon className="h-3 w-3" /> Modifier
+                            <PencilIcon className="h-3 w-3" /> {t('edit')}
                         </button>
                     </div>
                 </Section>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo'; 
 import { PrintIcon, UserIcon } from './Icons';
@@ -9,6 +10,7 @@ import AppFooter from './components/AppFooter';
 import Copyright from './Copyright';
 
 const Layout = ({ children, handleNewProject }) => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const { setIsProfileModalOpen } = useModal();
     const location = useLocation();
@@ -28,9 +30,9 @@ const Layout = ({ children, handleNewProject }) => {
                         <Logo />
                     </Link>
                     {user && (
-                        <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors" title="Accéder à mon profil">
+                        <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors" title={t('access_my_profile')}>
                             <UserIcon className="h-5 w-5" />
-                            <span className="hidden sm:inline">Mon Profil</span>
+                            <span className="hidden sm:inline">{t('my_profile_title')}</span>
                         </button>
                     )}
                 </div>
@@ -50,7 +52,7 @@ const Layout = ({ children, handleNewProject }) => {
                 <button
                     onClick={() => window.print()}
                     className="absolute bottom-full right-24 mb-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 active:bg-blue-800 transition-all duration-300 z-30 transform hover:scale-110 print-hidden"
-                    title="Imprimer le rapport"
+                    title={t('print_report')}
                 >
                     <PrintIcon />
                 </button>
