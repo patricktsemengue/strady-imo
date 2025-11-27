@@ -1,5 +1,4 @@
-import { PassThrough } from 'stream';
-import fetch from 'node-fetch';
+import { PassThrough, Readable } from 'stream';
 
 export const handler = async (event) => {
   // --- GESTION DU PREFLIGHT CORS ---
@@ -73,7 +72,8 @@ export const handler = async (event) => {
     }
     
     const passThrough = new PassThrough();
-    geminiResponse.body.pipe(passThrough);
+    // Convert web stream to Node.js stream and pipe it
+    Readable.fromWeb(geminiResponse.body).pipe(passThrough);
 
     return {
       statusCode: 200,
