@@ -1,4 +1,5 @@
 import { PassThrough } from 'stream';
+import fetch from 'node-fetch';
 
 export const handler = async (event) => {
   // --- GESTION DU PREFLIGHT CORS ---
@@ -33,22 +34,22 @@ export const handler = async (event) => {
         case 'ANALYZE_PDF':
         case 'ANALYZE_PLAN':
         case 'ANALYZE_DOCUMENT':
-          return 'gemini-1.5-pro-latest';
+          return 'gemini-2.5-pro';
         case 'ESTIMATE_RENOVATION':
         case 'QA':
         case 'EXTRACT_URL':
-          return 'gemini-1.5-flash-latest';
+          return 'gemini-2.5-flash';
         case 'RESTRUCTURE_TEXT':
         case 'EXTRACT_DATA':
-          return 'gemini-1.5-flash-latest';
+          return 'gemini-2.5-flash-lite';
         default:
-          console.warn(`[WARN] taskType inconnu: '${task}'. Utilisation de 'flash-latest'.`);
-          return 'gemini-1.5-flash-latest';
+          console.warn(`[WARN] taskType inconnu: '${task}'. Utilisation de 'flash-lite'.`);
+          return 'gemini-2.5-flash-lite';
       }
     };
 
     const model = getModelForTask(taskType);
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`;
     
     console.log(`[INFO] Appel de l'API Gemini en streaming avec le modèle : ${model}`);
 
