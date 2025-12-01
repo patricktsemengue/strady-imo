@@ -71,17 +71,45 @@ export const handler = async (event) => {
       };
     }
     
-    const passThrough = new PassThrough();
-    // Convert web stream to Node.js stream and pipe it
-    Readable.fromWeb(geminiResponse.body).pipe(passThrough);
+    const reader = geminiResponse.body.getReader();
+    const decoder = new TextDecoder();
+    let aggregatedResponse = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      aggregatedResponse += decoder.decode(value, { stream: true });
+    }
+
+    // Now, parse the aggregated JSON response to extract the content
+    let fullText = '';
+    try {
+        const responseArray = JSON.parse(aggregatedResponse);
+        fullText = responseArray.map(chunk =>
+            chunk.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        ).join('');
+    } catch (e) {
+        console.error("Error parsing aggregated Gemini response:", e);
+        console.error("Aggregated response was:", aggregatedResponse);
+        // It's possible the response isn't a clean JSON array if an error occurred mid-stream.
+        // Let's try to salvage what we can by just returning the raw aggregated text.
+        // A better approach might be to parse line-by-line if Gemini stream format is known.
+        // Assuming it might just be raw text in some error cases.
+        if (!fullText) {
+             fullText = aggregatedResponse;
+        }
+    }
+
 
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'text/event-stream',
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': process.env.URL || '*',
       },
-      body: passThrough,
+      body: JSON.stringify({ text: fullText }),
     };
 
   } catch (error) {

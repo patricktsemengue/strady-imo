@@ -112,29 +112,10 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
             
             const response = await aiService.fetchAIResponse(requestPayload, conversation, newUserInput);
             
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let fullResponseChunks = [];
+            const { text: fullResponseText } = await response.json();
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                fullResponseChunks.push(value);
-            }
-
-            // Manually concatenate the Uint8Arrays
-            const totalLength = fullResponseChunks.reduce((acc, arr) => acc + arr.length, 0);
-            const concatenatedChunks = new Uint8Array(totalLength);
-            let offset = 0;
-            for (const chunk of fullResponseChunks) {
-                concatenatedChunks.set(chunk, offset);
-                offset += chunk.length;
-            }
-            
-            const fullResponseJsonString = decoder.decode(concatenatedChunks);
-            
             // Call the modified aiService.parseAIResponse
-            const { conversationalPart, jsonData, usageMetadata: parsedUsageMetadata, error } = aiService.parseAIResponse(fullResponseJsonString);
+            const { conversationalPart, jsonData, usageMetadata: parsedUsageMetadata, error } = aiService.parseAIResponse(fullResponseText);
             if (error) setGeminiError(error);
 
             if (parsedUsageMetadata) { // Use the usageMetadata from the parsed result

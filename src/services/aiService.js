@@ -5,58 +5,35 @@
  * @param {string} rawStreamResponseJsonString - The complete JSON string from the streamed API response.
  * @returns {{conversationalPart: string, jsonData: object|null, usageMetadata: object|null, error: string|null}}
  */
-function parseAIResponse(rawStreamResponseJsonString) {
-    let fullTextContent = '';
+function parseAIResponse(fullTextContent) {
     let jsonData = null;
-    let usageMetadata = null;
     let error = null;
+    let conversationalPart = fullTextContent;
 
-    try {
-        const parsedResponses = JSON.parse(rawStreamResponseJsonString);
-        
-        if (!Array.isArray(parsedResponses)) {
-            throw new Error("La réponse streamée n'est pas un tableau JSON.");
+    const jsonMarker = 'JSON UPDATED';
+    const jsonStartIndex = fullTextContent.indexOf(jsonMarker);
+
+    if (jsonStartIndex !== -1) {
+        // Extract JSON string after the marker
+        const potentialJsonString = fullTextContent.substring(jsonStartIndex + jsonMarker.length);
+        // Attempt to find and parse the actual JSON object
+        const jsonMatch = potentialJsonString.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                jsonData = JSON.parse(jsonMatch[0]);
+                // Remove the JSON part and marker from the conversational part
+                conversationalPart = fullTextContent.substring(0, jsonStartIndex).trim();
+            } catch (e) {
+                console.error("Failed to parse extracted JSON from AI response:", e, "Content:", jsonMatch[0]);
+                error = "L'IA a retourné une réponse avec un format JSON invalide. Veuillez réessayer.";
+            }
+        } else {
+            console.warn("JSON marker found, but no valid JSON object followed.", "Content:", potentialJsonString);
         }
-
-        parsedResponses.forEach(item => {
-            const text = item?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-                fullTextContent += text;
-            }
-            const metadata = item?.usageMetadata;
-            if (metadata) {
-                usageMetadata = metadata; // Last one will be the total
-            }
-        });
-
-        const jsonMarker = 'JSON UPDATED';
-        const jsonStartIndex = fullTextContent.indexOf(jsonMarker);
-
-        if (jsonStartIndex !== -1) {
-            // Extract JSON string after the marker
-            const potentialJsonString = fullTextContent.substring(jsonStartIndex + jsonMarker.length);
-            // Attempt to find and parse the actual JSON object
-            const jsonMatch = potentialJsonString.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                try {
-                    jsonData = JSON.parse(jsonMatch[0]);
-                    // Remove the JSON part and marker from the conversational part
-                    fullTextContent = fullTextContent.substring(0, jsonStartIndex).trim();
-                } catch (e) {
-                    console.error("Failed to parse extracted JSON from AI response:", e, "Content:", jsonMatch[0]);
-                    error = "L'IA a retourné une réponse avec un format JSON invalide. Veuillez réessayer.";
-                }
-            } else {
-                console.warn("JSON marker found, but no valid JSON object followed.", "Content:", potentialJsonString);
-            }
-        }
-
-    } catch (e) {
-        console.error("Failed to parse raw stream response as JSON array:", e, "Raw response:", rawStreamResponseJsonString);
-        error = "Format de réponse de l'IA inattendu. Veuillez réessayer.";
     }
 
-    return { conversationalPart: fullTextContent, jsonData, usageMetadata, error };
+    // usageMetadata is no longer available from the simplified backend response
+    return { conversationalPart, jsonData, usageMetadata: null, error };
 }
 
 
