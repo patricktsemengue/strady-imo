@@ -112,22 +112,32 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
             
             const response = await aiService.fetchAIResponse(requestPayload, conversation, newUserInput);
             
-            const { text: fullResponseText } = await response.json();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponseText = '';
 
-            // Call the modified aiService.parseAIResponse
-            const { conversationalPart, jsonData, usageMetadata: parsedUsageMetadata, error } = aiService.parseAIResponse(fullResponseText);
-            if (error) setGeminiError(error);
-
-            if (parsedUsageMetadata) { // Use the usageMetadata from the parsed result
-                conversationService.logTokenUsage({
-                    user_id: user.id,
-                    prompt_tokens: parsedUsageMetadata.promptTokenCount,
-                    candidates_tokens: parsedUsageMetadata.candidatesTokenCount,
-                    total_tokens: parsedUsageMetadata.totalTokenCount,
-                    analysis_id: data?.analysisId,
+            // Live-update the conversation with streamed chunks
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+                const chunk = decoder.decode(value, { stream: true });
+                fullResponseText += chunk;
+                
+                // Update the last message in the conversation array in real-time
+                setConversation(prev => {
+                    const newConv = [...prev];
+                    newConv[newConv.length - 1].content = fullResponseText;
+                    return newConv;
                 });
             }
 
+            // Once streaming is complete, parse the full response
+            const { conversationalPart, jsonData, error } = aiService.parseAIResponse(fullResponseText);
+            if (error) setGeminiError(error);
+
+            // Handle any data updates commanded by the AI
             if (jsonData?.action === 'UPDATE_DATA' && jsonData.payload) {
                 setData(prevData => {
                     const newData = JSON.parse(JSON.stringify(prevData));
@@ -138,15 +148,17 @@ export const useAI = ({ user, userPlan, setUserPlan, data, setData, setNotificat
                 });
             }
 
+            // Save the final, complete message to the database
             const finalAiMessage = {
                 conversation_id: currentConversation.id,
                 user_id: user.id,
                 sender: 'ai',
-                content: conversationalPart.trim(), // Use conversationalPart
+                content: conversationalPart.trim(),
                 actions: jsonData?.suggestedActions || null,
             };
             const savedAiMessage = await conversationService.addMessage(finalAiMessage);
 
+            // Update the conversation with the final message from the DB (which includes a real ID)
             setConversation(prev => {
                 const newConv = [...prev];
                 newConv[newConv.length - 1] = savedAiMessage;
