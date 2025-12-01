@@ -1,27 +1,24 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Readable } from 'stream';
 
 // Helper function to map user-defined task types to specific Gemini model names.
 const getModelForTask = (task) => {
   switch (task) {
-    // More capable model for complex analysis tasks
     case 'ANALYZE_PHOTO':
     case 'ANALYZE_PDF':
     case 'ANALYZE_PLAN':
     case 'ANALYZE_DOCUMENT':
-      return 'gemini-1.5-pro-latest';
-
-    // Faster, more economical model for general purpose tasks
+      return 'gemini-2.5-pro';
     case 'ESTIMATE_RENOVATION':
     case 'QA':
     case 'EXTRACT_URL':
+      return 'gemini-2.5-flash';
     case 'RESTRUCTURE_TEXT':
     case 'EXTRACT_DATA':
-      return 'gemini-1.5-flash-latest';
-
-    // Default to the faster model for any unknown tasks
+      return 'gemini-2.5-flash-lite';
     default:
-      console.warn(`[WARN] Unknown taskType: '${task}'. Defaulting to 'gemini-1.5-flash-latest'.`);
-      return 'gemini-1.5-flash-latest';
+      console.warn(`[WARN] taskType inconnu: '${task}'. Utilisation de 'flash-lite'.`);
+      return 'gemini-2.5-flash-lite';
   }
 };
 
@@ -66,36 +63,53 @@ export const handler = async (event) => {
     // --- 4. PREPARE AND EXECUTE THE STREAMING REQUEST ---
     const result = await model.generateContentStream(userPrompt);
 
-    // --- 5. CREATE AND RETURN A READABLE STREAM FOR NETLIFY ---
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder();
-        try {
-          for await (const chunk of result.stream) {
-            const text = chunk.text();
-            if (text) {
-              // Enqueue the text chunk, properly encoded
-              controller.enqueue(encoder.encode(text));
-            }
-          }
-        } catch (error) {
-          console.error('[STREAM_ERROR] Error while processing Gemini stream:', error);
-          controller.error(error); // Propagate the error to the stream
-        } finally {
-          controller.close(); // Close the stream when done
-        }
-      },
-    });
-
-    // --- 6. SEND THE STREAMING RESPONSE ---
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Access-Control-Allow-Origin': process.env.URL || '*',
-      },
-      body: stream,
+    // --- 5. SEND THE STREAMING RESPONSE ---
+    const headers = {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Access-Control-Allow-Origin': process.env.URL || '*',
     };
+
+    // The production Netlify environment requires a standard `Response` object with a Web Stream,
+    // while the local `netlify dev` server requires the legacy object format with a Node.js Stream.
+    if (process.env.NETLIFY) {
+      // For production on Netlify: Use a Web ReadableStream
+      const stream = new ReadableStream({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          try {
+            for await (const chunk of result.stream) {
+              const text = chunk.text();
+              if (text) {
+                controller.enqueue(encoder.encode(text));
+              }
+            }
+          } catch (error) {
+            console.error('[STREAM_ERROR] Error while processing Gemini stream:', error);
+            controller.error(error);
+          } finally {
+            controller.close();
+          }
+        },
+      });
+      return new Response(stream, { status: 200, headers });
+
+    } else {
+      // For local development (netlify dev): Use a Node.js Readable stream
+      async function* streamGenerator() {
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          if (text) {
+            yield text;
+          }
+        }
+      }
+      const nodeStream = Readable.from(streamGenerator());
+      return {
+        statusCode: 200,
+        headers,
+        body: nodeStream,
+      };
+    }
 
   } catch (error) {
     console.error('[FATAL_ERROR] An unexpected error occurred:', error);
