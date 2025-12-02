@@ -6,9 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/.netlify/functions': {
-        target: 'http://localhost:8888',
+      //'/.netlify/functions': {
+        '/api/askGemini': {
+        //target: 'http://localhost:8888',
+        target:'http://127.0.0.1:5001/strady-imo/us-central1/askGemini',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/askGemini/, ''),
       },
     },
   },

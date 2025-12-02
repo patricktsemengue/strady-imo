@@ -61,10 +61,11 @@ En te basant sur la conversation et le nouveau message, suis les instructions de
 
     const finalRequestPayload = {
         ...requestPayload,
-        userPrompt: userPrompt,
+        prompt: userPrompt,
     };
 
-    const response = await fetch('/.netlify/functions/gemini', {
+    // NETLIFY const response = await fetch('/.netlify/functions/gemini', {
+    const response = await fetch('/api/askGemini', {    
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalRequestPayload)
