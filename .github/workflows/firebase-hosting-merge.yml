@@ -20,7 +20,11 @@ jobs:
         run: |
           npm ci
           npm run build
-
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_STRADY_CACHE_DURATION_HOURS: ${{ secrets.VITE_STRADY_CACHE_DURATION_HOURS }}
+          
       # 3. Prepare Backend (Functions)
       - name: Install Functions Dependencies
         run: |
@@ -34,3 +38,4 @@ jobs:
         run: |
           npm install -g firebase-tools
           firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
+        
