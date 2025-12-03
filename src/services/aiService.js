@@ -64,8 +64,14 @@ En te basant sur la conversation et le nouveau message, suis les instructions de
         prompt: userPrompt,
     };
 
+    const isDev = import.meta.env.DEV;
+    // Use the Vite environment variable for the emulator URL if in dev mode
+    const askGeminiUrl = isDev && import.meta.env.VITE_FIREBASE_EMULATOR_URL
+      ? import.meta.env.VITE_FIREBASE_EMULATOR_URL
+      : '/api/askGemini';
+
     // NETLIFY const response = await fetch('/.netlify/functions/gemini', {
-    const response = await fetch('/api/askGemini', {    
+    const response = await fetch(askGeminiUrl, {    
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalRequestPayload)
